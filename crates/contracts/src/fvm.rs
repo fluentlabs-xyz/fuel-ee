@@ -1,28 +1,22 @@
 use alloc::{format, vec::Vec};
 use alloy_sol_types::{SolType, SolValue};
 use core::str::FromStr;
-use fluentbase_core::fvm::{
-    exec::_exec_fuel_tx,
-    helpers::FUEL_TESTNET_BASE_ASSET_ID,
-    types::{
-        FvmDepositInput,
-        FvmWithdrawInput,
-        WasmStorage,
-        FVM_DEPOSIT_SIG_BYTES,
-        FVM_WITHDRAW_SIG_BYTES,
-    },
-};
 use fluentbase_sdk::{basic_entrypoint, derive::Contract, Bytes34, ExitCode, SharedAPI, U256};
 use fuel_core_storage::{
-    codec::Encode,
-    structured_storage::StructuredStorage,
-    tables::Coins,
-    StorageInspect,
+    codec::Encode, structured_storage::StructuredStorage, tables::Coins, StorageInspect,
     StorageMutate,
 };
 use fuel_core_types::{
     entities::coins::coin::{CompressedCoin, CompressedCoinV1},
     fuel_types::AssetId,
+};
+use fuel_ee_core::fvm::{
+    exec::_exec_fuel_tx,
+    helpers::FUEL_TESTNET_BASE_ASSET_ID,
+    types::{
+        FvmDepositInput, FvmWithdrawInput, WasmStorage, FVM_DEPOSIT_SIG_BYTES,
+        FVM_WITHDRAW_SIG_BYTES,
+    },
 };
 use fuel_tx::{TxId, UtxoId};
 

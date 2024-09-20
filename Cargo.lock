@@ -2395,6 +2395,7 @@ dependencies = [
  "fuel-core-executor",
  "fuel-core-storage",
  "fuel-core-types",
+ "fuel-ee-core",
  "fuel-tx",
  "fuel-vm",
  "zeth-primitives",
