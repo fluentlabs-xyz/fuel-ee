@@ -1,25 +1,13 @@
 use crate::fvm::helpers::{
-    CoinsHelper,
-    ContractsAssetsHelper,
-    ContractsLatestUtxoHelper,
-    ContractsRawCodeHelper,
-    ContractsStateHelper,
-    DepositWithdrawalIndexHelper,
-    FixedChunksWriter,
-    StorageChunksWriter,
+    CoinsHelper, ContractsAssetsHelper, ContractsLatestUtxoHelper, ContractsRawCodeHelper,
+    ContractsStateHelper, DepositWithdrawalIndexHelper, FixedChunksWriter, StorageChunksWriter,
     VariableLengthDataWriter,
 };
 use alloc::{vec, vec::Vec};
+use alloy_primitives::address;
 use alloy_sol_types::{sol, SolValue};
 use fluentbase_sdk::{
-    derive::derive_keccak256_id,
-    Address,
-    Bytes,
-    Bytes32,
-    Bytes34,
-    Bytes64,
-    SharedAPI,
-    U256,
+    derive::derive_keccak256_id, Address, Bytes, Bytes32, Bytes34, Bytes64, SharedAPI, U256,
 };
 use fuel_core_executor::ports::RelayerPort;
 use fuel_core_storage::{
@@ -30,15 +18,8 @@ use fuel_core_storage::{
     Result as StorageResult,
 };
 use fuel_core_types::{
-    blockchain::primitives::DaBlockHeight,
-    fuel_tx::ContractId,
-    fuel_types::canonical::Deserialize,
+    blockchain::primitives::DaBlockHeight, fuel_tx::ContractId, fuel_types::canonical::Deserialize,
     services::relayer::Event,
-};
-use revm_primitives::{
-    address,
-    alloy_primitives::private::serde::de::IntoDeserializer,
-    bitvec::macros::internal::funty::Fundamental,
 };
 
 pub const FVM_DEPOSIT_SIG: u32 = derive_keccak256_id!("_fvm_deposit(uint64)");

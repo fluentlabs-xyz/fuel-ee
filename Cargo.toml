@@ -23,6 +23,7 @@ fuel-ee-contracts = { path = "./crates/contracts", default-features = false }
 
 fluentbase-core = { path = "../fluentbase/crates/core", default-features = false }
 fluentbase-sdk = { path = "../fluentbase/crates/sdk", default-features = false }
+fluentbase-runtime = { path = "../fluentbase/crates/runtime", default-features = false }
 #fluentbase-contracts = { path = "../fluentbase/crates/contracts", default-features = false }
 
 # fuel
@@ -99,15 +100,3 @@ debug = false
 debug-assertions = false
 rpath = false
 codegen-units = 1
-
-#[profile.release]
-#opt-level = 1
-#debug = false
-#debug-assertions = false
-#overflow-checks = false
-#lto = true
-#panic = "abort"
-#incremental = false
-#codegen-units = 1
-#rpath = false
-#strip = true

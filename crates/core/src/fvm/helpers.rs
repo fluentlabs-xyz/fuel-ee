@@ -5,29 +5,18 @@ use fuel_core_storage::{column::Column, ContractsAssetKey};
 use fuel_core_types::{
     fuel_tx::{
         consensus_parameters::{
-            ConsensusParametersV1,
-            ContractParametersV1,
-            FeeParametersV1,
-            PredicateParametersV1,
-            ScriptParametersV1,
-            TxParametersV1,
+            ConsensusParametersV1, ContractParametersV1, FeeParametersV1, PredicateParametersV1,
+            ScriptParametersV1, TxParametersV1,
         },
-        AssetId,
-        ConsensusParameters,
-        ContractId,
-        ContractParameters,
-        FeeParameters,
-        GasCosts,
-        PredicateParameters,
-        ScriptParameters,
-        TxParameters,
+        AssetId, ConsensusParameters, ContractId, ContractParameters, FeeParameters, GasCosts,
+        PredicateParameters, ScriptParameters, TxParameters,
     },
     fuel_types,
     fuel_types::{canonical::Deserialize, ChainId},
     fuel_vm::ContractsStateKey,
 };
+use hex_literal::hex;
 use phantom_type::PhantomType;
-use revm_primitives::hex;
 
 pub const FUEL_TESTNET_BASE_ASSET_ID: &str =
     "f8f8b6283d7fa5b672b530cbb84fcccb4ff8dc40f8176ef4544ddb1f1952ad07";

@@ -1,16 +1,9 @@
 use crate::fvm::{
-    helpers::fuel_testnet_consensus_params_from_cr,
-    transact::_fvm_transact_commit_inner,
+    helpers::fuel_testnet_consensus_params_from_cr, transact::_fvm_transact_commit_inner,
 };
 use alloy_sol_types::SolValue;
 use fluentbase_sdk::{
-    derive::derive_keccak256,
-    types::FvmMethodOutput,
-    Bytes,
-    Bytes32,
-    ExitCode,
-    SharedAPI,
-    B256,
+    derive::derive_keccak256, types::FvmMethodOutput, Bytes, Bytes32, ExitCode, SharedAPI, B256,
 };
 use fuel_core_executor::executor::ExecutionData;
 use fuel_core_types::{
@@ -23,7 +16,7 @@ use fuel_core_types::{
     fuel_vm::checked_transaction::IntoChecked,
     tai64::Tai64,
 };
-use revm_primitives::hex;
+use hex_literal::hex;
 
 pub const FUEL_VM_NON_CONTRACT_LOGS_ADDRESS: Bytes32 =
     hex!("00000000000000000000000000000000000000000000000000004675656C564D"); // ANSI: FuelVM

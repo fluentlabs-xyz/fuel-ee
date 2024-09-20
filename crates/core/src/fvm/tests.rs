@@ -9,8 +9,7 @@ mod tests {
     use fluentbase_sdk::{
         journal::{JournalState, JournalStateBuilder},
         runtime::TestingContext,
-        Bytes34,
-        ContractContext,
+        Bytes34, ContractContext, U256,
     };
     use fuel_core::{
         database::{database_description::on_chain::OnChain, Database, RegularStage},
@@ -23,10 +22,7 @@ mod tests {
         structured_storage::StructuredStorage,
         tables::Coins,
         transactional::{Modifiable, WriteTransaction},
-        Mappable,
-        StorageAsMut,
-        StorageInspect,
-        StorageMutate,
+        Mappable, StorageAsMut, StorageInspect, StorageMutate,
     };
     use fuel_core_types::{
         blockchain::{
@@ -39,15 +35,8 @@ mod tests {
         fuel_merkle::sparse,
         fuel_tx::{
             field::{Inputs, Outputs, Script},
-            Address,
-            AssetId,
-            Cacheable,
-            ConsensusParameters,
-            Output,
-            Transaction,
-            TxParameters,
-            UniqueIdentifier,
-            UtxoId,
+            Address, AssetId, Cacheable, ConsensusParameters, Output, Transaction, TxParameters,
+            UniqueIdentifier, UtxoId,
         },
         fuel_types::{canonical::Serialize, ChainId, ContractId, Word},
         fuel_vm::{
@@ -55,12 +44,10 @@ mod tests {
             interpreter::{ExecutableTransaction, MemoryInstance},
             script_with_data_offset,
             util::test_helpers::TestBuilder,
-            Call,
-            ProgramState,
+            Call, ProgramState,
         },
         services::executor::{Error, TransactionValidityError},
     };
-    use revm_primitives::{alloy_primitives, U256};
 
     fn test_builder() -> TestBuilder {
         TestBuilder::new(1234u64)
