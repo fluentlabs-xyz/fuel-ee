@@ -1,11 +1,12 @@
-package graphql_schemas
+package graphql_entrypoints
 
 import (
+	"github.com/fluentlabs-xyz/fuel-ee/graphql_schemas"
 	"github.com/graphql-go/graphql"
 )
 
-type ChainType struct {
-	SchemaFields SchemaFields
+type GetChainType struct {
+	SchemaFields graphql_schemas.SchemaFields
 }
 
 //	pub struct Header {
@@ -24,13 +25,13 @@ type ChainType struct {
 //	   pub time: Tai64Timestamp,
 //	   pub application_hash: Bytes32,
 //	}
-func Chain(chainInfoType *ChainInfoType) (*ChainType, error) {
+func GetChain(chainInfoType *graphql_schemas.ChainInfoType) (*GetChainType, error) {
 
-	objectConfig := graphql.ObjectConfig{Name: "Chain", Fields: graphql.Fields{
+	objectConfig := graphql.ObjectConfig{Name: "GetChain", Fields: graphql.Fields{
 		"chain": &graphql.Field{
 			Type: chainInfoType.SchemaFields.Object,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return &ChainInfoStruct{}, nil
+				return &graphql_schemas.ChainInfoStruct{}, nil
 			},
 		},
 	}}
@@ -38,8 +39,8 @@ func Chain(chainInfoType *ChainInfoType) (*ChainType, error) {
 	schemaConfig := graphql.SchemaConfig{Query: object}
 	schema, err := graphql.NewSchema(schemaConfig)
 
-	return &ChainType{
-		SchemaFields: SchemaFields{
+	return &GetChainType{
+		SchemaFields: graphql_schemas.SchemaFields{
 			Schema:       &schema,
 			ObjectConfig: &objectConfig,
 			Object:       object,

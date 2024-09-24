@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/fluentlabs-xyz/fuel-ee/graphql_entrypoints"
 	"github.com/fluentlabs-xyz/fuel-ee/graphql_schemas"
 	"github.com/graphql-go/graphql"
 	"log"
@@ -109,17 +110,27 @@ func main() {
 		log.Fatalf("failed to create new schema, error: %v", err)
 	}
 
-	chainType, err := graphql_schemas.Chain(chainInfoType)
-	if err != nil {
-		log.Fatalf("failed to create new schema, error: %v", err)
-	}
-
 	nodeInfoType, err := graphql_schemas.NodeInfo()
 	if err != nil {
 		log.Fatalf("failed to create new schema, error: %v", err)
 	}
 
-	nodeInfoRequestType, err := graphql_schemas.NodeInfoRequest(nodeInfoType)
+	pageInfoType, err := graphql_schemas.PageInfo()
+	if err != nil {
+		log.Fatalf("failed to create new schema, error: %v", err)
+	}
+
+	getChainType, err := graphql_entrypoints.GetChain(chainInfoType)
+	if err != nil {
+		log.Fatalf("failed to create new schema, error: %v", err)
+	}
+
+	getNodeInfoType, err := graphql_entrypoints.GetNodeInfo(nodeInfoType)
+	if err != nil {
+		log.Fatalf("failed to create new schema, error: %v", err)
+	}
+
+	getCoinsType, err := graphql_entrypoints.GetCoins(pageInfoType)
 	if err != nil {
 		log.Fatalf("failed to create new schema, error: %v", err)
 	}
@@ -138,14 +149,17 @@ func main() {
 
 		switch p.Operation {
 		case "getChain":
-			schema = chainType.SchemaFields.Schema
+			schema = getChainType.SchemaFields.Schema
 		case "getNodeInfo":
-			schema = nodeInfoRequestType.SchemaFields.Schema
+			schema = getNodeInfoType.SchemaFields.Schema
+		case "getCoins":
+			schema = getCoinsType.SchemaFields.Schema
 		default:
 			errText := fmt.Sprintf("unsupported operation: %s", p.Operation)
 			log.Printf(errText)
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte(errText))
+			return
 		}
 		params := graphql.Params{
 			Context:        req.Context(),
