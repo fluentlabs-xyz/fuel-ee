@@ -30,7 +30,7 @@ func Chain(chainInfoType *ChainInfoType) (*ChainType, error) {
 		"chain": &graphql.Field{
 			Type: chainInfoType.SchemaFields.Object,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return "123", nil
+				return &ChainInfoStruct{}, nil
 			},
 		},
 	}}

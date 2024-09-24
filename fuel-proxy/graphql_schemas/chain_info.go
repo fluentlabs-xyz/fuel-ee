@@ -12,19 +12,21 @@ type ChainInfoType struct {
 //	   pub latest_block: Block,
 //	   pub consensus_parameters: ConsensusParameters,
 //	}
-func ChainInfo(blockType *BlockType, consensusParametersType *ConsensusParametersType) (*ChainInfoType, error) {
+type ChainInfoStruct struct {
+}
 
+func ChainInfo(blockType *BlockType, consensusParametersType *ConsensusParametersType) (*ChainInfoType, error) {
 	objectConfig := graphql.ObjectConfig{Name: "ChainInfo", Fields: graphql.Fields{
 		"daHeight": &graphql.Field{
-			Type: graphql.Int,
+			Type: graphql.String,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return 12, nil
+				return 0, nil
 			},
 		},
 		"name": &graphql.Field{
 			Type: graphql.String,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return "some chain info name here", nil
+				return "Local testnet", nil
 			},
 		},
 		"latestBlock": &graphql.Field{
@@ -32,14 +34,14 @@ func ChainInfo(blockType *BlockType, consensusParametersType *ConsensusParameter
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				return BlockStruct{
 					Id:     [32]byte{1, 2, 3},
-					Height: 321,
+					Height: 0,
 				}, nil
 			},
 		},
 		"consensusParameters": &graphql.Field{
 			Type: consensusParametersType.SchemaFields.Object,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return ConsensusParametersStruct{}, nil
+				return TxParametersStruct{}, nil
 			},
 		},
 	}}

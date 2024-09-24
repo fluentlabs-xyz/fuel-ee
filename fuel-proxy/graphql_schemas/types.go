@@ -12,6 +12,11 @@ type SchemaFields struct {
 }
 
 type EnumFields struct {
-	EnumConfig *graphql.EnumConfig
-	Enum       *graphql.Enum
+	Config *graphql.EnumConfig
+	Entity *graphql.Enum
+}
+
+type UnionFields struct {
+	Config *graphql.UnionConfig
+	Entity *graphql.Union
 }

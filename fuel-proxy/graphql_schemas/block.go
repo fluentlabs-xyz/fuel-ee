@@ -31,25 +31,25 @@ func Block(headerType *HeaderType, transactionType *TransactionType) (*BlockType
 		"id": &graphql.Field{
 			Type: graphql_types.Bytes32Type,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return graphql_types.NewBytes32TryFromStringOrPanic("1212121212121212121212121212121212121212121212121212121212121212"), nil
+				return graphql_types.NewBytes32TryFromStringOrPanic("0x6e024412c62b6d8158b6c6dd702c0affc760ab489ec735fee637a1a031010784"), nil
 			},
 		},
 		"height": &graphql.Field{
-			Type: graphql.Int,
+			Type: graphql.String,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return 111, nil
+				return 0, nil
 			},
 		},
 		"header": &graphql.Field{
 			Type: headerType.SchemaFields.Object,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return "block header here", nil
+				return &HeaderStruct{}, nil
 			},
 		},
 		"transactions": &graphql.Field{
 			Type: graphql.NewList(transactionType.SchemaFields.Object),
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return "block header here", nil
+				return &[]TransactionStruct{}, nil
 			},
 		},
 	}}

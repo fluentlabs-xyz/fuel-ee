@@ -39,15 +39,15 @@ func Header() (*HeaderType, error) {
 			},
 		},
 		"daHeight": &graphql.Field{
-			Type: graphql.Int,
+			Type: graphql.String,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return 10, nil
+				return 0, nil
 			},
 		},
 		"time": &graphql.Field{
-			Type: graphql.Int,
+			Type: graphql.String,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return 1727090371000, nil
+				return 4611686018427387914, nil
 			},
 		},
 	}}

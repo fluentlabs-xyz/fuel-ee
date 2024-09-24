@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/graphql/language/ast"
+	"strings"
 )
 
 type Bytes32 struct {
@@ -12,7 +13,7 @@ type Bytes32 struct {
 }
 
 func (b *Bytes32) String() string {
-	return hex.EncodeToString(b.value[:])
+	return "0x" + hex.EncodeToString(b.value[:])
 }
 
 func NewBytes32(v [32]byte) *Bytes32 {
@@ -22,6 +23,9 @@ func NewBytes32(v [32]byte) *Bytes32 {
 }
 
 func NewBytes32TryFromString(v string) (*Bytes32, error) {
+	if strings.HasPrefix(v, "0x") {
+		v = v[2:]
+	}
 	output, err := hex.DecodeString(v)
 	if err != nil {
 		return nil, err

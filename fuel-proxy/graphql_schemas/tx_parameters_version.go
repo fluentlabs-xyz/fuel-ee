@@ -2,19 +2,19 @@ package graphql_schemas
 
 import "github.com/graphql-go/graphql"
 
-type ConsensusParametersVersionType struct {
+type TxParametersVersionType struct {
 	SchemaFields EnumFields
 }
 
-//	pub enum ConsensusParametersVersion {
-//		V1,
-//	 }
-type ConsensusParametersVersionStruct struct {
+//	pub enum TxParametersVersion {
+//	   V1,
+//	}
+type TxParametersVersionStruct struct {
 }
 
-func ConsensusParametersVersion() *ConsensusParametersVersionType {
+func TxParametersVersion() *TxParametersVersionType {
 	enumConfig := graphql.EnumConfig{
-		Name: "ConsensusParametersVersion",
+		Name: "TxParametersVersion",
 		Values: graphql.EnumValueConfigMap{
 			"V1": &graphql.EnumValueConfig{
 				Value: 1,
@@ -23,7 +23,7 @@ func ConsensusParametersVersion() *ConsensusParametersVersionType {
 	}
 	enum := graphql.NewEnum(enumConfig)
 
-	return &ConsensusParametersVersionType{
+	return &TxParametersVersionType{
 		SchemaFields: EnumFields{
 			Config: &enumConfig,
 			Entity: enum,
