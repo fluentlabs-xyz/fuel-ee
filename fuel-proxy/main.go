@@ -114,49 +114,47 @@ func main() {
 		log.Fatalf("failed to create new schema, error: %v", err)
 	}
 
-	//// Query
-	//query := `
-	//	query getChain {
-	//      ...chainInfoFragment
-	//	}
-	//	fragment chainInfoFragment on ChainInfo {
-	//	  name
-	//	  daHeight
-	//      latestBlock {
-	//	    ...blockFragment
-	//      }
-	//	}
-	//	fragment blockFragment on Block {
-	//	  id
-	//	  height
-	//	}
-	//`
-	//params := graphql.Params{Schema: *chainInfoType.SchemaFields.Schema, RequestString: query}
-	//r := graphql.Do(params)
-	//if len(r.Errors) > 0 {
-	//	log.Fatalf("failed to execute graphql operation, errors: %+v", r.Errors)
-	//}
-	//rJSON, _ := json.Marshal(r)
-	//log.Printf("test response: %s", rJSON) // {“data”:{“hello”:”world”}}
+	nodeInfoType, err := graphql_schemas.NodeInfo()
+	if err != nil {
+		log.Fatalf("failed to create new schema, error: %v", err)
+	}
+
+	nodeInfoRequestType, err := graphql_schemas.NodeInfoRequest(nodeInfoType)
+	if err != nil {
+		log.Fatalf("failed to create new schema, error: %v", err)
+	}
 
 	http.HandleFunc("/v1/graphql", func(w http.ResponseWriter, req *http.Request) {
 		var p postData
 		if err := json.NewDecoder(req.Body).Decode(&p); err != nil {
-			log.Printf("failed to decode: %s", err)
-			w.WriteHeader(400)
+			errText := fmt.Sprintf("failed to decode: %s", err)
+			log.Printf(errText)
+			w.WriteHeader(http.StatusBadRequest)
+			_, _ = w.Write([]byte(errText))
 			return
 		}
 		log.Printf("query: %s", p.Query)
+		var schema *graphql.Schema
+
+		switch p.Operation {
+		case "getChain":
+			schema = chainType.SchemaFields.Schema
+		case "getNodeInfo":
+			schema = nodeInfoRequestType.SchemaFields.Schema
+		default:
+			errText := fmt.Sprintf("unsupported operation: %s", p.Operation)
+			log.Printf(errText)
+			w.WriteHeader(http.StatusBadRequest)
+			_, _ = w.Write([]byte(errText))
+		}
 		params := graphql.Params{
 			Context:        req.Context(),
-			Schema:         *chainType.SchemaFields.Schema,
+			Schema:         *schema,
 			RequestString:  p.Query,
 			VariableValues: p.Variables,
 			OperationName:  p.Operation,
 		}
 		result := graphql.Do(params)
-		v, _ := json.Marshal(result)
-		log.Printf("v: %s", v)
 		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(result); err != nil {
 			log.Printf("could not write result to response: %s", err)
