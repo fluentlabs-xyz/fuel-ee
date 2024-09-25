@@ -87,52 +87,62 @@ func main() {
 		gasCostsType,
 	)
 	if err != nil {
-		log.Fatalf("failed to create new schema, error: %v", err)
+		log.Fatalf("error: %v", err)
 	}
 
 	transactionType, err := graphql_schemas.Transaction()
 	if err != nil {
-		log.Fatalf("failed to create new schema, error: %v", err)
+		log.Fatalf("error: %v", err)
 	}
 
 	headerType, err := graphql_schemas.Header()
 	if err != nil {
-		log.Fatalf("failed to create new schema, error: %v", err)
+		log.Fatalf("error: %v", err)
 	}
 
 	blockType, err := graphql_schemas.Block(headerType, transactionType)
 	if err != nil {
-		log.Fatalf("failed to create new schema, error: %v", err)
+		log.Fatalf("error: %v", err)
 	}
 
 	chainInfoType, err := graphql_schemas.ChainInfo(blockType, consensusParametersType)
 	if err != nil {
-		log.Fatalf("failed to create new schema, error: %v", err)
+		log.Fatalf("error: %v", err)
 	}
 
 	nodeInfoType, err := graphql_schemas.NodeInfo()
 	if err != nil {
-		log.Fatalf("failed to create new schema, error: %v", err)
+		log.Fatalf("error: %v", err)
 	}
 
 	pageInfoType, err := graphql_schemas.PageInfo()
 	if err != nil {
-		log.Fatalf("failed to create new schema, error: %v", err)
+		log.Fatalf("error: %v", err)
 	}
 
-	getChainType, err := graphql_entrypoints.GetChain(chainInfoType)
+	gasPriceType, err := graphql_schemas.GasPrice()
 	if err != nil {
-		log.Fatalf("failed to create new schema, error: %v", err)
+		log.Fatalf("error: %v", err)
 	}
 
-	getNodeInfoType, err := graphql_entrypoints.GetNodeInfo(nodeInfoType)
+	getChainEntry, err := graphql_entrypoints.GetChain(chainInfoType)
 	if err != nil {
-		log.Fatalf("failed to create new schema, error: %v", err)
+		log.Fatalf("error: %v", err)
 	}
 
-	getCoinsType, err := graphql_entrypoints.GetCoins(pageInfoType)
+	getNodeInfoEntry, err := graphql_entrypoints.GetNodeInfo(nodeInfoType)
 	if err != nil {
-		log.Fatalf("failed to create new schema, error: %v", err)
+		log.Fatalf("error: %v", err)
+	}
+
+	getCoinsEntry, err := graphql_entrypoints.GetCoins(pageInfoType)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+
+	estimateGasPriceEntry, err := graphql_entrypoints.EstimateGasPrice(gasPriceType)
+	if err != nil {
+		log.Fatalf("error: %v", err)
 	}
 
 	http.HandleFunc("/v1/graphql", func(w http.ResponseWriter, req *http.Request) {
@@ -144,16 +154,20 @@ func main() {
 			_, _ = w.Write([]byte(errText))
 			return
 		}
-		log.Printf("query: %s", p.Query)
+		log.Printf("Operation: %s", p.Operation)
+		log.Printf("Variables: %s", p.Variables)
+		log.Printf("Query: %s", p.Query)
 		var schema *graphql.Schema
 
 		switch p.Operation {
 		case "getChain":
-			schema = getChainType.SchemaFields.Schema
+			schema = getChainEntry.SchemaFields.Schema
 		case "getNodeInfo":
-			schema = getNodeInfoType.SchemaFields.Schema
+			schema = getNodeInfoEntry.SchemaFields.Schema
 		case "getCoins":
-			schema = getCoinsType.SchemaFields.Schema
+			schema = getCoinsEntry.SchemaFields.Schema
+		case "estimateGasPrice":
+			schema = estimateGasPriceEntry.SchemaFields.Schema
 		default:
 			errText := fmt.Sprintf("unsupported operation: %s", p.Operation)
 			log.Printf(errText)
