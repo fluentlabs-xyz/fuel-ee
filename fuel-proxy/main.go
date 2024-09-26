@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/fluentlabs-xyz/fuel-ee/graphql_entrypoints"
-	"github.com/fluentlabs-xyz/fuel-ee/graphql_schemas"
+	"github.com/fluentlabs-xyz/fuel-ee/graphql_object"
 	"github.com/graphql-go/graphql"
 	"log"
 	"net/http"
@@ -29,55 +29,55 @@ func main() {
 	//baseAssetIdSchemaConfig := graphql.SchemaConfig{Query: baseAssetIdObject}
 	//_, err := graphql.NewSchema(baseAssetIdSchemaConfig)
 
-	consensusParametersVersionType := graphql_schemas.ConsensusParametersVersion()
+	consensusParametersVersionType := graphql_object.ConsensusParametersVersion()
 
-	lightOperationType, err := graphql_schemas.LightOperation()
+	lightOperationType, err := graphql_object.LightOperation()
 	if err != nil {
 		log.Fatalf("failed to create new schema, error: %v", err)
 	}
-	heavyOperationType, err := graphql_schemas.HeavyOperation()
+	heavyOperationType, err := graphql_object.HeavyOperation()
 	if err != nil {
 		log.Fatalf("failed to create new schema, error: %v", err)
 	}
-	dependentCostType := graphql_schemas.DependentCost(lightOperationType, heavyOperationType)
+	dependentCostType := graphql_object.DependentCost(lightOperationType, heavyOperationType)
 
-	contractParametersVersionType := graphql_schemas.ContractParametersVersion()
-	contractParametersType, err := graphql_schemas.ContractParameters(contractParametersVersionType)
-	if err != nil {
-		log.Fatalf("failed to create new schema, error: %v", err)
-	}
-
-	gasCostsVersionType := graphql_schemas.GasCostsVersion()
-	gasCostsType, err := graphql_schemas.GasCosts(gasCostsVersionType, dependentCostType)
+	contractParametersVersionType := graphql_object.ContractParametersVersion()
+	contractParametersType, err := graphql_object.ContractParameters(contractParametersVersionType)
 	if err != nil {
 		log.Fatalf("failed to create new schema, error: %v", err)
 	}
 
-	feeParametersVersionType := graphql_schemas.FeeParametersVersion()
-	feeParametersType, err := graphql_schemas.FeeParameters(feeParametersVersionType)
+	gasCostsVersionType := graphql_object.GasCostsVersion()
+	gasCostsType, err := graphql_object.GasCosts(gasCostsVersionType, dependentCostType)
 	if err != nil {
 		log.Fatalf("failed to create new schema, error: %v", err)
 	}
 
-	scriptParametersVersionType := graphql_schemas.ScriptParametersVersion()
-	scriptParametersType, err := graphql_schemas.ScriptParameters(scriptParametersVersionType)
+	feeParametersVersionType := graphql_object.FeeParametersVersion()
+	feeParametersType, err := graphql_object.FeeParameters(feeParametersVersionType)
 	if err != nil {
 		log.Fatalf("failed to create new schema, error: %v", err)
 	}
 
-	predicateParametersVersionType := graphql_schemas.PredicateParametersVersion()
-	predicateParametersType, err := graphql_schemas.PredicateParameters(predicateParametersVersionType)
+	scriptParametersVersionType := graphql_object.ScriptParametersVersion()
+	scriptParametersType, err := graphql_object.ScriptParameters(scriptParametersVersionType)
 	if err != nil {
 		log.Fatalf("failed to create new schema, error: %v", err)
 	}
 
-	txParametersVersionType := graphql_schemas.TxParametersVersion()
-	txParametersType, err := graphql_schemas.TxParameters(txParametersVersionType)
+	predicateParametersVersionType := graphql_object.PredicateParametersVersion()
+	predicateParametersType, err := graphql_object.PredicateParameters(predicateParametersVersionType)
 	if err != nil {
 		log.Fatalf("failed to create new schema, error: %v", err)
 	}
 
-	consensusParametersType, err := graphql_schemas.ConsensusParameters(
+	txParametersVersionType := graphql_object.TxParametersVersion()
+	txParametersType, err := graphql_object.TxParameters(txParametersVersionType)
+	if err != nil {
+		log.Fatalf("failed to create new schema, error: %v", err)
+	}
+
+	consensusParametersType, err := graphql_object.ConsensusParameters(
 		consensusParametersVersionType,
 		txParametersType,
 		predicateParametersType,
@@ -90,59 +90,114 @@ func main() {
 		log.Fatalf("error: %v", err)
 	}
 
-	transactionType, err := graphql_schemas.Transaction()
+	transactionType, err := graphql_object.Transaction()
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
 
-	headerType, err := graphql_schemas.Header()
+	headerType, err := graphql_object.Header()
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
 
-	blockType, err := graphql_schemas.Block(headerType, transactionType)
+	blockType, err := graphql_object.Block(headerType, transactionType)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
 
-	chainInfoType, err := graphql_schemas.ChainInfo(blockType, consensusParametersType)
+	chainInfoType, err := graphql_object.ChainInfo(blockType, consensusParametersType)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
 
-	nodeInfoType, err := graphql_schemas.NodeInfo()
+	nodeInfoType, err := graphql_object.NodeInfo()
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
 
-	pageInfoType, err := graphql_schemas.PageInfo()
+	pageInfoType, err := graphql_object.PageInfo()
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
 
-	gasPriceType, err := graphql_schemas.GasPrice()
+	gasPriceType, err := graphql_object.GasPrice()
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
 
-	getChainEntry, err := graphql_entrypoints.GetChain(chainInfoType)
+	programStateType, err := graphql_object.ProgramState()
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
 
-	getNodeInfoEntry, err := graphql_entrypoints.GetNodeInfo(nodeInfoType)
+	dryRunSuccessStatusType, err := graphql_object.DryRunSuccessStatus(programStateType)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
 
-	getCoinsEntry, err := graphql_entrypoints.GetCoins(pageInfoType)
+	dryRunFailureStatusType, err := graphql_object.DryRunFailureStatus(programStateType)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
 
-	estimateGasPriceEntry, err := graphql_entrypoints.EstimateGasPrice(gasPriceType)
+	dryRunTransactionStatusType := graphql_object.DryRunTransactionStatus(dryRunSuccessStatusType, dryRunFailureStatusType)
+
+	receiptTypeType := graphql_object.MakeReceiptType()
+
+	receiptType, err := graphql_object.Receipt(receiptTypeType)
 	if err != nil {
 		log.Fatalf("error: %v", err)
+	}
+
+	dryRunTransactionExecutionStatusType, err := graphql_object.DryRunTransactionExecutionStatus(dryRunTransactionStatusType, receiptType)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+
+	// ENTRIES
+
+	getChainEntry, err := graphql_entrypoints.MakeGetChainEntry(chainInfoType)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+
+	getNodeInfoEntry, err := graphql_entrypoints.MakeGetNodeInfoEntry(nodeInfoType)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+
+	getCoinsEntry, err := graphql_entrypoints.MakeGetCoinsEntry(pageInfoType)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+
+	estimateGasPriceEntry, err := graphql_entrypoints.MakeEstimateGasPriceEntry(gasPriceType)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+
+	dryRunEntry, err := graphql_entrypoints.MakeDryRunEntry(dryRunTransactionExecutionStatusType)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+
+	coinType, err := graphql_object.MakeCoin()
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+
+	messageCoinType, err := graphql_object.MakeMessageCoin()
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+
+	coinTypeType := graphql_object.MakeCoinType(coinType, messageCoinType)
+
+	//excludeInputType := graphql_input_objects.ExcludeInput()
+
+	getCoinsToSpendEntry, err := graphql_entrypoints.MakeGetCoinsToSpendEntry(coinTypeType)
+	if err != nil {
+		panic(err)
 	}
 
 	http.HandleFunc("/v1/graphql", func(w http.ResponseWriter, req *http.Request) {
@@ -168,6 +223,10 @@ func main() {
 			schema = getCoinsEntry.SchemaFields.Schema
 		case "estimateGasPrice":
 			schema = estimateGasPriceEntry.SchemaFields.Schema
+		case "dryRun":
+			schema = dryRunEntry.SchemaFields.Schema
+		case "getCoinsToSpend":
+			schema = getCoinsToSpendEntry.SchemaFields.Schema
 		default:
 			errText := fmt.Sprintf("unsupported operation: %s", p.Operation)
 			log.Printf(errText)
@@ -183,6 +242,9 @@ func main() {
 			OperationName:  p.Operation,
 		}
 		result := graphql.Do(params)
+		if len(result.Errors) > 0 {
+			log.Printf("graphql errors: %s", result.Errors)
+		}
 		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(result); err != nil {
 			log.Printf("could not write result to response: %s", err)

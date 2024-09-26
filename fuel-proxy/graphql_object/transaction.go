@@ -1,12 +1,15 @@
-package graphql_entrypoints
+package graphql_object
 
 import (
-	"github.com/fluentlabs-xyz/fuel-ee/graphql_object"
+	"github.com/fluentlabs-xyz/fuel-ee/graphql_scalars"
 	"github.com/graphql-go/graphql"
 )
 
-type GetChainEntry struct {
-	SchemaFields graphql_object.SchemaFields
+type TransactionType struct {
+	SchemaFields SchemaFields
+}
+
+type TransactionStruct struct {
 }
 
 //	pub struct Header {
@@ -25,13 +28,13 @@ type GetChainEntry struct {
 //	   pub time: Tai64Timestamp,
 //	   pub application_hash: Bytes32,
 //	}
-func MakeGetChainEntry(chainInfoType *graphql_object.ChainInfoType) (*GetChainEntry, error) {
+func Transaction() (*TransactionType, error) {
 
-	objectConfig := graphql.ObjectConfig{Name: "GetChainEntry", Fields: graphql.Fields{
-		"chain": &graphql.Field{
-			Type: chainInfoType.SchemaFields.Object,
+	objectConfig := graphql.ObjectConfig{Name: "Transaction", Fields: graphql.Fields{
+		"id": &graphql.Field{
+			Type: graphql_scalars.Bytes32Type,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return &graphql_object.ChainInfoStruct{}, nil
+				return graphql_scalars.NewBytes32TryFromStringOrPanic("a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"), nil
 			},
 		},
 	}}
@@ -39,8 +42,8 @@ func MakeGetChainEntry(chainInfoType *graphql_object.ChainInfoType) (*GetChainEn
 	schemaConfig := graphql.SchemaConfig{Query: object}
 	schema, err := graphql.NewSchema(schemaConfig)
 
-	return &GetChainEntry{
-		SchemaFields: graphql_object.SchemaFields{
+	return &TransactionType{
+		SchemaFields: SchemaFields{
 			Schema:       &schema,
 			ObjectConfig: &objectConfig,
 			Object:       object,

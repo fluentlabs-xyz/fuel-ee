@@ -1,33 +1,33 @@
 package graphql_entrypoints
 
 import (
-	"github.com/fluentlabs-xyz/fuel-ee/graphql_schemas"
-	"github.com/fluentlabs-xyz/fuel-ee/graphql_types"
+	"github.com/fluentlabs-xyz/fuel-ee/graphql_object"
+	"github.com/fluentlabs-xyz/fuel-ee/graphql_scalars"
 	"github.com/graphql-go/graphql"
 )
 
-type EstimateGasPriceType struct {
-	SchemaFields graphql_schemas.SchemaFields
+type EstimateGasPriceEntry struct {
+	SchemaFields graphql_object.SchemaFields
 }
 
 type EstimateGasPriceStruct struct {
 }
 
-const BlockHorizon = "blockHorizon"
+const blockHorizon = "blockHorizon"
 
-func EstimateGasPrice(gasPriceType *graphql_schemas.GasPriceType) (*EstimateGasPriceType, error) {
-	objectConfig := graphql.ObjectConfig{Name: "EstimateGasPrice", Fields: graphql.Fields{
+func MakeEstimateGasPriceEntry(gasPriceType *graphql_object.GasPriceType) (*EstimateGasPriceEntry, error) {
+	objectConfig := graphql.ObjectConfig{Name: "EstimateGasPriceEntry", Fields: graphql.Fields{
 		"estimateGasPrice": &graphql.Field{
 			Type: gasPriceType.SchemaFields.Object,
 			Args: graphql.FieldConfigArgument{
-				BlockHorizon: &graphql.ArgumentConfig{
-					Type:         graphql_types.U32Type,
-					DefaultValue: graphql_types.NewU32(0),
+				blockHorizon: &graphql.ArgumentConfig{
+					Type:         graphql_scalars.U32Type,
+					DefaultValue: graphql_scalars.NewU32(0),
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				//blockHorizon := p.Args[BlockHorizon]
-				return graphql_schemas.GasPriceStruct{
+				//blockHorizon := p.Args[blockHorizon]
+				return graphql_object.GasPriceStruct{
 					GasPrice: 0,
 				}, nil
 			},
@@ -37,8 +37,8 @@ func EstimateGasPrice(gasPriceType *graphql_schemas.GasPriceType) (*EstimateGasP
 	schemaConfig := graphql.SchemaConfig{Query: object}
 	schema, err := graphql.NewSchema(schemaConfig)
 
-	return &EstimateGasPriceType{
-		SchemaFields: graphql_schemas.SchemaFields{
+	return &EstimateGasPriceEntry{
+		SchemaFields: graphql_object.SchemaFields{
 			Schema:       &schema,
 			ObjectConfig: &objectConfig,
 			Object:       object,

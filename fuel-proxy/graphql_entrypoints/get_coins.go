@@ -1,12 +1,12 @@
 package graphql_entrypoints
 
 import (
-	"github.com/fluentlabs-xyz/fuel-ee/graphql_schemas"
+	"github.com/fluentlabs-xyz/fuel-ee/graphql_object"
 	"github.com/graphql-go/graphql"
 )
 
-type GetCoinsType struct {
-	SchemaFields graphql_schemas.SchemaFields
+type GetCoinsEntry struct {
+	SchemaFields graphql_object.SchemaFields
 }
 
 //	{
@@ -37,12 +37,12 @@ type GetCoinsType struct {
 type GetCoinsStruct struct {
 }
 
-func GetCoins(pageInfoType *graphql_schemas.PageInfoType) (*GetCoinsType, error) {
-	objectConfig := graphql.ObjectConfig{Name: "GetNodeInfo", Fields: graphql.Fields{
+func MakeGetCoinsEntry(pageInfoType *graphql_object.PageInfoType) (*GetCoinsEntry, error) {
+	objectConfig := graphql.ObjectConfig{Name: "GetCoinsEntry", Fields: graphql.Fields{
 		"pageInfo": &graphql.Field{
 			Type: pageInfoType.SchemaFields.Object,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return &graphql_schemas.PageInfoStruct{}, nil
+				return &graphql_object.PageInfoStruct{}, nil
 			},
 		},
 	}}
@@ -50,8 +50,8 @@ func GetCoins(pageInfoType *graphql_schemas.PageInfoType) (*GetCoinsType, error)
 	schemaConfig := graphql.SchemaConfig{Query: object}
 	schema, err := graphql.NewSchema(schemaConfig)
 
-	return &GetCoinsType{
-		SchemaFields: graphql_schemas.SchemaFields{
+	return &GetCoinsEntry{
+		SchemaFields: graphql_object.SchemaFields{
 			Schema:       &schema,
 			ObjectConfig: &objectConfig,
 			Object:       object,
