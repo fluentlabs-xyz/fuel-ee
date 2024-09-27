@@ -1,10 +1,13 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/fluentlabs-xyz/fuel-ee/graphql_entrypoints"
 	"github.com/fluentlabs-xyz/fuel-ee/graphql_object"
+	"github.com/fluentlabs-xyz/fuel-ee/helpers"
 	"github.com/graphql-go/graphql"
 	"log"
 	"net/http"
@@ -17,17 +20,20 @@ type postData struct {
 }
 
 func main() {
-	//baseAssetIdObjectConfig := graphql.ObjectConfig{Name: "BaseAssetId", Fields: graphql.Fields{
-	//	"id": &graphql.Field{
-	//		Type: graphql.String,
-	//		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-	//			return "0xf8f8b6283d7fa5b672b530cbb84fcccb4ff8dc40f8176ef4544ddb1f1952ad07", nil
-	//		},
-	//	},
-	//}}
-	//baseAssetIdObject := graphql.NewObject(baseAssetIdObjectConfig)
-	//baseAssetIdSchemaConfig := graphql.SchemaConfig{Query: baseAssetIdObject}
-	//_, err := graphql.NewSchema(baseAssetIdSchemaConfig)
+	ethClient, err := ethclient.Dial("http://127.0.0.1:8545")
+	if err != nil {
+		log.Fatal(err)
+	}
+	blockNumber, err := ethClient.BlockNumber(context.Background())
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("eth last blockNumber: %d", blockNumber)
+	//block, err := ethClient.BlockByNumber(context.Background(), big.NewInt(1))
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//log.Printf("block.Header().ParentHash: %s", block.Header().ParentHash)
 
 	consensusParametersVersionType := graphql_object.ConsensusParametersVersion()
 
@@ -176,7 +182,7 @@ func main() {
 		log.Fatalf("error: %v", err)
 	}
 
-	dryRunEntry, err := graphql_entrypoints.MakeDryRunEntry(dryRunTransactionExecutionStatusType)
+	dryRunEntry, err := graphql_entrypoints.MakeDryRunEntry(ethClient, dryRunTransactionExecutionStatusType)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
@@ -193,8 +199,6 @@ func main() {
 
 	coinTypeType := graphql_object.MakeCoinType(coinType, messageCoinType)
 
-	//excludeInputType := graphql_input_objects.ExcludeInput()
-
 	getCoinsToSpendEntry, err := graphql_entrypoints.MakeGetCoinsToSpendEntry(coinTypeType)
 	if err != nil {
 		panic(err)
@@ -205,8 +209,7 @@ func main() {
 		if err := json.NewDecoder(req.Body).Decode(&p); err != nil {
 			errText := fmt.Sprintf("failed to decode: %s", err)
 			log.Printf(errText)
-			w.WriteHeader(http.StatusBadRequest)
-			_, _ = w.Write([]byte(errText))
+			_, _ = helpers.HttpWriteError(w, http.StatusBadRequest, errText)
 			return
 		}
 		log.Printf("Operation: %s", p.Operation)
@@ -220,18 +223,21 @@ func main() {
 		case "getNodeInfo":
 			schema = getNodeInfoEntry.SchemaFields.Schema
 		case "getCoins":
+			_, _ = helpers.HttpWriteError(w, http.StatusMethodNotAllowed, "temporarily disabled")
+			return
 			schema = getCoinsEntry.SchemaFields.Schema
 		case "estimateGasPrice":
 			schema = estimateGasPriceEntry.SchemaFields.Schema
 		case "dryRun":
 			schema = dryRunEntry.SchemaFields.Schema
 		case "getCoinsToSpend":
+			//_, _ = helpers.HttpWriteError(w, http.StatusMethodNotAllowed, "temporarily disabled")
+			//return
 			schema = getCoinsToSpendEntry.SchemaFields.Schema
 		default:
 			errText := fmt.Sprintf("unsupported operation: %s", p.Operation)
 			log.Printf(errText)
-			w.WriteHeader(http.StatusBadRequest)
-			_, _ = w.Write([]byte(errText))
+			_, _ = helpers.HttpWriteError(w, http.StatusBadRequest, errText)
 			return
 		}
 		params := graphql.Params{

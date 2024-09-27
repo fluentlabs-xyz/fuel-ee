@@ -1,7 +1,7 @@
 use alloc::{format, vec::Vec};
 use alloy_sol_types::{SolType, SolValue};
 use core::str::FromStr;
-use fluentbase_sdk::{basic_entrypoint, derive::Contract, Bytes34, ExitCode, SharedAPI, U256};
+use fluentbase_sdk::{basic_entrypoint, derive::Contract, ExitCode, SharedAPI, U256};
 use fuel_core_storage::{
     codec::Encode, structured_storage::StructuredStorage, tables::Coins, StorageInspect,
     StorageMutate,
@@ -82,12 +82,12 @@ impl<SDK: SharedAPI> FvmLoaderEntrypoint<SDK> {
             )
             .expect("failed to save deposit utxo");
 
-            let utxo_as_a_key: Bytes34 =
-                fuel_core_storage::codec::primitive::Primitive::<34>::encode(&utxo_id);
-            storage
-                .into_inner()
-                .utxo_owner_update(&utxo_as_a_key, caller)
-                .expect("failed to update utxo<->owner mapping");
+            // let utxo_as_a_key: Bytes34 =
+            //     fuel_core_storage::codec::primitive::Primitive::<34>::encode(&utxo_id);
+            // storage
+            //     .into_inner()
+            //     .utxo_owner_update(&utxo_as_a_key, caller)
+            //     .expect("failed to update utxo<->owner mapping");
 
             return ExitCode::Ok;
         } else if raw_tx_bytes_as_ref.starts_with(FVM_WITHDRAW_SIG_BYTES.as_slice()) {
@@ -121,7 +121,7 @@ impl<SDK: SharedAPI> FvmLoaderEntrypoint<SDK> {
                 let utxo_as_a_key =
                     fuel_core_storage::codec::primitive::Primitive::<34>::encode(&utxo_id);
                 let wasm_storage = WasmStorage { sdk: &mut self.sdk };
-                let evm_owner = wasm_storage.utxo_owner(&utxo_as_a_key);
+                // let evm_owner = wasm_storage.utxo_owner(&utxo_as_a_key);
                 let mut storage = StructuredStorage::new(wasm_storage);
                 let coin = <StructuredStorage<WasmStorage<'_, SDK>> as StorageInspect<Coins>>::get(
                     &mut storage,
@@ -137,9 +137,9 @@ impl<SDK: SharedAPI> FvmLoaderEntrypoint<SDK> {
                     )
                 }
                 // validate belong to the user
-                if evm_owner != caller {
-                    panic!("caller address doesnt match utxo owner")
-                }
+                // if evm_owner != caller {
+                //     panic!("caller address doesnt match utxo owner")
+                // }
                 if let Some(last_owner) = last_owner {
                     if &last_owner != coin.owner() {
                         panic!("all utxo owners must be the same")

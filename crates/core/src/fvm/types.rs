@@ -429,24 +429,24 @@ impl<'a, SDK: SharedAPI> WasmStorage<'a, SDK> {
         Some(res.into())
     }
 
-    pub fn utxo_owner_update(&mut self, raw_key: &Bytes34, data: Address) -> anyhow::Result<()> {
-        anyhow::ensure!(
-            data.len() <= COINS_MAX_ENCODED_LEN,
-            anyhow::Error::msg("coins encoded len must fit max len")
-        );
-        let helper = CoinsHelper::new(raw_key);
-        let slot = helper.owner_storage_slot();
-        let address_u256 = U256::from_be_slice(&data.0.as_slice());
-        self.sdk.write_storage(slot, address_u256);
-        Ok(())
-    }
-
-    pub fn utxo_owner(&self, raw_key: &Bytes34) -> Address {
-        let helper = CoinsHelper::new(raw_key);
-        let slot = helper.owner_storage_slot();
-        let address_u256 = self.sdk.storage(&slot);
-        Address::from_slice(&address_u256.to_be_bytes::<32>()[12..])
-    }
+    // pub fn utxo_owner_update(&mut self, raw_key: &Bytes34, data: Address) -> anyhow::Result<()> {
+    //     anyhow::ensure!(
+    //         data.len() <= COINS_MAX_ENCODED_LEN,
+    //         anyhow::Error::msg("coins encoded len must fit max len")
+    //     );
+    //     let helper = CoinsHelper::new(raw_key);
+    //     let slot = helper.owner_storage_slot();
+    //     let address_u256 = U256::from_be_slice(&data.0.as_slice());
+    //     self.sdk.write_storage(slot, address_u256);
+    //     Ok(())
+    // }
+    //
+    // pub fn utxo_owner(&self, raw_key: &Bytes34) -> Address {
+    //     let helper = CoinsHelper::new(raw_key);
+    //     let slot = helper.owner_storage_slot();
+    //     let address_u256 = self.sdk.storage(&slot);
+    //     Address::from_slice(&address_u256.to_be_bytes::<32>()[12..])
+    // }
 
     pub fn deposit_withdraw_tx_next_index(&mut self) -> U256 {
         DepositWithdrawalIndexHelper::new(self.sdk).next_index()

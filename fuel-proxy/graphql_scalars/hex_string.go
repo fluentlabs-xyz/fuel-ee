@@ -15,6 +15,10 @@ func (b *HexString) String() string {
 	return hex.EncodeToString(b.value)
 }
 
+func (b *HexString) Value() []byte {
+	return b.value
+}
+
 func NewHexString(v []byte) *HexString {
 	return &HexString{
 		value: v,
