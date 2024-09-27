@@ -8,7 +8,7 @@ crates/rwasm/spec/target
 **/fuzz/target/
 **/fuzz/artifacts/
 
-/.idea
+.idea
 .vscode
 .DS_Store
 libzktrie.so
