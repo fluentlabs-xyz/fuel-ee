@@ -1,21 +1,23 @@
 use alloc::{format, vec::Vec};
-use alloy_sol_types::{SolType, SolValue};
+use alloy_sol_types::SolType;
 use core::str::FromStr;
 use fluentbase_sdk::{basic_entrypoint, derive::Contract, ExitCode, SharedAPI, U256};
+use fluentbase_sdk::bytes::Bytes;
 use fuel_core_storage::{
-    codec::Encode, structured_storage::StructuredStorage, tables::Coins, StorageInspect,
+    structured_storage::StructuredStorage, tables::Coins, StorageInspect,
     StorageMutate,
 };
 use fuel_core_types::{
     entities::coins::coin::{CompressedCoin, CompressedCoinV1},
     fuel_types::AssetId,
 };
+use fuel_ee_core::fvm::exec::_exec_fuel_tx;
+use fuel_ee_core::fvm::types::{FVM_DEPOSIT_SIG_BYTES, FVM_DRY_RUN_SIG_BYTES, FVM_WITHDRAW_SIG_BYTES};
 use fuel_ee_core::fvm::{
-    exec::_exec_fuel_tx,
     helpers::FUEL_TESTNET_BASE_ASSET_ID,
     types::{
-        FvmDepositInput, FvmWithdrawInput, WasmStorage, FVM_DEPOSIT_SIG_BYTES,
-        FVM_WITHDRAW_SIG_BYTES,
+        FvmDepositInput, FvmWithdrawInput, WasmStorage
+        ,
     },
 };
 use fuel_tx::{TxId, UtxoId};
@@ -38,10 +40,10 @@ impl<SDK: SharedAPI> FvmLoaderEntrypoint<SDK> {
     pub fn main_inner(&mut self) -> ExitCode {
         let base_asset_id: AssetId = AssetId::from_str(FUEL_TESTNET_BASE_ASSET_ID).unwrap();
         let raw_tx_bytes = self.sdk.input();
-        let raw_tx_bytes_as_ref = raw_tx_bytes.as_ref();
-        if raw_tx_bytes_as_ref.starts_with(FVM_DEPOSIT_SIG_BYTES.as_slice()) {
+        // let raw_tx_bytes_as_ref = raw_tx_bytes.as_ref();
+        if raw_tx_bytes.as_ref().starts_with(FVM_DEPOSIT_SIG_BYTES.as_slice()) {
             let deposit_input: FvmDepositInput =
-                <FvmDepositInput as SolType>::abi_decode(&raw_tx_bytes_as_ref[4..], true)
+                <FvmDepositInput as SolType>::abi_decode(&raw_tx_bytes.slice(FVM_DEPOSIT_SIG_BYTES.len()..).as_ref(), true)
                     .expect("valid fvm deposit input");
             let owner_address = fuel_core_types::fuel_types::Address::new(deposit_input.address.0);
 
@@ -80,21 +82,14 @@ impl<SDK: SharedAPI> FvmLoaderEntrypoint<SDK> {
                 &utxo_id,
                 &coin,
             )
-            .expect("failed to save deposit utxo");
-
-            // let utxo_as_a_key: Bytes34 =
-            //     fuel_core_storage::codec::primitive::Primitive::<34>::encode(&utxo_id);
-            // storage
-            //     .into_inner()
-            //     .utxo_owner_update(&utxo_as_a_key, caller)
-            //     .expect("failed to update utxo<->owner mapping");
+                .expect("failed to save deposit utxo");
 
             return ExitCode::Ok;
-        } else if raw_tx_bytes_as_ref.starts_with(FVM_WITHDRAW_SIG_BYTES.as_slice()) {
+        } else if raw_tx_bytes.as_ref().starts_with(FVM_WITHDRAW_SIG_BYTES.as_slice()) {
             let contract_ctx = self.sdk.contract_context();
             let caller = contract_ctx.caller;
             let utxo_ids: FvmWithdrawInput =
-                <FvmWithdrawInput as SolType>::abi_decode(&raw_tx_bytes_as_ref[4..], true)
+                <FvmWithdrawInput as SolType>::abi_decode(raw_tx_bytes.slice(FVM_WITHDRAW_SIG_BYTES.len()..).as_ref(), true)
                     .expect("valid fvm withdraw input");
             let FvmWithdrawInput {
                 utxos,
@@ -118,17 +113,14 @@ impl<SDK: SharedAPI> FvmLoaderEntrypoint<SDK> {
             }
             let mut last_owner: Option<fuel_core_types::fuel_types::Address> = None;
             for utxo_id in &utxos {
-                let utxo_as_a_key =
-                    fuel_core_storage::codec::primitive::Primitive::<34>::encode(&utxo_id);
                 let wasm_storage = WasmStorage { sdk: &mut self.sdk };
-                // let evm_owner = wasm_storage.utxo_owner(&utxo_as_a_key);
                 let mut storage = StructuredStorage::new(wasm_storage);
                 let coin = <StructuredStorage<WasmStorage<'_, SDK>> as StorageInspect<Coins>>::get(
                     &mut storage,
                     &utxo_id,
                 )
-                .expect(&format!("got error when fetching utxo: {}", &utxo_id))
-                .expect(&format!("utxo {} doesnt exist", &utxo_id));
+                    .expect(&format!("got error when fetching utxo: {}", &utxo_id))
+                    .expect(&format!("utxo {} doesnt exist", &utxo_id));
                 utxos_total_balance += coin.amount();
                 if coin.asset_id() != &base_asset_id {
                     panic!(
@@ -136,10 +128,6 @@ impl<SDK: SharedAPI> FvmLoaderEntrypoint<SDK> {
                         &utxo_id, &base_asset_id
                     )
                 }
-                // validate belong to the user
-                // if evm_owner != caller {
-                //     panic!("caller address doesnt match utxo owner")
-                // }
                 if let Some(last_owner) = last_owner {
                     if &last_owner != coin.owner() {
                         panic!("all utxo owners must be the same")
@@ -166,7 +154,7 @@ impl<SDK: SharedAPI> FvmLoaderEntrypoint<SDK> {
                     &mut storage,
                     &utxo,
                 )
-                .expect(&format!("failed to remove spent utxo: {}", utxo));
+                    .expect(&format!("failed to remove spent utxo: {}", utxo));
             }
             let balance_left = utxos_total_balance - withdraw_amount;
             if balance_left > 0 {
@@ -184,7 +172,7 @@ impl<SDK: SharedAPI> FvmLoaderEntrypoint<SDK> {
                     &utxo_id,
                     &coin,
                 )
-                .expect("insert first utxo success");
+                    .expect("insert first utxo success");
             }
 
             // top up evm balance
@@ -196,7 +184,12 @@ impl<SDK: SharedAPI> FvmLoaderEntrypoint<SDK> {
             );
 
             return ExitCode::Ok;
+        } else if raw_tx_bytes.as_ref().starts_with(FVM_DRY_RUN_SIG_BYTES.as_slice()) {
+            let input: Bytes = raw_tx_bytes.slice(FVM_DRY_RUN_SIG_BYTES.len()..).into();
+            let result = _exec_fuel_tx(&mut self.sdk, u64::MAX, input.into());
+            return result.exit_code.into()
         }
+
         let result = _exec_fuel_tx(&mut self.sdk, u64::MAX, raw_tx_bytes);
         result.exit_code.into()
     }

@@ -633,6 +633,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "aurora-engine-modexp"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0aef7712851e524f35fbbb74fa6599c5cd8692056a1c36f9ca0d2001b670e7e5"
+dependencies = [
+ "hex",
+ "num",
+]
+
+[[package]]
 name = "auto_impl"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -856,6 +866,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "blst"
+version = "0.3.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4378725facc195f1a538864863f6de233b500a8862747e7f165078a419d5e874"
+dependencies = [
+ "cc",
+ "glob",
+ "threadpool",
+ "zeroize",
+]
+
+[[package]]
 name = "bs58"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -901,6 +923,21 @@ dependencies = [
  "cc",
  "libc",
  "pkg-config",
+]
+
+[[package]]
+name = "c-kzg"
+version = "1.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f0307f72feab3300336fb803a57134159f6e20139af1357f36c54cb90d8e8928"
+dependencies = [
+ "blst",
+ "cc",
+ "glob",
+ "hex",
+ "libc",
+ "once_cell",
+ "serde",
 ]
 
 [[package]]
@@ -1879,6 +1916,7 @@ dependencies = [
  "alloy-sol-types",
  "anyhow",
  "byteorder",
+ "fluentbase-runtime",
  "fluentbase-sdk 0.1.0",
  "fuel-core-executor",
  "fuel-core-storage",
@@ -2368,7 +2406,7 @@ dependencies = [
  "lazy_static",
  "p256",
  "rand",
- "secp256k1",
+ "secp256k1 0.26.0",
  "serde",
  "sha2 0.10.8",
  "zeroize",
@@ -2424,6 +2462,39 @@ dependencies = [
  "phantom-type",
  "postcard",
  "rwasm",
+]
+
+[[package]]
+name = "fuel-ee-e2e"
+version = "0.1.0"
+dependencies = [
+ "alloy-rlp",
+ "alloy-sol-types",
+ "byteorder",
+ "fluentbase-codec 0.1.0",
+ "fluentbase-core",
+ "fluentbase-genesis",
+ "fluentbase-poseidon",
+ "fluentbase-runtime",
+ "fluentbase-sdk 0.1.0",
+ "fluentbase-types 0.1.0",
+ "fuel-core",
+ "fuel-core-executor",
+ "fuel-core-storage",
+ "fuel-core-types",
+ "fuel-ee-core",
+ "fuel-tx",
+ "fuel-vm",
+ "hashbrown 0.14.5",
+ "hex",
+ "hex-literal",
+ "keccak-hash 0.11.0",
+ "paste",
+ "revm-fluent",
+ "revm-interpreter",
+ "rwasm",
+ "serde_json",
+ "wasmi",
 ]
 
 [[package]]
@@ -4271,12 +4342,35 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "61807f77802ff30975e01f4f071c8ba10c022052f98b3294119f3e615d13e5be"
 
 [[package]]
+name = "num"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "35bd024e8b2ff75562e5f34e7f4905839deb4b22955ef5e73d2fea1b9813cb23"
+dependencies = [
+ "num-bigint",
+ "num-complex",
+ "num-integer",
+ "num-iter",
+ "num-rational",
+ "num-traits",
+]
+
+[[package]]
 name = "num-bigint"
 version = "0.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a5e44f723f1133c9deac646763579fdb3ac745e418f2a7af9cd0c431da1f20b9"
 dependencies = [
  "num-integer",
+ "num-traits",
+]
+
+[[package]]
+name = "num-complex"
+version = "0.4.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "73f88a1307638156682bada9d7604135552957b7818057dcef22705b4d509495"
+dependencies = [
  "num-traits",
 ]
 
@@ -4292,6 +4386,17 @@ version = "0.1.46"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7969661fd2958a5cb096e56c8e1ad0444ac2bbcd0061bd28660485a44879858f"
 dependencies = [
+ "num-traits",
+]
+
+[[package]]
+name = "num-iter"
+version = "0.1.45"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1429034a0490724d0075ebb2bc9e875d6503c3cf69e235a8941aa757d83ef5bf"
+dependencies = [
+ "autocfg",
+ "num-integer",
  "num-traits",
 ]
 
@@ -5030,10 +5135,48 @@ dependencies = [
 ]
 
 [[package]]
+name = "revm-fluent"
+version = "9.0.0"
+dependencies = [
+ "auto_impl",
+ "cfg-if",
+ "dyn-clone",
+ "fluentbase-core",
+ "fluentbase-genesis",
+ "fluentbase-runtime",
+ "fluentbase-sdk 0.1.0",
+ "fluentbase-types 0.1.0",
+ "fuel-ee-core",
+ "lazy_static",
+ "revm-interpreter",
+ "revm-precompile",
+ "rwasm",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "revm-interpreter"
 version = "5.0.0"
 dependencies = [
  "revm-primitives 4.0.0",
+ "serde",
+]
+
+[[package]]
+name = "revm-precompile"
+version = "7.0.0"
+dependencies = [
+ "aurora-engine-modexp",
+ "blst",
+ "c-kzg",
+ "k256",
+ "once_cell",
+ "revm-primitives 4.0.0",
+ "ripemd",
+ "secp256k1 0.29.1",
+ "sha2 0.10.8",
+ "substrate-bn",
 ]
 
 [[package]]
@@ -5049,6 +5192,7 @@ dependencies = [
  "enumn",
  "hashbrown 0.14.5",
  "hex",
+ "serde",
 ]
 
 [[package]]
@@ -5366,7 +5510,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4124a35fe33ae14259c490fd70fa199a32b9ce9502f2ee6bc4f81ec06fa65894"
 dependencies = [
  "rand",
- "secp256k1-sys",
+ "secp256k1-sys 0.8.1",
+]
+
+[[package]]
+name = "secp256k1"
+version = "0.29.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9465315bc9d4566e1724f0fffcbcc446268cb522e60f9a27bcded6b19c108113"
+dependencies = [
+ "rand",
+ "secp256k1-sys 0.10.1",
 ]
 
 [[package]]
@@ -5374,6 +5528,15 @@ name = "secp256k1-sys"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "70a129b9e9efbfb223753b9163c4ab3b13cff7fd9c7f010fbac25ab4099fa07e"
+dependencies = [
+ "cc",
+]
+
+[[package]]
+name = "secp256k1-sys"
+version = "0.10.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d4387882333d3aa8cb20530a17c69a3752e97837832f34f6dccc760e715001d9"
 dependencies = [
  "cc",
 ]
@@ -5437,6 +5600,7 @@ version = "1.0.128"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6ff5456707a1de34e7e37f2a6fd3d3f808c318259cbd01ab6377795054b483d8"
 dependencies = [
+ "indexmap",
  "itoa",
  "memchr",
  "ryu",
@@ -5734,6 +5898,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "substrate-bn"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "72b5bbfa79abbae15dd642ea8176a21a635ff3c00059961d1ea27ad04e5b441c"
+dependencies = [
+ "byteorder",
+ "crunchy",
+ "lazy_static",
+ "rand",
+ "rustc-hex",
+]
+
+[[package]]
 name = "subtle"
 version = "2.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5883,6 +6060,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a3ad459d94dd517257cc96add8a43190ee620011bb6e6cdc82dafd97dfafafea"
 dependencies = [
  "thiserror-impl-no-std",
+]
+
+[[package]]
+name = "threadpool"
+version = "1.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d050e60b33d41c19108b32cea32164033a9013fe3b46cbd4457559bfbf77afaa"
+dependencies = [
+ "num_cpus",
 ]
 
 [[package]]
@@ -6361,6 +6547,37 @@ name = "wasm-bindgen-shared"
 version = "0.2.93"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c62a0a307cb4a311d3a07867860911ca130c3494e8c2719593806c08bc5d0484"
+
+[[package]]
+name = "wasmi"
+version = "0.31.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "77a8281d1d660cdf54c76a3efa9ddd0c270cada1383a995db3ccb43d166456c7"
+dependencies = [
+ "smallvec",
+ "spin 0.9.8",
+ "wasmi_arena",
+ "wasmi_core",
+ "wasmparser-nostd",
+]
+
+[[package]]
+name = "wasmi_arena"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "104a7f73be44570cac297b3035d76b169d6599637631cf37a1703326a0727073"
+
+[[package]]
+name = "wasmi_core"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dcf1a7db34bff95b85c261002720c00c3a6168256dcb93041d3fa2054d19856a"
+dependencies = [
+ "downcast-rs",
+ "libm",
+ "num-traits",
+ "paste",
+]
 
 [[package]]
 name = "wasmparser-nostd"

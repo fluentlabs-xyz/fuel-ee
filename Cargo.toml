@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "crates/*",
+    "e2e"
 ]
 exclude = [
 ]
@@ -24,7 +25,10 @@ fuel-ee-contracts = { path = "./crates/contracts", default-features = false }
 fluentbase-core = { path = "../fluentbase/crates/core", default-features = false }
 fluentbase-sdk = { path = "../fluentbase/crates/sdk", default-features = false }
 fluentbase-runtime = { path = "../fluentbase/crates/runtime", default-features = false }
-#fluentbase-contracts = { path = "../fluentbase/crates/contracts", default-features = false }
+fluentbase-codec = { path = "../fluentbase/crates/codec", default-features = false }
+fluentbase-poseidon = { path = "../fluentbase/crates/poseidon", default-features = false }
+fluentbase-genesis = { path = "../fluentbase/crates/genesis", default-features = false }
+fluentbase-types = { path = "../fluentbase/crates/types", default-features = false }
 
 # fuel
 #fuel-tx = { git = "https://github.com/fluentlabs-xyz/fuel-vm", branch = "develop", default-features = false, features = ["alloc"] }
@@ -53,14 +57,14 @@ serde = { version = "1.0.203", default-features = false, features = ["derive"] }
 postcard = { version = "1.0", default-features = false }
 casey = { version = "0.4" }
 paste = { version = "1.0", default-features = false }
-#revm-interpreter = { path = "revm/crates/interpreter", default-features = false, features = ["rwasm"] }
-#revm-primitives = { path = "revm/crates/primitives", default-features = false, features = ["rwasm"] }
-#revm-precompile = { path = "revm/crates/precompile", default-features = false, features = ["rwasm"] }
-#revm = { package = "revm-fluent", path = "revm/crates/revm_fluent", default-features = false, features = [
-#    "hashbrown",
-#    "blst",
-#    "rwasm",
-#] }
+revm-interpreter = { path = "../fluentbase/revm/crates/interpreter", default-features = false, features = ["rwasm"] }
+revm-primitives = { path = "../fluentbase/revm/crates/primitives", default-features = false, features = ["rwasm"] }
+revm-precompile = { path = "../fluentbase/revm/crates/precompile", default-features = false, features = ["rwasm"] }
+revm = { package = "revm-fluent", path = "../fluentbase/revm/crates/revm_fluent", default-features = false, features = [
+    "hashbrown",
+    "blst",
+    "rwasm",
+] }
 zeth-primitives = { git = "https://github.com/fluentlabs-xyz/zeth-rwasm.git", branch = "rwasm", default-features = false }
 #revm-interpreter = { package = "revm-interpreter-fluent", path = "../revm-rwasm/crates/interpreter_fluent", default-features = false, features = ["rwasm"] }
 #revm-primitives = { path = "../revm-rwasm/crates/primitives", default-features = false, features = ["rwasm"] }
