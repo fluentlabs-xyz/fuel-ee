@@ -55,10 +55,6 @@ func MakeSubmitEntry(ethClient *ethclient.Client, submitType *graphql_object.Sub
 					From:          from,
 					To:            &to,
 					Gas:           0,
-					GasPrice:      nil,
-					GasFeeCap:     nil,
-					GasTipCap:     nil,
-					Value:         nil,
 					Data:          data,
 					AccessList:    nil,
 					BlobGasFeeCap: nil,
@@ -70,10 +66,9 @@ func MakeSubmitEntry(ethClient *ethclient.Client, submitType *graphql_object.Sub
 				}
 				log.Printf("estimatedGas: %d", estimatedGas)
 				tx := types2.NewTx(&types2.DynamicFeeTx{
-					Nonce: 0,
-					Gas:   estimatedGas,
-					To:    &to,
-					Data:  data,
+					Gas:  estimatedGas,
+					To:   &to,
+					Data: data,
 				})
 				err = ethClient.SendTransaction(context.Background(), tx)
 				if err != nil {
@@ -81,7 +76,7 @@ func MakeSubmitEntry(ethClient *ethclient.Client, submitType *graphql_object.Sub
 				}
 				return graphql_object.SubmitStruct{
 					// TODO provide id
-					Id: graphql_scalars.NewBytes32TryFromStringOrPanic("0x0000000000000000000000000000000000000000000000000000000000000000"),
+					Id: graphql_scalars.NewBytes32TryFromStringOrPanic("0x1231231230000000000000000000000000000000000000000000000000123123"),
 				}, nil
 			},
 		},

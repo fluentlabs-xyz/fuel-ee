@@ -65,23 +65,16 @@ func MakeDryRunEntry(ethClient *ethclient.Client, dryRunTransactionStatusType *g
 					from := common.HexToAddress(types.FuelRelayerAccountAddress)
 					to := common.HexToAddress(types.EthFuelVMPrecompileAddress)
 					callMsg := ethereum.CallMsg{
-						From:          from,
-						To:            &to,
-						Gas:           0,
-						GasPrice:      nil,
-						GasFeeCap:     nil,
-						GasTipCap:     nil,
-						Value:         nil,
-						Data:          data,
-						AccessList:    nil,
-						BlobGasFeeCap: nil,
-						BlobHashes:    nil,
+						From: from,
+						To:   &to,
+						Data: data,
 					}
 					estimatedGas, err := ethClient.EstimateGas(context.Background(), callMsg)
 					if err != nil {
 						return nil, errors.New(fmt.Sprintf("dryRun: failed to estimate gas, error: %s", err))
 					}
 					log.Printf("estimatedGas: %d", estimatedGas)
+					callMsg.Gas = estimatedGas
 					callRes, err := ethClient.CallContract(context.Background(), callMsg, nil)
 					if err != nil {
 						return nil, errors.New(fmt.Sprintf("dryRun: failed to call contract, error: %s", err))
