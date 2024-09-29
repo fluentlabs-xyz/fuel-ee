@@ -10,3 +10,10 @@ build:
 .PHONY: run_proxy
 run_proxy:
 	cd fuel-proxy && go run main.go
+
+.PHONY: update_contracts_and_genesis
+update_contracts_and_genesis:
+	cd crates/contracts && make
+	cp crates/contracts/assets/* ../fluentbase/crates/contracts/assets/
+	cd ../fluentbase/crates/genesis && make
+	notify-send "done"

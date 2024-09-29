@@ -6,3 +6,4 @@ const FuelRelayerAccountAddress = EthGenesisAccount1Address
 const EthFuelVMPrecompileAddress = "0x0000000000000000000000000000000000005250"
 
 const FvmDryRunSig = 567857912 // _fvm_dry_run(uint64)
+const FvmExecSig = 1692387067  // _fvm_exec(uint64)

@@ -160,6 +160,11 @@ func main() {
 		log.Fatalf("error: %v", err)
 	}
 
+	submitType, err := graphql_object.MakeSubmitType()
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+
 	// ENTRIES
 
 	getChainEntry, err := graphql_entrypoints.MakeGetChainEntry(chainInfoType)
@@ -183,6 +188,11 @@ func main() {
 	}
 
 	dryRunEntry, err := graphql_entrypoints.MakeDryRunEntry(ethClient, dryRunTransactionExecutionStatusType)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+
+	submitEntry, err := graphql_entrypoints.MakeSubmitEntry(ethClient, submitType)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
@@ -212,9 +222,7 @@ func main() {
 			_, _ = helpers.HttpWriteError(w, http.StatusBadRequest, errText)
 			return
 		}
-		log.Printf("Operation: %s", p.Operation)
-		log.Printf("Variables: %s", p.Variables)
-		log.Printf("Query: %s", p.Query)
+		log.Printf("Operation: '%s' Variables: '%s' Query: '%s'", p.Operation, p.Variables, p.Query)
 		var schema *graphql.Schema
 
 		switch p.Operation {
@@ -230,6 +238,8 @@ func main() {
 			schema = estimateGasPriceEntry.SchemaFields.Schema
 		case "dryRun":
 			schema = dryRunEntry.SchemaFields.Schema
+		case "submit":
+			schema = submitEntry.SchemaFields.Schema
 		case "getCoinsToSpend":
 			//_, _ = helpers.HttpWriteError(w, http.StatusMethodNotAllowed, "temporarily disabled")
 			//return

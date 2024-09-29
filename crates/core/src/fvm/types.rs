@@ -25,10 +25,12 @@ use fuel_core_types::{
 pub const FVM_DEPOSIT_SIG: u32 = derive_keccak256_id!("_fvm_deposit(uint64)");
 pub const FVM_WITHDRAW_SIG: u32 = derive_keccak256_id!("_fvm_withdraw(uint64)");
 pub const FVM_DRY_RUN_SIG: u32 = derive_keccak256_id!("_fvm_dry_run(uint64)");
+pub const FVM_EXEC_SIG: u32 = derive_keccak256_id!("_fvm_exec(uint64)");
 
 pub const FVM_DEPOSIT_SIG_BYTES: [u8; 4] = FVM_DEPOSIT_SIG.to_be_bytes();
 pub const FVM_WITHDRAW_SIG_BYTES: [u8; 4] = FVM_WITHDRAW_SIG.to_be_bytes();
 pub const FVM_DRY_RUN_SIG_BYTES: [u8; 4] = FVM_DRY_RUN_SIG.to_be_bytes();
+pub const FVM_EXEC_SIG_BYTES: [u8; 4] = FVM_EXEC_SIG.to_be_bytes();
 
 sol! {
     #[derive(PartialEq, Eq, Debug)]

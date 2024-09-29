@@ -28,7 +28,7 @@ const utxoValidationArgName = "utxoValidation"
 const gasPriceArgName = "gasPrice"
 
 func MakeDryRunEntry(ethClient *ethclient.Client, dryRunTransactionStatusType *graphql_object.DryRunTransactionExecutionStatusType) (*DryRunEntry, error) {
-	objectConfig := graphql.ObjectConfig{Name: "DryRun", Fields: graphql.Fields{
+	objectConfig := graphql.ObjectConfig{Name: "DryRunEntry", Fields: graphql.Fields{
 		"dryRun": &graphql.Field{
 			Type: graphql.NewList(dryRunTransactionStatusType.SchemaFields.Object),
 			Args: graphql.FieldConfigArgument{
@@ -52,16 +52,16 @@ func MakeDryRunEntry(ethClient *ethclient.Client, dryRunTransactionStatusType *g
 					return nil, errors.New("encoded transactions must be a list")
 				}
 				for _, encodedTransaction := range encodedTransactionsList {
-					encodedTransactionHexString, ok := encodedTransaction.(*graphql_scalars.HexString)
+					transactionHexString, ok := encodedTransaction.(*graphql_scalars.HexString)
 					if !ok {
 						return nil, errors.New("each encoded transaction must be a hex string")
 					}
-					log.Printf("encodedTransactionHexString: %s", encodedTransactionHexString)
+					log.Printf("transactionHexString: %s", transactionHexString)
 
-					FvmDryRunSigBytes := make([]byte, 4)
-					binary.BigEndian.PutUint32(FvmDryRunSigBytes, types.FvmDryRunSig)
+					fvmDryRunSigBytes := make([]byte, 4)
+					binary.BigEndian.PutUint32(fvmDryRunSigBytes, types.FvmDryRunSig)
 					// send tx to reth node for emulation/estimation process (to get status, receipts, gas spent)
-					data := append(FvmDryRunSigBytes, encodedTransactionHexString.Value()...)
+					data := append(fvmDryRunSigBytes, transactionHexString.Value()...)
 					from := common.HexToAddress(types.FuelRelayerAccountAddress)
 					to := common.HexToAddress(types.EthFuelVMPrecompileAddress)
 					callMsg := ethereum.CallMsg{
@@ -82,10 +82,11 @@ func MakeDryRunEntry(ethClient *ethclient.Client, dryRunTransactionStatusType *g
 						return nil, errors.New(fmt.Sprintf("dryRun: failed to estimate gas, error: %s", err))
 					}
 					log.Printf("estimatedGas: %d", estimatedGas)
-					//callRes, err := ethClient.CallContract(context.Background(), callMsg, nil)
-					//if err != nil {
-					//	return nil, errors.New(fmt.Sprintf("dryRun: failed to call contract, error: %s", err))
-					//}
+					callRes, err := ethClient.CallContract(context.Background(), callMsg, nil)
+					if err != nil {
+						return nil, errors.New(fmt.Sprintf("dryRun: failed to call contract, error: %s", err))
+					}
+					log.Printf("callRes: %s", callRes)
 				}
 				return []graphql_object.DryRunTransactionExecutionStatusStruct{
 					{
