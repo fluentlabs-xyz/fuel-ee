@@ -17,6 +17,7 @@ mod tests {
         txpool::types::TxId,
     };
     use fuel_core_executor::{executor::ExecutionData, refs::ContractRef};
+    use fuel_core_executor::executor::{BlockExecutor, ExecutionOptions};
     use fuel_core_storage::{
         rand::rngs::StdRng,
         structured_storage::StructuredStorage,
@@ -114,13 +115,13 @@ mod tests {
             &utxo_id,
             &first_coin,
         )
-        .expect("insert first utxo success");
+            .expect("insert first utxo success");
         <StructuredStorage<WasmStorage<'_, TestingSDK>> as StorageMutate<Coins>>::insert(
             &mut storage,
             &second_input.utxo_id().unwrap().clone(),
             &second_coin,
         )
-        .expect("insert first utxo success");
+            .expect("insert first utxo success");
 
         let block = PartialFuelBlock {
             header: Default::default(),
@@ -132,15 +133,15 @@ mod tests {
             &storage,
             first_input.utxo_id().unwrap(),
         )
-        .unwrap()
-        .expect("coin should be unspent");
+            .unwrap()
+            .expect("coin should be unspent");
         // The second input should be `Unspent` before execution.
         <StructuredStorage<WasmStorage<'_, TestingSDK>> as StorageInspect<Coins>>::get(
             &storage,
             second_input.utxo_id().unwrap(),
         )
-        .unwrap()
-        .expect("coin should be unspent");
+            .unwrap()
+            .expect("coin should be unspent");
 
         let consensus_params = ConsensusParameters::default();
         let coinbase_contract_id = ContractId::default();
@@ -150,14 +151,21 @@ mod tests {
             .expect("into_checked successful");
         let mut storage_transaction = storage.write_transaction();
         let execution_data = &mut ExecutionData::new();
+        let execution_options = ExecutionOptions {
+            extra_tx_checks: true,
+            backtrace: false,
+        };
+        let block_executor =
+            BlockExecutor::new(crate::fvm::types::WasmRelayer {}, execution_options.clone(), consensus_params.clone())
+                .expect("failed to create block executor");
         let exec_result1 = fvm_transact_commit(
             &mut storage_transaction,
             create_tx_checked,
             &block.header,
             coinbase_contract_id,
             0,
-            consensus_params.clone(),
-            true,
+            execution_options,
+            block_executor,
             execution_data,
         );
         assert_eq!(true, exec_result1.is_ok());
@@ -170,14 +178,21 @@ mod tests {
             .expect("into_checked successful");
         let mut storage_transaction = storage.write_transaction();
         let execution_data = &mut ExecutionData::new();
+        let execution_options = ExecutionOptions {
+            extra_tx_checks: true,
+            backtrace: false,
+        };
+        let block_executor =
+            BlockExecutor::new(crate::fvm::types::WasmRelayer {}, execution_options.clone(), consensus_params.clone())
+                .expect("failed to create block executor");
         let exec_result2 = fvm_transact_commit(
             &mut storage_transaction,
             tx2_checked,
             &block.header,
             coinbase_contract_id,
             0,
-            consensus_params.clone(),
-            true,
+            execution_options,
+            block_executor,
             execution_data,
         );
         assert_eq!(true, exec_result2.is_err());
@@ -222,7 +237,7 @@ mod tests {
             &input.utxo_id().unwrap().clone(),
             &coin,
         )
-        .unwrap();
+            .unwrap();
 
         let block = PartialFuelBlock {
             header: Default::default(),
@@ -238,6 +253,13 @@ mod tests {
         let mut memory = MemoryInstance::new();
         let execution_data = &mut ExecutionData::new();
         let mut storage_transaction = storage.write_transaction();
+        let execution_options = ExecutionOptions {
+            extra_tx_checks: true,
+            backtrace: false,
+        };
+        let block_executor =
+            BlockExecutor::new(crate::fvm::types::WasmRelayer {}, execution_options.clone(), consensus_params.clone())
+                .expect("failed to create block executor");
         let fvm_exec_result = fvm_transact(
             &mut storage_transaction,
             checked_tx,
@@ -245,8 +267,8 @@ mod tests {
             coinbase_contract_id,
             0,
             &mut memory,
-            consensus_params,
-            true,
+            execution_options,
+            block_executor,
             execution_data,
         );
         assert_eq!(true, fvm_exec_result.is_err());
@@ -291,6 +313,13 @@ mod tests {
         let mut memory = MemoryInstance::new();
         let execution_data = &mut ExecutionData::new();
         let mut storage_transaction = storage.write_transaction();
+        let execution_options = ExecutionOptions {
+            extra_tx_checks: true,
+            backtrace: false,
+        };
+        let block_executor =
+            BlockExecutor::new(crate::fvm::types::WasmRelayer {}, execution_options.clone(), consensus_params.clone())
+                .expect("failed to create block executor");
         let fvm_exec_result = fvm_transact(
             &mut storage_transaction,
             checked_tx,
@@ -298,8 +327,8 @@ mod tests {
             coinbase_contract_id,
             0,
             &mut memory,
-            consensus_params,
-            true,
+            execution_options,
+            block_executor,
             execution_data,
         );
         assert_eq!(true, fvm_exec_result.is_err());
@@ -352,14 +381,21 @@ mod tests {
             .expect("into_checked successful");
         let mut storage_transaction = storage.write_transaction();
         let execution_data = &mut ExecutionData::new();
+        let execution_options = ExecutionOptions {
+            extra_tx_checks: false,
+            backtrace: false,
+        };
+        let block_executor =
+            BlockExecutor::new(crate::fvm::types::WasmRelayer {}, execution_options.clone(), consensus_params.clone())
+                .expect("failed to create block executor");
         let fvm_exec_result = fvm_transact_commit(
             &mut storage_transaction,
             create_tx_checked,
             &block.header,
             coinbase_contract_id,
             0,
-            consensus_params.clone(),
-            false,
+            execution_options,
+            block_executor,
             execution_data,
         );
         assert_eq!(true, fvm_exec_result.is_ok());
@@ -368,14 +404,21 @@ mod tests {
         let script_non_modify_state_tx_checked = script_non_modify_state_tx
             .into_checked(*block.header.height(), &consensus_params)
             .expect("into_checked successful");
+        let execution_options = ExecutionOptions {
+            extra_tx_checks: false,
+            backtrace: false,
+        };
+        let block_executor =
+            BlockExecutor::new(crate::fvm::types::WasmRelayer {}, execution_options.clone(), consensus_params.clone())
+                .expect("failed to create block executor");
         let fvm_exec_result = fvm_transact_commit(
             &mut storage_transaction,
             script_non_modify_state_tx_checked,
             &block.header,
             coinbase_contract_id,
             0,
-            consensus_params,
-            false,
+            execution_options,
+            block_executor,
             execution_data,
         );
         assert_eq!(true, fvm_exec_result.is_ok());
@@ -429,14 +472,21 @@ mod tests {
             .expect("into_checked successful");
         let mut storage_transaction = storage.write_transaction();
         let execution_data = &mut ExecutionData::new();
+        let execution_options = ExecutionOptions {
+            extra_tx_checks: false,
+            backtrace: false,
+        };
+        let block_executor =
+            BlockExecutor::new(crate::fvm::types::WasmRelayer {}, execution_options.clone(), consensus_params.clone())
+                .expect("failed to create block executor");
         let fvm_exec_result = fvm_transact_commit(
             &mut storage_transaction,
             create_tx_checked,
             &block.header,
             coinbase_contract_id,
             0,
-            consensus_params.clone(),
-            false,
+            execution_options,
+            block_executor,
             execution_data,
         );
         assert_eq!(true, fvm_exec_result.is_ok());
@@ -445,14 +495,24 @@ mod tests {
         let script_non_modify_state_tx_checked = script_non_modify_state_tx
             .into_checked(*block.header.height(), &consensus_params)
             .expect("into_checked successful");
+        let execution_options = ExecutionOptions {
+            extra_tx_checks: false,
+            backtrace: false,
+        };
+        let block_executor =
+            BlockExecutor::new(crate::fvm::types::WasmRelayer {}, execution_options.clone(), consensus_params.clone())
+                .expect("failed to create block executor");
+        let block_executor =
+            BlockExecutor::new(crate::fvm::types::WasmRelayer {}, execution_options.clone(), consensus_params.clone())
+                .expect("failed to create block executor");
         let fvm_exec_result = fvm_transact_commit(
             &mut storage_transaction,
             script_non_modify_state_tx_checked,
             &block.header,
             coinbase_contract_id,
             0,
-            consensus_params,
-            false,
+            execution_options,
+            block_executor,
             execution_data,
         );
         assert_eq!(true, fvm_exec_result.is_ok());
@@ -488,8 +548,8 @@ mod tests {
                 op::sww(0x1, 0x29, RegId::PC),
                 op::ret(1),
             ]
-            .into_iter()
-            .collect::<Vec<u8>>(),
+                .into_iter()
+                .collect::<Vec<u8>>(),
             &mut rng,
         );
 
@@ -516,10 +576,10 @@ mod tests {
                 .to_bytes()
                 .as_ref(),
         ]
-        .into_iter()
-        .flatten()
-        .copied()
-        .collect();
+            .into_iter()
+            .flatten()
+            .copied()
+            .collect();
 
         let modify_balance_and_state_tx = test_builder()
             .script_gas_limit(10000)
@@ -559,14 +619,21 @@ mod tests {
             .expect("into_checked successful");
         let mut storage_transaction = storage.write_transaction();
         let execution_data = &mut ExecutionData::new();
+        let execution_options = ExecutionOptions {
+            extra_tx_checks: false,
+            backtrace: false,
+        };
+        let block_executor =
+            BlockExecutor::new(crate::fvm::types::WasmRelayer {}, execution_options.clone(), consensus_params.clone())
+                .expect("failed to create block executor");
         let fvm_exec_result = fvm_transact_commit(
             &mut storage_transaction,
             create_tx_checked,
             &block.header,
             coinbase_contract_id,
             0,
-            consensus_params.clone(),
-            false,
+            execution_options.clone(),
+            block_executor,
             execution_data,
         );
         assert_eq!(true, fvm_exec_result.is_ok());
@@ -576,14 +643,17 @@ mod tests {
         let script_modify_balance_and_state_tx_checked = script_modify_balance_and_state_tx
             .into_checked(*block.header.height(), &consensus_params)
             .expect("into_checked successful");
+        let block_executor =
+            BlockExecutor::new(crate::fvm::types::WasmRelayer {}, execution_options.clone(), consensus_params.clone())
+                .expect("failed to create block executor");
         let fvm_exec_result = fvm_transact_commit(
             &mut storage_transaction,
             script_modify_balance_and_state_tx_checked,
             &block.header,
             coinbase_contract_id,
             0,
-            consensus_params,
-            false,
+            execution_options,
+            block_executor,
             execution_data,
         );
         assert_eq!(true, fvm_exec_result.is_ok());
@@ -620,8 +690,8 @@ mod tests {
                 op::sww(0x1, 0x29, RegId::PC),
                 op::ret(1),
             ]
-            .into_iter()
-            .collect::<Vec<u8>>(),
+                .into_iter()
+                .collect::<Vec<u8>>(),
             &mut rng,
         );
 
@@ -648,10 +718,10 @@ mod tests {
                 .to_bytes()
                 .as_ref(),
         ]
-        .into_iter()
-        .flatten()
-        .copied()
-        .collect();
+            .into_iter()
+            .flatten()
+            .copied()
+            .collect();
 
         let modify_balance_and_state_tx = test_builder()
             .script_gas_limit(10000)
@@ -691,14 +761,21 @@ mod tests {
             .expect("into_checked successful");
         let mut storage_transaction = db.write_transaction();
         let execution_data = &mut ExecutionData::new();
+        let execution_options = ExecutionOptions {
+            extra_tx_checks: false,
+            backtrace: false,
+        };
+        let block_executor =
+            BlockExecutor::new(crate::fvm::types::WasmRelayer {}, execution_options.clone(), consensus_params.clone())
+                .expect("failed to create block executor");
         let exec_result1 = fvm_transact_commit(
             &mut storage_transaction,
             tx1_checked,
             &block.header,
             coinbase_contract_id,
             0,
-            consensus_params.clone(),
-            false,
+            execution_options.clone(),
+            block_executor,
             execution_data,
         );
         assert_eq!(true, exec_result1.is_ok());
@@ -710,14 +787,17 @@ mod tests {
             .into_checked(*block.header.height(), &consensus_params)
             .expect("into_checked successful");
         let mut storage_transaction = db.write_transaction();
+        let block_executor =
+            BlockExecutor::new(crate::fvm::types::WasmRelayer {}, execution_options.clone(), consensus_params.clone())
+                .expect("failed to create block executor");
         let exec_result2 = fvm_transact_commit(
             &mut storage_transaction,
             tx2_checked,
             &block.header,
             coinbase_contract_id,
             0,
-            consensus_params.clone(),
-            false,
+            execution_options.clone(),
+            block_executor,
             execution_data,
         );
         assert_eq!(true, exec_result2.is_ok());
@@ -749,14 +829,17 @@ mod tests {
             .expect("into_checked successful");
         let mut storage_transaction = db.write_transaction();
         let execution_data = &mut ExecutionData::new();
+        let block_executor =
+            BlockExecutor::new(crate::fvm::types::WasmRelayer {}, execution_options.clone(), consensus_params.clone())
+                .expect("failed to create block executor");
         let exec_result1 = fvm_transact_commit(
             &mut storage_transaction,
             create_tx_checked,
             &block.header,
             coinbase_contract_id,
             0,
-            consensus_params.clone(),
-            false,
+            execution_options,
+            block_executor,
             execution_data,
         );
         assert_eq!(true, exec_result1.is_ok());
@@ -783,8 +866,8 @@ mod tests {
                 op::sww(0x1, 0x29, RegId::PC),
                 op::ret(1),
             ]
-            .into_iter()
-            .collect::<Vec<u8>>(),
+                .into_iter()
+                .collect::<Vec<u8>>(),
             &mut rng,
         );
 
@@ -811,10 +894,10 @@ mod tests {
                 .to_bytes()
                 .as_ref(),
         ]
-        .into_iter()
-        .flatten()
-        .copied()
-        .collect();
+            .into_iter()
+            .flatten()
+            .copied()
+            .collect();
 
         let modify_balance_and_state_tx = test_builder()
             .script_gas_limit(10000)
@@ -856,14 +939,21 @@ mod tests {
             .expect("into_checked successful");
         let mut storage_transaction = storage.write_transaction();
         let execution_data = &mut ExecutionData::new();
+        let execution_options = ExecutionOptions {
+            extra_tx_checks: false,
+            backtrace: false,
+        };
+        let block_executor =
+            BlockExecutor::new(crate::fvm::types::WasmRelayer {}, execution_options.clone(), consensus_params.clone())
+                .expect("failed to create block executor");
         let exec_result1 = fvm_transact_commit(
             &mut storage_transaction,
             tx1_checked,
             &block.header,
             coinbase_contract_id,
             0,
-            consensus_params.clone(),
-            false,
+            execution_options.clone(),
+            block_executor,
             execution_data,
         );
         assert_eq!(true, exec_result1.is_ok());
@@ -876,14 +966,17 @@ mod tests {
             .expect("into_checked successful");
         let mut storage_transaction = storage.write_transaction();
         let execution_data = &mut ExecutionData::new();
+        let block_executor =
+            BlockExecutor::new(crate::fvm::types::WasmRelayer {}, execution_options.clone(), consensus_params.clone())
+                .expect("failed to create block executor");
         let exec_result2 = fvm_transact_commit(
             &mut storage_transaction,
             tx2_checked,
             &block.header,
             coinbase_contract_id,
             0,
-            consensus_params.clone(),
-            false,
+            execution_options.clone(),
+            block_executor,
             execution_data,
         );
         assert_eq!(true, exec_result2.is_ok());
@@ -914,14 +1007,17 @@ mod tests {
             .expect("into_checked successful");
         let mut storage_transaction = storage.write_transaction();
         let execution_data = &mut ExecutionData::new();
+        let block_executor =
+            BlockExecutor::new(crate::fvm::types::WasmRelayer {}, execution_options.clone(), consensus_params.clone())
+                .expect("failed to create block executor");
         let exec_result1 = fvm_transact_commit(
             &mut storage_transaction,
             create_tx_checked,
             &block.header,
             coinbase_contract_id,
             0,
-            consensus_params.clone(),
-            false,
+            execution_options.clone(),
+            block_executor,
             execution_data,
         );
         assert_eq!(true, exec_result1.is_ok());
@@ -982,14 +1078,21 @@ mod tests {
             .expect("into_checked successful");
         let mut storage_transaction = db.write_transaction();
         let execution_data = &mut ExecutionData::new();
+        let execution_options = ExecutionOptions {
+            extra_tx_checks: false,
+            backtrace: false,
+        };
+        let block_executor =
+            BlockExecutor::new(crate::fvm::types::WasmRelayer {}, execution_options.clone(), consensus_params.clone())
+                .expect("failed to create block executor");
         let exec_result1 = fvm_transact_commit(
             &mut storage_transaction,
             create_tx_checked,
             &block.header,
             coinbase_contract_id,
             0,
-            consensus_params.clone(),
-            false,
+            execution_options.clone(),
+            block_executor,
             execution_data,
         );
         assert_eq!(true, exec_result1.is_ok());
@@ -998,14 +1101,17 @@ mod tests {
         let tx2_checked = tx2
             .into_checked_basic(*block.header.height(), &consensus_params)
             .expect("into_checked successful");
+        let block_executor =
+            BlockExecutor::new(crate::fvm::types::WasmRelayer {}, execution_options.clone(), consensus_params.clone())
+                .expect("failed to create block executor");
         let exec_result2 = fvm_transact_commit(
             &mut storage_transaction,
             tx2_checked,
             &block.header,
             coinbase_contract_id,
             0,
-            consensus_params.clone(),
-            false,
+            execution_options.clone(),
+            block_executor,
             execution_data,
         );
         assert_eq!(true, exec_result2.is_ok());
@@ -1042,14 +1148,21 @@ mod tests {
             .expect("into_checked successful");
         let mut storage_transaction = storage.write_transaction();
         let execution_data = &mut ExecutionData::new();
+        let execution_options = ExecutionOptions {
+            extra_tx_checks: false,
+            backtrace: false,
+        };
+        let block_executor =
+            BlockExecutor::new(crate::fvm::types::WasmRelayer {}, execution_options.clone(), consensus_params.clone())
+                .expect("failed to create block executor");
         let exec_result1 = fvm_transact_commit(
             &mut storage_transaction,
             create_tx_checked,
             &block.header,
             coinbase_contract_id,
             0,
-            consensus_params.clone(),
-            false,
+            execution_options.clone(),
+            block_executor,
             execution_data,
         );
         assert_eq!(true, exec_result1.is_ok());
@@ -1062,14 +1175,17 @@ mod tests {
             .expect("into_checked successful");
         let mut storage_transaction = storage.write_transaction();
         let execution_data = &mut ExecutionData::new();
+        let block_executor =
+            BlockExecutor::new(crate::fvm::types::WasmRelayer {}, execution_options.clone(), consensus_params.clone())
+                .expect("failed to create block executor");
         let exec_result2 = fvm_transact_commit(
             &mut storage_transaction,
             tx2_checked,
             &block.header,
             coinbase_contract_id,
             0,
-            consensus_params.clone(),
-            false,
+            execution_options.clone(),
+            block_executor,
             execution_data,
         );
         assert_eq!(true, exec_result2.is_ok());
@@ -1126,14 +1242,21 @@ mod tests {
             .expect("into_checked successful");
         let mut storage_transaction = storage.write_transaction();
         let execution_data = &mut ExecutionData::new();
+        let execution_options = ExecutionOptions {
+            extra_tx_checks: false,
+            backtrace: false,
+        };
+        let block_executor =
+            BlockExecutor::new(crate::fvm::types::WasmRelayer {}, execution_options.clone(), consensus_params.clone())
+                .expect("failed to create block executor");
         let exec_result1 = fvm_transact_commit(
             &mut storage_transaction,
             create_tx_checked,
             &block.header,
             coinbase_contract_id,
             0,
-            consensus_params.clone(),
-            false,
+            execution_options.clone(),
+            block_executor,
             execution_data,
         );
         assert_eq!(true, exec_result1.is_ok());

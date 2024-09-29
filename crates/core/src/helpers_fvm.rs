@@ -6,6 +6,7 @@ use fuel_core_executor::executor::{
     ExecutionOptions,
     TxStorageTransaction,
 };
+use fuel_core_executor::ports::{MaybeCheckedTransaction, RelayerPort};
 use fuel_core_storage::{
     column::Column,
     kv_store::{KeyValueInspect, KeyValueMutate, WriteOperation},
@@ -22,6 +23,8 @@ use fuel_core_types::{
     },
     services::executor::Result,
 };
+use fuel_core_types::fuel_tx::field::{Inputs, Outputs};
+use fuel_core_types::fuel_vm::checked_transaction::CheckedTransaction;
 
 #[derive(Debug, Clone)]
 pub struct FvmTransactResult<Tx> {
@@ -32,31 +35,132 @@ pub struct FvmTransactResult<Tx> {
     pub changes: Changes,
 }
 
-pub fn fvm_transact<'a, Tx, T>(
+pub fn fvm_transact<'a, Tx, T, R>(
     storage: &mut T,
     checked_tx: Checked<Tx>,
     header: &'a PartialBlockHeader,
     coinbase_contract_id: ContractId,
     gas_price: Word,
     memory: &'a mut MemoryInstance,
-    consensus_params: ConsensusParameters,
-    extra_tx_checks: bool,
+    execution_options: ExecutionOptions,
+    block_executor: BlockExecutor<R>,
     execution_data: &mut ExecutionData,
 ) -> Result<FvmTransactResult<Tx>>
 where
     Tx: ExecutableTransaction + Cacheable + Send + Sync + 'static,
     <Tx as IntoChecked>::Metadata: CheckedMetadata + Send + Sync,
-    T: KeyValueInspect<Column = Column>,
+    T: KeyValueInspect<Column=Column>,
+    R: RelayerPort
 {
-    let execution_options = ExecutionOptions {
-        extra_tx_checks,
-        backtrace: false,
-    };
+    execute_chargeable_transaction(
+        storage,
+        checked_tx,
+        header,
+        coinbase_contract_id,
+        gas_price,
+        memory,
+        execution_options,
+        execution_data,
+        block_executor,
+    )
+    // match checked_tx {
+    //     MaybeCheckedTransaction::CheckedTransaction(tx, _) => {
+    //         match tx {
+    //             CheckedTransaction::Script(checked_tx) => {
+    //                 execute_chargeable_transaction(
+    //                     storage,
+    //                     checked_tx,
+    //                     header,
+    //                     coinbase_contract_id,
+    //                     gas_price,
+    //                     memory,
+    //                     execution_options,
+    //                     execution_data,
+    //                     block_executor,
+    //                 )
+    //             }
+    //             CheckedTransaction::Create(checked_tx) => {
+    //                 execute_chargeable_transaction(
+    //                     storage,
+    //                     checked_tx,
+    //                     header,
+    //                     coinbase_contract_id,
+    //                     gas_price,
+    //                     memory,
+    //                     execution_options,
+    //                     execution_data,
+    //                     block_executor,
+    //                 )
+    //             }
+    //             CheckedTransaction::Upgrade(checked_tx) => {
+    //                 execute_chargeable_transaction(
+    //                     storage,
+    //                     checked_tx,
+    //                     header,
+    //                     coinbase_contract_id,
+    //                     gas_price,
+    //                     memory,
+    //                     execution_options,
+    //                     execution_data,
+    //                     block_executor,
+    //                 )
+    //             }
+    //             CheckedTransaction::Upload(checked_tx) => {
+    //                 execute_chargeable_transaction(
+    //                     storage,
+    //                     checked_tx,
+    //                     header,
+    //                     coinbase_contract_id,
+    //                     gas_price,
+    //                     memory,
+    //                     execution_options,
+    //                     execution_data,
+    //                     block_executor,
+    //                 )
+    //             }
+    //             CheckedTransaction::Mint(_) => {
+    //                 panic!("mint transaction not supported")
+    //             }
+    //         }
+    //     }
+    //     MaybeCheckedTransaction::Transaction(tx) => {
+    //         panic!("pure tx not supported yet");
+    //         // let block_height = *header.height();
+    //         // let checked_tx = tx
+    //         //     .into_checked_basic(block_height, &consensus_params)
+    //         //     .into();
+    //         // execute_chargeable_transaction(
+    //         //     storage,
+    //         //     checked_tx,
+    //         //     header,
+    //         //     coinbase_contract_id,
+    //         //     gas_price,
+    //         //     memory,
+    //         //     consensus_params,
+    //         //     extra_tx_checks,
+    //         //     execution_data,
+    //         // )
+    //     }
+    // }
+}
 
-    let block_executor =
-        BlockExecutor::new(WasmRelayer {}, execution_options.clone(), consensus_params)
-            .expect("failed to create block executor");
-
+fn execute_chargeable_transaction<'a, Tx, T, R>(
+    storage: &mut T,
+    checked_tx: Checked<Tx>,
+    header: &'a PartialBlockHeader,
+    coinbase_contract_id: ContractId,
+    gas_price: Word,
+    memory: &'a mut MemoryInstance,
+    execution_options: ExecutionOptions,
+    execution_data: &mut ExecutionData,
+    block_executor: BlockExecutor<R>,
+) -> Result<FvmTransactResult<Tx>>
+where
+    Tx: ExecutableTransaction + Cacheable + Send + Sync + 'static,
+    <Tx as IntoChecked>::Metadata: CheckedMetadata + Send + Sync,
+    T: KeyValueInspect<Column=Column>,
+    R: RelayerPort
+{
     let structured_storage = StructuredStorage::new(storage);
     let mut structured_storage = structured_storage.into_transaction();
     let in_memory_transaction = InMemoryTransaction::new(
@@ -93,10 +197,6 @@ where
         tx.outputs(),
     )?;
 
-    // tx_st_transaction
-    //     .storage::<ProcessedTransactions>()
-    //     .insert(&tx_id, &());
-
     block_executor.update_execution_data(
         &tx,
         execution_data,
@@ -116,20 +216,21 @@ where
     })
 }
 
-pub fn fvm_transact_commit<Tx, T>(
+pub fn fvm_transact_commit<Tx, T, R>(
     storage: &mut T,
     checked_tx: Checked<Tx>,
     header: &PartialBlockHeader,
     coinbase_contract_id: ContractId,
     gas_price: Word,
-    consensus_params: ConsensusParameters,
-    extra_tx_checks: bool,
+    execution_options: ExecutionOptions,
+    block_executor: BlockExecutor<R>,
     execution_data: &mut ExecutionData,
 ) -> Result<FvmTransactResult<Tx>>
 where
     Tx: ExecutableTransaction + Cacheable + Send + Sync + 'static,
     <Tx as IntoChecked>::Metadata: CheckedMetadata + Send + Sync,
-    T: KeyValueMutate<Column = Column>,
+    T: KeyValueMutate<Column=Column>,
+    R: RelayerPort
 {
     // debug_log!("ecl(fvm_transact_commit): start");
 
@@ -156,8 +257,8 @@ where
         coinbase_contract_id,
         gas_price,
         &mut memory,
-        consensus_params,
-        extra_tx_checks,
+        execution_options,
+        block_executor,
         execution_data,
     )?;
 

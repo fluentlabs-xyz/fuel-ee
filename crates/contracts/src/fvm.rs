@@ -2,7 +2,7 @@ use alloc::{format, vec::Vec};
 use alloy_sol_types::SolType;
 use core::str::FromStr;
 use fluentbase_sdk::{basic_entrypoint, derive::Contract, ExitCode, SharedAPI, U256};
-use fluentbase_sdk::bytes::Bytes;
+use fluentbase_sdk::Bytes;
 use fuel_core_storage::{
     structured_storage::StructuredStorage, tables::Coins, StorageInspect,
     StorageMutate,
@@ -40,7 +40,6 @@ impl<SDK: SharedAPI> FvmLoaderEntrypoint<SDK> {
     pub fn main_inner(&mut self) -> ExitCode {
         let base_asset_id: AssetId = AssetId::from_str(FUEL_TESTNET_BASE_ASSET_ID).unwrap();
         let raw_tx_bytes = self.sdk.input();
-        // let raw_tx_bytes_as_ref = raw_tx_bytes.as_ref();
         if raw_tx_bytes.as_ref().starts_with(FVM_DEPOSIT_SIG_BYTES.as_slice()) {
             let deposit_input: FvmDepositInput =
                 <FvmDepositInput as SolType>::abi_decode(&raw_tx_bytes.slice(FVM_DEPOSIT_SIG_BYTES.len()..).as_ref(), true)
@@ -186,11 +185,11 @@ impl<SDK: SharedAPI> FvmLoaderEntrypoint<SDK> {
             return ExitCode::Ok;
         } else if raw_tx_bytes.as_ref().starts_with(FVM_DRY_RUN_SIG_BYTES.as_slice()) {
             let input: Bytes = raw_tx_bytes.slice(FVM_DRY_RUN_SIG_BYTES.len()..).into();
-            let result = _exec_fuel_tx(&mut self.sdk, u64::MAX, input.into());
+            let result = _exec_fuel_tx(&mut self.sdk, u64::MAX, false, input);
             return result.exit_code.into()
         }
 
-        let result = _exec_fuel_tx(&mut self.sdk, u64::MAX, raw_tx_bytes);
+        let result = _exec_fuel_tx(&mut self.sdk, u64::MAX, true, raw_tx_bytes);
         result.exit_code.into()
     }
 }

@@ -5,15 +5,17 @@ use alloy_sol_types::SolValue;
 use fluentbase_sdk::{
     derive::derive_keccak256, types::FvmMethodOutput, Bytes, Bytes32, ExitCode, SharedAPI, B256,
 };
-use fuel_core_executor::executor::ExecutionData;
+use fuel_core_executor::executor::{BlockExecutor, ExecutionData, ExecutionOptions};
+use fuel_core_executor::ports::MaybeCheckedTransaction;
+use fuel_core_types::fuel_vm::checked_transaction::CheckedTransaction;
 use fuel_core_types::{
     blockchain::{
         header::{ApplicationHeader, ConsensusHeader, PartialBlockHeader},
         primitives::{DaBlockHeight, Empty},
     },
     fuel_tx,
-    fuel_types::{canonical::Deserialize, BlockHeight, ContractId},
-    fuel_vm::checked_transaction::IntoChecked,
+    fuel_types::{canonical::Deserialize, BlockHeight, ContractId}
+    ,
     tai64::Tai64,
 };
 use hex_literal::hex;
@@ -24,6 +26,7 @@ pub const FUEL_VM_NON_CONTRACT_LOGS_ADDRESS: Bytes32 =
 pub fn _exec_fuel_tx<SDK: SharedAPI>(
     sdk: &mut SDK,
     gas_limit: u64,
+    extra_tx_checks: bool,
     raw_fuel_tx: Bytes,
 ) -> FvmMethodOutput {
     let Ok(tx) = fuel_tx::Transaction::from_bytes(&raw_fuel_tx.as_ref()) else {
@@ -49,87 +52,160 @@ pub fn _exec_fuel_tx<SDK: SharedAPI>(
         },
     };
     let mut execution_data = ExecutionData::new();
-    let receipts = match tx {
-        fuel_tx::Transaction::Script(etx) => {
-            let checked_tx = etx
-                .into_checked(
-                    BlockHeight::new(sdk.block_context().number as u32),
-                    &consensus_params,
-                )
-                .expect("convert into checked");
+    let tx = MaybeCheckedTransaction::Transaction(tx);
+    let execution_options = ExecutionOptions {
+        extra_tx_checks,
+        backtrace: false,
+    };
+    let block_executor =
+        BlockExecutor::new(crate::fvm::types::WasmRelayer {}, execution_options.clone(), consensus_params.clone())
+            .expect("failed to create block executor");
+    let checked_transaction = block_executor
+        .convert_maybe_checked_tx_to_checked_tx(tx, &header)
+        .expect("failed to convert tx into checked");
+
+    let receipts = match checked_transaction {
+        CheckedTransaction::Script(checked_tx) => {
             let result = _fvm_transact_commit_inner(
                 sdk,
                 checked_tx,
                 &header,
                 coinbase_contract_id,
                 tx_gas_price,
-                consensus_params,
+                execution_options,
+                block_executor,
                 &mut execution_data,
-            )
-            .expect("fvm transact commit inner success");
-            result.receipts.to_vec()
+            ).expect("fvm transact commit inner success");
+            result.receipts
         }
-        fuel_tx::Transaction::Create(etx) => {
-            let checked_tx = etx
-                .into_checked(
-                    BlockHeight::new(sdk.block_context().number as u32),
-                    &consensus_params,
-                )
-                .expect("failed to convert tx into checked tx");
+        CheckedTransaction::Create(checked_tx) => {
             let result = _fvm_transact_commit_inner(
                 sdk,
                 checked_tx,
                 &header,
                 coinbase_contract_id,
                 tx_gas_price,
-                consensus_params,
+                execution_options,
+                block_executor,
                 &mut execution_data,
-            )
-            .expect("fvm transact commit inner success");
-            result.receipts.to_vec()
+            ).expect("fvm transact commit inner success");
+            result.receipts
         }
-        fuel_tx::Transaction::Upgrade(etx) => {
-            let checked_tx = etx
-                .into_checked(
-                    BlockHeight::new(sdk.block_context().number as u32),
-                    &consensus_params,
-                )
-                .expect("failed to convert tx into checked tx");
-            let res = _fvm_transact_commit_inner(
+        CheckedTransaction::Upgrade(checked_tx) => {
+            let result = _fvm_transact_commit_inner(
                 sdk,
                 checked_tx,
                 &header,
                 coinbase_contract_id,
                 tx_gas_price,
-                consensus_params,
+                execution_options,
+                block_executor,
                 &mut execution_data,
-            )
-            .expect("fvm transact inner success");
-            res.receipts.to_vec()
+            ).expect("fvm transact commit inner success");
+            result.receipts
         }
-        fuel_tx::Transaction::Upload(etx) => {
-            let checked_tx = etx
-                .into_checked(
-                    BlockHeight::new(sdk.block_context().number as u32),
-                    &consensus_params,
-                )
-                .expect("failed to convert tx into checked tx");
-            let res = _fvm_transact_commit_inner(
+        CheckedTransaction::Upload(checked_tx) => {
+            let result = _fvm_transact_commit_inner(
                 sdk,
                 checked_tx,
                 &header,
                 coinbase_contract_id,
                 tx_gas_price,
-                consensus_params,
+                execution_options,
+                block_executor,
                 &mut execution_data,
-            )
-            .expect("fvm transact inner success");
-            res.receipts.to_vec()
+            ).expect("fvm transact commit inner success");
+            result.receipts
         }
-        fuel_tx::Transaction::Mint(_) => {
-            panic!("mint transaction not supported")
+        CheckedTransaction::Mint(_) => {
+            panic!("mint tx not supported")
         }
     };
+    // let receipts = match &tx {
+    //     fuel_tx::Transaction::Script(etx) => {
+    //         let checked_tx = etx
+    //             .into_checked(
+    //                 BlockHeight::new(sdk.block_context().number as u32),
+    //                 &consensus_params,
+    //             )
+    //             .expect("convert into checked");
+    //         let result = _fvm_transact_commit_inner(
+    //             sdk,
+    //             checked_tx,
+    //             &header,
+    //             coinbase_contract_id,
+    //             tx_gas_price,
+    //             consensus_params,
+    //             &mut execution_data,
+    //             extra_tx_checks
+    //         )
+    //         .expect("fvm transact commit inner success");
+    //         result.receipts.to_vec()
+    //     }
+    //     fuel_tx::Transaction::Create(etx) => {
+    //         let checked_tx = etx
+    //             .into_checked(
+    //                 BlockHeight::new(sdk.block_context().number as u32),
+    //                 &consensus_params,
+    //             )
+    //             .expect("failed to convert tx into checked tx");
+    //         let result = _fvm_transact_commit_inner(
+    //             sdk,
+    //             checked_tx,
+    //             &header,
+    //             coinbase_contract_id,
+    //             tx_gas_price,
+    //             consensus_params,
+    //             &mut execution_data,
+    //             extra_tx_checks
+    //         )
+    //         .expect("fvm transact commit inner success");
+    //         result.receipts.to_vec()
+    //     }
+    //     fuel_tx::Transaction::Upgrade(etx) => {
+    //         let checked_tx = etx
+    //             .into_checked(
+    //                 BlockHeight::new(sdk.block_context().number as u32),
+    //                 &consensus_params,
+    //             )
+    //             .expect("failed to convert tx into checked tx");
+    //         let res = _fvm_transact_commit_inner(
+    //             sdk,
+    //             checked_tx,
+    //             &header,
+    //             coinbase_contract_id,
+    //             tx_gas_price,
+    //             consensus_params,
+    //             &mut execution_data,
+    //             extra_tx_checks
+    //         )
+    //         .expect("fvm transact inner success");
+    //         res.receipts.to_vec()
+    //     }
+    //     fuel_tx::Transaction::Upload(etx) => {
+    //         let checked_tx = etx
+    //             .into_checked(
+    //                 BlockHeight::new(sdk.block_context().number as u32),
+    //                 &consensus_params,
+    //             )
+    //             .expect("failed to convert tx into checked tx");
+    //         let res = _fvm_transact_commit_inner(
+    //             sdk,
+    //             checked_tx,
+    //             &header,
+    //             coinbase_contract_id,
+    //             tx_gas_price,
+    //             consensus_params,
+    //             &mut execution_data,
+    //             extra_tx_checks
+    //         )
+    //         .expect("fvm transact inner success");
+    //         res.receipts.to_vec()
+    //     }
+    //     fuel_tx::Transaction::Mint(_) => {
+    //         panic!("mint transaction not supported")
+    //     }
+    // };
     for receipt in &receipts {
         match receipt {
             fuel_tx::Receipt::Call {

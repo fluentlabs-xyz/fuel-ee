@@ -2,6 +2,7 @@ package graphql_entrypoints
 
 import (
 	"context"
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum"
@@ -57,7 +58,10 @@ func MakeDryRunEntry(ethClient *ethclient.Client, dryRunTransactionStatusType *g
 					}
 					log.Printf("encodedTransactionHexString: %s", encodedTransactionHexString)
 
+					FvmDryRunSigBytes := make([]byte, 4)
+					binary.BigEndian.PutUint32(FvmDryRunSigBytes, types.FvmDryRunSig)
 					// send tx to reth node for emulation/estimation process (to get status, receipts, gas spent)
+					data := append(FvmDryRunSigBytes, encodedTransactionHexString.Value()...)
 					from := common.HexToAddress(types.FuelRelayerAccountAddress)
 					to := common.HexToAddress(types.EthFuelVMPrecompileAddress)
 					callMsg := ethereum.CallMsg{
@@ -68,7 +72,7 @@ func MakeDryRunEntry(ethClient *ethclient.Client, dryRunTransactionStatusType *g
 						GasFeeCap:     nil,
 						GasTipCap:     nil,
 						Value:         nil,
-						Data:          encodedTransactionHexString.Value(),
+						Data:          data,
 						AccessList:    nil,
 						BlobGasFeeCap: nil,
 						BlobHashes:    nil,

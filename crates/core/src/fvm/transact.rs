@@ -3,7 +3,8 @@ use crate::{
     helpers_fvm::{fvm_transact_commit, FvmTransactResult},
 };
 use fluentbase_sdk::SharedAPI;
-use fuel_core_executor::executor::ExecutionData;
+use fuel_core_executor::executor::{BlockExecutor, ExecutionData, ExecutionOptions};
+use fuel_core_executor::ports::RelayerPort;
 use fuel_core_types::{
     blockchain::header::PartialBlockHeader,
     fuel_tx::{Cacheable, ConsensusParameters, ContractId, Word},
@@ -14,18 +15,20 @@ use fuel_core_types::{
     services::executor::Result,
 };
 
-pub fn _fvm_transact_commit_inner<Tx, SDK: SharedAPI>(
+pub fn _fvm_transact_commit_inner<Tx, SDK: SharedAPI, R>(
     sdk: &mut SDK,
     checked_tx: Checked<Tx>,
     header: &PartialBlockHeader,
     coinbase_contract_id: ContractId,
     gas_price: Word,
-    consensus_params: ConsensusParameters,
+    execution_options: ExecutionOptions,
+    block_executor: BlockExecutor<R>,
     execution_data: &mut ExecutionData,
 ) -> Result<FvmTransactResult<Tx>>
 where
     Tx: ExecutableTransaction + Cacheable + Send + Sync + 'static,
     <Tx as IntoChecked>::Metadata: CheckedMetadata + Send + Sync,
+    R: RelayerPort
 {
     let mut storage = WasmStorage { sdk };
 
@@ -61,8 +64,8 @@ where
         header,
         coinbase_contract_id,
         gas_price,
-        consensus_params,
-        true,
+        execution_options,
+        block_executor,
         execution_data,
     )?;
 
