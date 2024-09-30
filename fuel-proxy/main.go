@@ -136,17 +136,17 @@ func main() {
 		log.Fatalf("error: %v", err)
 	}
 
-	dryRunSuccessStatusType, err := graphql_object.DryRunSuccessStatus(programStateType)
+	dryRunSuccessStatusType, err := graphql_object.MakeDryRunSuccessStatus(programStateType)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
 
-	dryRunFailureStatusType, err := graphql_object.DryRunFailureStatus(programStateType)
+	dryRunFailureStatusType, err := graphql_object.MakeDryRunFailureStatus(programStateType)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
 
-	dryRunTransactionStatusType := graphql_object.DryRunTransactionStatus(dryRunSuccessStatusType, dryRunFailureStatusType)
+	dryRunTransactionStatusType := graphql_object.MakeDryRunTransactionStatus(dryRunSuccessStatusType, dryRunFailureStatusType)
 
 	receiptTypeType := graphql_object.MakeReceiptType()
 

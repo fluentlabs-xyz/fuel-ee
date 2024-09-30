@@ -1,12 +1,14 @@
 package graphql_object
 
-import "github.com/graphql-go/graphql"
+import (
+	"github.com/graphql-go/graphql"
+)
 
 type DryRunFailureStatusType struct {
 	SchemaFields SchemaFields
 }
 
-//		pub struct DryRunFailureStatus {
+//	pub struct MakeDryRunFailureStatus {
 //	   pub program_state: Option<ProgramState>,
 //	   pub receipts: Vec<Receipt>,
 //	   pub total_gas: U64,
@@ -19,7 +21,7 @@ type DryRunFailureStatusStruct struct {
 	ProgramState *ProgramStateStruct `json:"programState"`
 }
 
-func DryRunFailureStatus(programStateType *ProgramStateType) (*DryRunFailureStatusType, error) {
+func MakeDryRunFailureStatus(programStateType *ProgramStateType) (*DryRunFailureStatusType, error) {
 	objectConfig := graphql.ObjectConfig{Name: "DryRunFailureStatus", Fields: graphql.Fields{
 		"totalGas": &graphql.Field{
 			Type: graphql.String,

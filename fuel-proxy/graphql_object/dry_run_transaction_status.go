@@ -1,21 +1,23 @@
 package graphql_object
 
-import "github.com/graphql-go/graphql"
+import (
+	"github.com/graphql-go/graphql"
+)
 
 type DryRunTransactionStatusType struct {
 	SchemaFields UnionFields
 }
 
-//		pub enum DryRunTransactionStatus {
-//	   SuccessStatus(DryRunSuccessStatus),
-//	   FailureStatus(DryRunFailureStatus),
+//		pub enum MakeDryRunTransactionStatus {
+//	   SuccessStatus(MakeDryRunSuccessStatus),
+//	   FailureStatus(MakeDryRunFailureStatus),
 //	   #[cynic(fallback)]
 //	   Unknown,
 //	}
 type DryRunTransactionStatusStruct struct {
 }
 
-func DryRunTransactionStatus(dryRunSuccessStatusType *DryRunSuccessStatusType, dryRunFailureStatusType *DryRunFailureStatusType) *DryRunTransactionStatusType {
+func MakeDryRunTransactionStatus(dryRunSuccessStatusType *DryRunSuccessStatusType, dryRunFailureStatusType *DryRunFailureStatusType) *DryRunTransactionStatusType {
 	config := graphql.UnionConfig{
 		Name: "DryRunTransactionStatus",
 		Types: []*graphql.Object{

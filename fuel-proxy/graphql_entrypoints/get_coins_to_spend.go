@@ -44,8 +44,8 @@ func MakeGetCoinsToSpendEntry(
 			Type: graphql.NewList(graphql.NewList(coinTypeType.SchemaFields.Type)),
 			Args: graphql.FieldConfigArgument{
 				ownerArgName: &graphql.ArgumentConfig{
-					Type:         graphql_scalars.AddressType,
-					DefaultValue: []graphql_scalars.HexString{},
+					Type: graphql_scalars.AddressType,
+					//DefaultValue: []graphql_scalars.HexString{},
 				},
 				queryPerAssetArgName: &graphql.ArgumentConfig{
 					Type: graphql.NewList(graphql_object.SpendQueryElementInput),
@@ -62,7 +62,34 @@ func MakeGetCoinsToSpendEntry(
 				log.Printf("owner: %s", owner)
 				log.Printf("queryPerAsset: %s", queryPerAsset)
 				log.Printf("excludedIds: %s", excludedIds)
-				return [][]graphql_object.CoinTypeStruct{{}}, nil
+				// {
+				//  "data": {
+				//    "coinsToSpend": [
+				//      [
+				//        {
+				//          "type": "Coin",
+				//          "utxoId": "0xa9d5261a68ec08433015f7747d88d0541ced59213224fb96e5ba33e303314afb0001",
+				//          "owner": "0x6b63804cfbf9856e68e5b6e7aef238dc8311ec55bec04df774003a2c96e0418e",
+				//          "amount": "1152921504606846975",
+				//          "assetId": "0xf8f8b6283d7fa5b672b530cbb84fcccb4ff8dc40f8176ef4544ddb1f1952ad07",
+				//          "blockCreated": "1",
+				//          "txCreatedIdx": "0"
+				//        }
+				//      ]
+				//    ]
+				//  }
+				// }
+				// TODO
+				coin := graphql_object.CoinStruct{
+					UtxoId:       *graphql_scalars.NewBytes34TryFromStringOrPanic("0xa9d5261a68ec08433015f7747d88d0541ced59213224fb96e5ba33e303314afb0001"),
+					Owner:        *graphql_scalars.NewBytes32TryFromStringOrPanic("0x6b63804cfbf9856e68e5b6e7aef238dc8311ec55bec04df774003a2c96e0418e"),
+					AssetId:      *graphql_scalars.NewBytes32TryFromStringOrPanic("0xf8f8b6283d7fa5b672b530cbb84fcccb4ff8dc40f8176ef4544ddb1f1952ad07"),
+					Amount:       1152921504606846975,
+					BlockCreated: 1,
+					TxCreatedIdx: 0,
+				}
+				res := [][]*graphql_object.CoinStruct{{&coin}}
+				return res, nil
 			},
 		},
 	}}

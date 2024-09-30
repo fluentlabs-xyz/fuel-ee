@@ -44,7 +44,8 @@ impl<SDK: SharedAPI> FvmLoaderEntrypoint<SDK> {
             let deposit_input: FvmDepositInput =
                 <FvmDepositInput as SolType>::abi_decode(&raw_tx_bytes.slice(FVM_DEPOSIT_SIG_BYTES.len()..).as_ref(), true)
                     .expect("valid fvm deposit input");
-            let owner_address = fuel_core_types::fuel_types::Address::new(deposit_input.address.0);
+            let receiver_address = fuel_core_types::fuel_types::Address::new(deposit_input.address.0);
+            panic!("FVM_DEPOSIT_SIG_BYTES receiver_address: {}", receiver_address);
 
             let contract_ctx = self.sdk.contract_context();
             let caller = contract_ctx.caller;
@@ -72,7 +73,7 @@ impl<SDK: SharedAPI> FvmLoaderEntrypoint<SDK> {
             let utxo_id = UtxoId::new(tx_id, 0);
 
             let mut coin = CompressedCoin::V1(CompressedCoinV1::default());
-            coin.set_owner(owner_address);
+            coin.set_owner(receiver_address);
             coin.set_amount(coin_amount);
             coin.set_asset_id(base_asset_id);
 

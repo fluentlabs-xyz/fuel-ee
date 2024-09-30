@@ -47,6 +47,8 @@ func MakeDryRunEntry(ethClient *ethclient.Client, dryRunTransactionStatusType *g
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				encodedTransactions := p.Args[encodedTransactionsArgName]
+				//utxoValidation := p.Args[utxoValidationArgName]
+				//gasPrice := p.Args[gasPriceArgName]
 				encodedTransactionsList, ok := encodedTransactions.([]interface{})
 				if !ok {
 					return nil, errors.New("encoded transactions must be a list")
@@ -84,7 +86,7 @@ func MakeDryRunEntry(ethClient *ethclient.Client, dryRunTransactionStatusType *g
 				return []graphql_object.DryRunTransactionExecutionStatusStruct{
 					{
 						Id:       "0xb4f5b359704eda15f8ec6c15004b6816b9df4f730baaa50d0a2fb34a99108bee",
-						Status:   &graphql_object.DryRunTransactionStatusStruct{},
+						Status:   &graphql_object.DryRunSuccessStatusStruct{},
 						Receipts: []graphql_object.ReceiptStruct{},
 					},
 				}, nil

@@ -446,14 +446,14 @@ fn test_fvm_deposit_then_withdraw() {
     let secret1_vec = revm::primitives::hex::decode(secret1).unwrap();
     let secret1_secret_key = SecretKey::try_from(secret1_vec.as_slice()).unwrap();
     let secret1_address = Input::owner(&secret1_secret_key.public_key());
-    // println!("secret1_address: {}", secret1_address);
+    println!("secret1_address: {}", secret1_address);
     let secret1_address_as_evm = Address::from_slice(&secret1_address.as_slice()[12..]);
 
     let secret2 = "0xde97d8624a438121b86a1956544bd72ed68cd69f2c99555b08b1e8c51ffd511c";
     let secret2_vec = revm::primitives::hex::decode(secret2).unwrap();
     let secret2_secret_key = SecretKey::try_from(secret2_vec.as_slice()).unwrap();
-    // let secret2_address = Input::owner(&secret2_secret_key.public_key());
-    // println!("secret2_address: {}", secret2_address);
+    let secret2_address = Input::owner(&secret2_secret_key.public_key());
+    println!("secret2_address: {}", secret2_address);
     // let secret2_address_as_evm = Address::from_slice(&secret2_address.as_slice()[12..]);
 
     let coins_sent = 0x500;
@@ -471,7 +471,7 @@ fn test_fvm_deposit_then_withdraw() {
     // FVM deposit
     let mut input = Vec::<u8>::new();
     input.extend_from_slice(FVM_DEPOSIT_SIG_BYTES.as_slice());
-    input.extend_from_slice(secret1_address.as_slice());
+    input.extend_from_slice(secret2_address.as_slice());
     let result = call_evm_tx_simple(
         &mut ctx,
         secret1_address_as_evm.clone(),

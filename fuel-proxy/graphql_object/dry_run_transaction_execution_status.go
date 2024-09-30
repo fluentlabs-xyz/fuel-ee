@@ -1,19 +1,21 @@
 package graphql_object
 
-import "github.com/graphql-go/graphql"
+import (
+	"github.com/graphql-go/graphql"
+)
 
 type DryRunTransactionExecutionStatusType struct {
 	SchemaFields SchemaFields
 }
 
-//		pub struct DryRunTransactionExecutionStatus {
+//	pub struct DryRunTransactionExecutionStatus {
 //	   pub id: TransactionId,
-//	   pub status: DryRunTransactionStatus,
+//	   pub status: MakeDryRunTransactionStatus,
 //	}
 type DryRunTransactionExecutionStatusStruct struct {
-	Id       string                         `json:"id"`
-	Status   *DryRunTransactionStatusStruct `json:"status"`
-	Receipts []ReceiptStruct                `json:"receipts"`
+	Id       string          `json:"id"`
+	Status   interface{}     `json:"status"`
+	Receipts []ReceiptStruct `json:"receipts"`
 }
 
 func DryRunTransactionExecutionStatus(dryRunTransactionStatusType *DryRunTransactionStatusType, receiptType *ReceiptType) (*DryRunTransactionExecutionStatusType, error) {
