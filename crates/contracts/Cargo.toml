@@ -39,28 +39,6 @@ alloy-sol-types = { workspace = true }
 [dev-dependencies]
 
 [features]
-default = [
-    "std"
-]
-std = [
-    #    "fluentbase-sdk/std",
-    #    "fluentbase-core/std",
-    #    "revm-interpreter/std",
-    #    "revm-precompile/std",
-    #    "revm-primitives/std",
-]
-blake2 = []
-sha256 = []
-ripemd160 = []
-identity = []
-modexp = []
-ecrecover = []
-evm = []
-evm_deployer = []
-evm_loader = []
+default = []
 fvm = []
-wasm = []
-wasm_deployer = []
-wasm_loader = []
-svm = []
-blended = []
+fvm_codec = []

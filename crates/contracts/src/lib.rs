@@ -6,3 +6,5 @@ extern crate core;
 // mod blended;
 #[cfg(feature = "fvm")]
 mod fvm;
+#[cfg(feature = "fvm_codec")]
+mod fvm_codec;

@@ -11,8 +11,8 @@ build:
 run_proxy:
 	cd fuel-proxy && go run main.go
 
-.PHONY: update_contracts_and_genesis
-update_contracts_and_genesis:
+.PHONY: update_contracts_and_genesis_locally
+update_contracts_and_genesis_locally:
 	cd crates/contracts && make
 	cp crates/contracts/assets/* ../fluentbase/crates/contracts/assets/
 	cd ../fluentbase/crates/genesis && make
