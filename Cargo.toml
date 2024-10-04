@@ -4,6 +4,7 @@ members = [
     "e2e"
 ]
 exclude = [
+    "crates/abi_rs_gen",
 ]
 resolver = "2"
 

@@ -3,6 +3,7 @@ const {Web3, ETH_DATA_FORMAT} = require('web3');
 const {hexToBytes, bytesToHex} = require('web3-utils');
 const {ethRpcMethods} = require('web3-rpc-methods');
 const {Wallet, Provider, Signer} = require('fuels');
+const { BN } = require('@fuel-ts/math');
 
 const DEPLOYER_PRIVATE_KEY = 'ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
 const PRECOMPILE_FVM_ADDRESS = '0x0000000000000000000000000000000000005250';
@@ -46,8 +47,9 @@ const main = async () => {
 
     const web3 = new Web3(web3Url);
 
-    let doSendEthToEthBalance = false;
-    let doDepositEthToFuel = true;
+    let doSendEthToEthBalance = 0;
+    let doDepositEthToFuel = 0;
+    let doWithdrawEthFromFuel = 0;
     let doSendFuelTx = true;
 
     let fvm_precompile_address = "0x0000000000000000000000000000000000005250";
@@ -125,7 +127,7 @@ const main = async () => {
         if (doDepositEthToFuel) {
             console.log(`sending balance to ${account.address}->${fuelWalletOfficial.address.toHexString()}`)
             const gasPrice = await web3.eth.getGasPrice(ETH_DATA_FORMAT);
-            let ethAmountToSend = web3.utils.toWei(0.1, "ether");
+            let ethAmountToSend = web3.utils.toWei(0.000001, "ether");
             const FvmDepositSig = 3934318243
             // const FvmDepositSigBytes = new DataView(new ArrayBuffer(FvmDepositSig));
             let FvmDepositSigBytes = dec2hexReverse(FvmDepositSig)
@@ -143,15 +145,55 @@ const main = async () => {
                 gas: 300_000_000,
                 to: fvm_precompile_address,
                 value: ethAmountToSend,
-                data: data,
+                data: Buffer.from(data),
                 // "chainId": 1337 // Remember to change this
             };
+            console.log(`ethAmountToSend:`, ethAmountToSend)
             console.log(`rawTransaction:`, rawTransaction)
             const signedTransaction = await web3.eth.accounts.signTransaction(rawTransaction, privateKey)
+            console.log("sending fuel transaction");
             await web3.eth.sendSignedTransaction(signedTransaction.rawTransaction)
                 .on('confirmation', confirmation => {
                     console.log(`confirmation:`, confirmation)
-                });
+                })
+            ;
+            console.log(`balance sent`);
+        }
+
+        if (doWithdrawEthFromFuel) {
+            console.log(`sending balance to ${fuelWalletOfficial.address.toHexString()}->${account.address}`)
+            const gasPrice = await web3.eth.getGasPrice(ETH_DATA_FORMAT);
+            let ethAmountToSend = web3.utils.toWei(0.000001, "ether");
+            const FvmWithdrawSig = 2866282671
+            // const FvmDepositSigBytes = new DataView(new ArrayBuffer(FvmDepositSig));
+            let FvmWithdrawSigBytes = dec2hexReverse(FvmWithdrawSig)
+            console.log(`FvmWithdrawSigBytes: ${Buffer.from(FvmWithdrawSigBytes).toString('hex')}`)
+            let data = [];
+            data = data.concat(FvmWithdrawSigBytes)
+            console.log(`data: ${Buffer.from(data).toString('hex')}`)
+            // TODO encode FvmWithdrawInput using abi
+            // data = data.concat(...fuelWalletOfficial.address.toBytes())
+            // console.log(`data: ${Buffer.from(data).toString('hex')}`)
+            // process.exit(0)
+
+            let rawTransaction = {
+                from: account.address,
+                gasPrice: gasPrice,
+                gas: 300_000_000,
+                to: fvm_precompile_address,
+                value: ethAmountToSend,
+                data: Buffer.from(data),
+                // "chainId": 1337 // Remember to change this
+            };
+            console.log(`ethAmountToSend:`, ethAmountToSend)
+            console.log(`rawTransaction:`, rawTransaction)
+            const signedTransaction = await web3.eth.accounts.signTransaction(rawTransaction, privateKey)
+            console.log("sending transaction");
+            await web3.eth.sendSignedTransaction(signedTransaction.rawTransaction)
+                .on('confirmation', confirmation => {
+                    console.log(`confirmation:`, confirmation)
+                })
+            ;
             console.log(`balance sent`);
         }
 
@@ -167,20 +209,30 @@ const main = async () => {
         // console.log(`- fuelWallet1Coins:`, fuelWallet1Coins);
 
         console.log("- fuel: creating transfer");
-        let fuelTransferFromOfficialToWallet1Tx = await fuelWalletOfficial.createTransfer(fuelWallet1.address, 1);
+        let fuelTransferFromOfficialToWallet1Tx = await fuelWalletOfficial.createTransfer(fuelWallet1.address, 10);
+        // fuelTransferFromOfficialToWallet1Tx.gasLimit = new BN(600);
         console.log("- fuelTransferFromOfficialToWallet1Tx:", fuelTransferFromOfficialToWallet1Tx);
-        const fuelTransferFromOfficialToWallet1TxSigned = await fuelWalletOfficial.signTransaction(fuelTransferFromOfficialToWallet1Tx);
-        console.log("- fuelTransferFromOfficialToWallet1TxSigned:", fuelTransferFromOfficialToWallet1TxSigned);
-        const transactionId = fuelTransferFromOfficialToWallet1Tx.getTransactionId(fuelProvider.getChainId());
-        console.log("- transactionId:", transactionId);
-        const recoveredAddress = Signer.recoverAddress(transactionId, fuelTransferFromOfficialToWallet1TxSigned);
-        console.log("- recoveredAddress:", recoveredAddress);
-        fuelTransferFromOfficialToWallet1Tx.updateWitnessByOwner(recoveredAddress, fuelTransferFromOfficialToWallet1TxSigned);
-        console.log("- fuelTransferFromOfficialToWallet1Tx (updated witness):", fuelTransferFromOfficialToWallet1Tx);
-        let transferResult = await fuelWallet1.sendTransaction(fuelTransferFromOfficialToWallet1Tx);
-        console.log(`- transferResult`, transferResult);
-        let {id} = await transferResult.wait();
-        console.log(`- transfer id`, id);
+
+        if (false) {
+            // fast send (signing hidden)
+            let transferResult = await fuelWallet1.sendTransaction(fuelTransferFromOfficialToWallet1Tx);
+            console.log(`- transferResult`, transferResult);
+            let {id} = await transferResult.wait();
+            console.log(`- transfer id`, id);
+        } else {
+            // slow send (signing exposed)
+            const fuelTransferFromOfficialToWallet1TxSigned = await fuelWalletOfficial.signTransaction(fuelTransferFromOfficialToWallet1Tx);
+            console.log("- fuelTransferFromOfficialToWallet1TxSigned:", fuelTransferFromOfficialToWallet1TxSigned);
+            const transactionId = fuelTransferFromOfficialToWallet1Tx.getTransactionId(fuelProvider.getChainId());
+            console.log("- transactionId:", transactionId);
+            const recoveredAddress = Signer.recoverAddress(transactionId, fuelTransferFromOfficialToWallet1TxSigned);
+            console.log("- recoveredAddress:", recoveredAddress);
+            fuelTransferFromOfficialToWallet1Tx.updateWitnessByOwner(recoveredAddress, fuelTransferFromOfficialToWallet1TxSigned);
+            console.log("- fuelTransferFromOfficialToWallet1Tx (updated witness):", fuelTransferFromOfficialToWallet1Tx);
+            let transferResult = await fuelWallet1.sendTransaction(fuelTransferFromOfficialToWallet1Tx);
+            console.log(`- transferResult`, transferResult);
+            let {id} = await transferResult.wait();
+            console.log(`- transfer id`, id);}
 
 
         // fuelWalletOfficialCoins = await fuelProvider.getCoins(fuelWalletOfficial.address);

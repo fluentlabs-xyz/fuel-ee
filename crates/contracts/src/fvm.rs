@@ -1,8 +1,8 @@
 use alloc::{format, vec::Vec};
-use alloy_sol_types::SolType;
+use alloy_sol_types::{SolType, SolValue};
 use core::str::FromStr;
-use fluentbase_sdk::{basic_entrypoint, derive::Contract, ExitCode, SharedAPI, U256};
 use fluentbase_sdk::Bytes;
+use fluentbase_sdk::{basic_entrypoint, derive::Contract, ExitCode, SharedAPI, B256, U256};
 use fuel_core_storage::{
     structured_storage::StructuredStorage, tables::Coins, StorageInspect,
     StorageMutate,
@@ -16,8 +16,7 @@ use fuel_ee_core::fvm::types::{FVM_DEPOSIT_SIG_BYTES, FVM_DRY_RUN_SIG_BYTES, FVM
 use fuel_ee_core::fvm::{
     helpers::FUEL_TESTNET_BASE_ASSET_ID,
     types::{
-        FvmDepositInput, FvmWithdrawInput, WasmStorage
-        ,
+        FvmDepositInput, FvmWithdrawInput, WasmStorage,
     },
 };
 use fuel_tx::{TxId, UtxoId};
@@ -39,13 +38,13 @@ impl<SDK: SharedAPI> FvmLoaderEntrypoint<SDK> {
 
     pub fn main_inner(&mut self) -> ExitCode {
         let base_asset_id: AssetId = AssetId::from_str(FUEL_TESTNET_BASE_ASSET_ID).unwrap();
-        let raw_tx_bytes = self.sdk.input();
-        if raw_tx_bytes.as_ref().starts_with(FVM_DEPOSIT_SIG_BYTES.as_slice()) {
+        let asset_id = base_asset_id;
+        let input = self.sdk.input();
+        if input.as_ref().starts_with(FVM_DEPOSIT_SIG_BYTES.as_slice()) {
             let deposit_input: FvmDepositInput =
-                <FvmDepositInput as SolType>::abi_decode(&raw_tx_bytes.slice(FVM_DEPOSIT_SIG_BYTES.len()..).as_ref(), true)
+                <FvmDepositInput as SolType>::abi_decode(&input.slice(FVM_DEPOSIT_SIG_BYTES.len()..).as_ref(), true)
                     .expect("valid fvm deposit input");
-            let receiver_address = fuel_core_types::fuel_types::Address::new(deposit_input.address.0);
-            panic!("FVM_DEPOSIT_SIG_BYTES receiver_address: {}", receiver_address);
+            let recipient_address = fuel_core_types::fuel_types::Address::new(deposit_input.address.0);
 
             let contract_ctx = self.sdk.contract_context();
             let caller = contract_ctx.caller;
@@ -69,13 +68,14 @@ impl<SDK: SharedAPI> FvmLoaderEntrypoint<SDK> {
             let mut storage = StructuredStorage::new(wasm_storage);
             let coin_amount = value_gwei.as_limbs()[0];
 
+            let tx_output_index: u16 = 0;
             let tx_id: TxId = TxId::new(deposit_withdraw_tx_index);
-            let utxo_id = UtxoId::new(tx_id, 0);
+            let utxo_id = UtxoId::new(tx_id, tx_output_index);
 
             let mut coin = CompressedCoin::V1(CompressedCoinV1::default());
-            coin.set_owner(receiver_address);
+            coin.set_owner(recipient_address);
             coin.set_amount(coin_amount);
-            coin.set_asset_id(base_asset_id);
+            coin.set_asset_id(asset_id);
 
             <StructuredStorage<WasmStorage<'_, SDK>> as StorageMutate<Coins>>::insert(
                 &mut storage,
@@ -84,13 +84,24 @@ impl<SDK: SharedAPI> FvmLoaderEntrypoint<SDK> {
             )
                 .expect("failed to save deposit utxo");
 
+            // UtxoId:       *graphql_scalars.NewBytes34TryFromStringOrPanic("0x00000000000000000000000000000000000000000000000000000000000000000000"),
+            // Amount:       1000,
+            // Owner:        *graphql_scalars.NewBytes32TryFromStringOrPanic("0x6b63804cfbf9856e68e5b6e7aef238dc8311ec55bec04df774003a2c96e0418e"),
+            // AssetId:      *graphql_scalars.NewBytes32TryFromStringOrPanic(types.FuelBaseAssetId),
+            // BlockCreated: 1,
+            // TxCreatedIdx: 0,
+            let log_data = (coin_amount, tx_id.0, tx_output_index, recipient_address.0, asset_id.0).abi_encode();
+            let topics = [B256::left_padding_from(FVM_DEPOSIT_SIG_BYTES.as_slice())];
+            self.sdk.emit_log(log_data.into(), &topics);
+
             return ExitCode::Ok;
-        } else if raw_tx_bytes.as_ref().starts_with(FVM_WITHDRAW_SIG_BYTES.as_slice()) {
+        } else if input.as_ref().starts_with(FVM_WITHDRAW_SIG_BYTES.as_slice()) {
             let contract_ctx = self.sdk.contract_context();
             let caller = contract_ctx.caller;
             let utxo_ids: FvmWithdrawInput =
-                <FvmWithdrawInput as SolType>::abi_decode(raw_tx_bytes.slice(FVM_WITHDRAW_SIG_BYTES.len()..).as_ref(), true)
+                <FvmWithdrawInput as SolType>::abi_decode(input.slice(FVM_WITHDRAW_SIG_BYTES.len()..).as_ref(), true)
                     .expect("valid fvm withdraw input");
+            // panic!("utxo_ids {:?}", &utxo_ids);
             let FvmWithdrawInput {
                 utxos,
                 withdraw_amount,
@@ -157,10 +168,12 @@ impl<SDK: SharedAPI> FvmLoaderEntrypoint<SDK> {
                     .expect(&format!("failed to remove spent utxo: {}", utxo));
             }
             let balance_left = utxos_total_balance - withdraw_amount;
+            let last_owner = last_owner.expect("utxo owner not found");
+            let mut utxo_id_opt: Option<UtxoId> = None;
             if balance_left > 0 {
                 // if there is fvm balance left - create utxo based on balance
                 let mut coin = CompressedCoin::V1(CompressedCoinV1::default());
-                coin.set_owner(last_owner.expect("utxo owner not found"));
+                coin.set_owner(last_owner);
                 coin.set_amount(balance_left);
                 coin.set_asset_id(base_asset_id);
                 // TODO need counter to form TxId dynamically and without collisions
@@ -173,24 +186,34 @@ impl<SDK: SharedAPI> FvmLoaderEntrypoint<SDK> {
                     &coin,
                 )
                     .expect("insert first utxo success");
+                utxo_id_opt = Some(utxo_id);
             }
 
             // top up evm balance
+            let withdraw_amount_wei = withdraw_amount as u128 * 1e9 as u128;
             self.sdk.call(
                 caller,
-                U256::from(withdraw_amount * 1e9 as u64),
+                U256::from(withdraw_amount_wei),
                 &[],
                 10_000,
             );
 
+            let log_data = if let Some(utxo_id) = utxo_id_opt {
+                (withdraw_amount_wei, utxo_id.tx_id().0, utxo_id.output_index()).abi_encode()
+            } else {
+                (withdraw_amount_wei).abi_encode()
+            };
+            let topics = [B256::left_padding_from(FVM_WITHDRAW_SIG_BYTES.as_slice()), last_owner.0.into()];
+            self.sdk.emit_log(log_data.into(), &topics);
+
             return ExitCode::Ok;
-        } else if raw_tx_bytes.as_ref().starts_with(FVM_DRY_RUN_SIG_BYTES.as_slice()) {
-            let input: Bytes = raw_tx_bytes.slice(FVM_DRY_RUN_SIG_BYTES.len()..).into();
-            let result = _exec_fuel_tx(&mut self.sdk, u64::MAX, false, input);
+        } else if input.as_ref().starts_with(FVM_DRY_RUN_SIG_BYTES.as_slice()) {
+            let raw_tx_bytes: Bytes = input.slice(FVM_DRY_RUN_SIG_BYTES.len()..).into();
+            let result = _exec_fuel_tx(&mut self.sdk, u64::MAX, false, raw_tx_bytes);
             return result.exit_code.into()
         }
 
-        let result = _exec_fuel_tx(&mut self.sdk, u64::MAX, true, raw_tx_bytes);
+        let result = _exec_fuel_tx(&mut self.sdk, u64::MAX, true, input);
         result.exit_code.into()
     }
 }

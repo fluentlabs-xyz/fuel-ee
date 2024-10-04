@@ -8,3 +8,6 @@ extern crate core;
 mod fvm;
 #[cfg(feature = "fvm_codec")]
 mod fvm_codec;
+// mod generated;
+#[cfg(test)]
+mod fvm_test;

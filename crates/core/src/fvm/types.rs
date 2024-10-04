@@ -92,11 +92,7 @@ impl RelayerPort for WasmRelayer {
 }
 
 pub const FUEL_BASE_STORAGE_ADDRESS: Address = address!("ba8ab429ff0aaa5f1bb8f19f1f9974ffc82ff161");
-pub const FUEL_UTXO_OWNER_STORAGE_ADDRESS: Address =
-    address!("be0550e039dcbe443c8a918ac4ae5f632ea43127");
-
-pub const STORAGE_ADDRESSES: [Address; 2] =
-    [FUEL_BASE_STORAGE_ADDRESS, FUEL_UTXO_OWNER_STORAGE_ADDRESS];
+pub const STORAGE_ADDRESSES: [Address; 1] = [FUEL_BASE_STORAGE_ADDRESS];
 
 const CONTRACTS_LATEST_UTXO_MAX_ENCODED_LEN: usize = 44;
 const COINS_MAX_ENCODED_LEN: usize = 83;

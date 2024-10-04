@@ -394,7 +394,7 @@ impl<'a, SDK: SharedAPI> DepositWithdrawalIndexHelper<'a, SDK> {
         "3b7beb7da1bf6fe0385840aec5f2bb7a20a36c96e298b5f66760841e0e77a209"
     ));
     pub const BASE_INDEX: U256 = U256::from_be_bytes(hex!(
-        "0000000000000000000000000000000000000000000000000012300000000000"
+        "0000000000000000000000000000000000000000000000000000000000000000"
     ));
     pub fn new(sdk: &'a mut SDK) -> Self {
         Self { sdk }

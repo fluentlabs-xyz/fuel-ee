@@ -1,0 +1,27 @@
+[package]
+name = "fuel-ee-abi-rs-gen"
+version = "0.1.0"
+authors = [
+    "Stanislav Stepanov <stanislav@fluentlabs.xyz>",
+]
+repository = "https://github.com/fluentlabs-xyz/fuel-ee"
+edition = "2021"
+readme = "README.md"
+license = "MIT"
+keywords = ["fuel", "execution", "environment", "zk", "integration"]
+categories = ["no-std"]
+
+[[bin]]
+name = "fuel-ee-contracts-abi-rs-gen"
+path = "src/main.rs"
+
+#[lib]
+#crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+eyre = "0.6.12"
+ethers = "2.0.14"
+tokio = "1.40.0"
+
+[features]
+default = []
