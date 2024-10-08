@@ -73,17 +73,17 @@ func (s *Service) processCycle() {
 	blockBatchSize := int64(100)
 	query := ethereum.FilterQuery{
 		FromBlock: big.NewInt(int64(lastProcessedBlockNumber + 1)),
+		ToBlock:   big.NewInt(int64(lastProcessedBlockNumber + 1)),
 	}
-	query.FromBlock.Add(query.FromBlock, big.NewInt(blockBatchSize))
+	query.ToBlock.Add(query.ToBlock, big.NewInt(blockBatchSize))
 
 	logItems, err := s.ethClient.FilterLogs(context.Background(), query)
 	if err != nil {
 		log.Printf("error when filtering logs: %s", err)
 		return
 	}
-	prevBlockNumber := uint64(0)
 	if len(logItems) > 0 {
-		prevBlockNumber = logItems[0].BlockNumber
+		lastProcessedBlockNumber = logItems[0].BlockNumber
 	}
 	for _, logItem := range logItems {
 		log.Printf("new logItem: %+v", logItem)
@@ -103,13 +103,19 @@ func (s *Service) processCycle() {
 			log.Printf("unprocessed log item: %+v", logItem)
 		}
 
-		if logItem.BlockNumber > prevBlockNumber {
-			err = s.utxoRepo.SaveLastProcessedBlockNumber(context.Background(), prevBlockNumber)
+		if logItem.BlockNumber > lastProcessedBlockNumber {
+			err = s.utxoRepo.SaveLastProcessedBlockNumber(context.Background(), lastProcessedBlockNumber)
 			if err != nil {
 				log.Printf("failed to save last processed block number: %s", err)
 				break
 			}
-			prevBlockNumber = logItem.BlockNumber
+			lastProcessedBlockNumber = logItem.BlockNumber
+		}
+	}
+	if len(logItems) > 0 {
+		err = s.utxoRepo.SaveLastProcessedBlockNumber(context.Background(), lastProcessedBlockNumber)
+		if err != nil {
+			log.Printf("failed to save last processed block number: %s", err)
 		}
 	}
 }

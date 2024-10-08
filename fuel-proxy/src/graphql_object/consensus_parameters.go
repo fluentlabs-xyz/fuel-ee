@@ -1,6 +1,7 @@
 package graphql_object
 
 import (
+	"github.com/fluentlabs-xyz/fuel-ee/src/config"
 	"github.com/fluentlabs-xyz/fuel-ee/src/graphql_scalars"
 	"github.com/graphql-go/graphql"
 )
@@ -26,6 +27,7 @@ type ConsensusParametersStruct struct {
 }
 
 func ConsensusParameters(
+	config *config.Config,
 	consensusParametersVersionType *ConsensusParametersVersionType,
 	txParametersType *TxParametersType,
 	predicateParametersType *PredicateParametersType,
@@ -44,7 +46,7 @@ func ConsensusParameters(
 		"chainId": &graphql.Field{
 			Type: graphql.String,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return 1337, nil
+				return config.App.ChainId, nil
 			},
 		},
 		"txParams": &graphql.Field{

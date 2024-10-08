@@ -1,7 +1,4 @@
-const web3 = require('web3');
 const {Web3, ETH_DATA_FORMAT} = require('web3');
-const {hexToBytes, bytesToHex} = require('web3-utils');
-const {ethRpcMethods} = require('web3-rpc-methods');
 const {Wallet, Provider, Signer} = require('fuels');
 const { BN } = require('@fuel-ts/math');
 
@@ -48,7 +45,7 @@ const main = async () => {
     const web3 = new Web3(web3Url);
 
     let doSendEthToEthBalance = 0;
-    let doDepositEthToFuel = 0;
+    let doDepositEthToFuel = 1;
     let doWithdrawEthFromFuel = 0;
     let doSendFuelTx = 1;
 
@@ -61,28 +58,6 @@ const main = async () => {
     let account = web3.eth.accounts.privateKeyToAccount('0x' + privateKey);
     // let accountBalance = await web3.eth.getBalance(account.address);
     // console.log(`for account ${account.address} balance ${accountBalance}`);
-
-    // send ETH to FUEL acc (fuel addr is a cut version)
-    if (doSendEthToEthBalance) {
-        console.log(`sending balance to ${account.address}->${fuelTxOwnerAddress}`)
-        const gasPrice = await web3.eth.getGasPrice(ETH_DATA_FORMAT);
-        let ethAmountToSend = web3.utils.toWei(0.1, "ether");
-        let rawTransaction = {
-            from: account.address,
-            gasPrice: gasPrice,
-            gas: 300_000_000,
-            to: fuelTxOwnerAddress,
-            value: ethAmountToSend,
-            // "chainId": 1337 // Remember to change this
-        };
-        console.log(`rawTransaction:`, rawTransaction)
-        const signedTransaction = await web3.eth.accounts.signTransaction(rawTransaction, privateKey)
-        await web3.eth.sendSignedTransaction(signedTransaction.rawTransaction)
-            .on('confirmation', confirmation => {
-                console.log(`confirmation:`, confirmation)
-            });
-        console.log(`balance sent`);
-    }
 
     if (doSendFuelTx) {
         const LOCAL_FUEL_NETWORK_PROXY = 'http://127.0.0.1:8080/v1/graphql'; // proxy
@@ -114,8 +89,13 @@ const main = async () => {
         // let fuelProvider = await Provider.create(LOCAL_FUEL_NETWORK);
         let fuelProvider = fuelProviderProxy;
 
-        let chainId = fuelProvider.getChainId();
-        console.log(`chainId=${chainId}`);
+        let ethChainId = await web3.eth.getChainId();
+        console.log(`ethChainId=${ethChainId}`);
+        let fuelChainId = BigInt(fuelProvider.getChainId());
+        console.log(`fuelChainId=${fuelChainId}`);
+        if (ethChainId !== fuelChainId) {
+            throw new Error(`ethChainId(${ethChainId}) !== fuelChainId(${fuelChainId})`)
+        }
 
         let fuelSecretOfficial = "de97d8624a438121b86a1956544bd72ed68cd69f2c99555b08b1e8c51ffd511c";
         let fuelWalletOfficial = Wallet.fromPrivateKey(fuelSecretOfficial, fuelProvider);
@@ -147,7 +127,6 @@ const main = async () => {
                 to: fvmPrecompileAddress,
                 value: ethAmountToSend,
                 data: Buffer.from(data),
-                // chainId: 1337 // Remember to change this
             };
             console.log(`ethAmountToSend:`, ethAmountToSend)
             console.log(`rawTransaction:`, rawTransaction)
@@ -198,26 +177,16 @@ const main = async () => {
             console.log(`balance sent`);
         }
 
-        // let fuelWallet2 = Wallet.fromAddress("0x53a9c6a74bee79c5e04115a007984f4bddaafed75f512f68766c6ed59d0aedec", fuelProvider);
-        // console.log(`fuelWallet2.address:`, fuelWallet2.address.toHexString());
-        // let fuelWallet2Coins = await fuelProvider.getCoins(fuelWallet2.address);
-        // console.log(`fuelWallet2Coins:`, fuelWallet2Coins);
-
-        let fuelWalletOfficialCoins = await fuelProvider.getCoins(
-            // fuelWalletOfficial.address,
-            fuelWallet1.address,
-            // "0xf8f8b6283d7fa5b672b530cbb84fcccb4ff8dc40f8176ef4544ddb1f1952ad07",
-            );
-        console.log(`- fuelWalletOfficialCoins:`, fuelWalletOfficialCoins);
-        process.exit(0)
-        //
-        // let fuelWallet1Coins = await fuelProvider.getCoins(fuelWallet1.address);
-        // console.log(`- fuelWallet1Coins:`, fuelWallet1Coins);
+        // let fuelWalletOfficialCoins = await fuelProvider.getCoins(
+        //     fuelWalletOfficial.address,
+        //     // "0xf8f8b6283d7fa5b672b530cbb84fcccb4ff8dc40f8176ef4544ddb1f1952ad07",
+        // );
+        // console.log(`- fuelWalletOfficialCoins:`, fuelWalletOfficialCoins);
+        // process.exit(0)
 
         console.log("- fuel: creating transfer");
         let fuelTransferFromOfficialToWallet1Tx = await fuelWalletOfficial.createTransfer(fuelWallet1.address, 10);
         fuelTransferFromOfficialToWallet1Tx.maxFee = new BN(100_000);
-        // fuelTransferFromOfficialToWallet1Tx.maxFee = new BN(200_000_000_000);
         console.log("- fuelTransferFromOfficialToWallet1Tx:", fuelTransferFromOfficialToWallet1Tx);
 
         if (false) {
@@ -226,10 +195,10 @@ const main = async () => {
             console.log(`- transferResult`, transferResult);
             console.log(`- transferResult.id`, transferResult.id);
         } else {
-            // slow send (signing exposed)
+            // slow send (signing process exposed)
             const fuelTransferFromOfficialToWallet1TxSigned = await fuelWalletOfficial.signTransaction(fuelTransferFromOfficialToWallet1Tx);
             console.log("- fuelTransferFromOfficialToWallet1TxSigned:", fuelTransferFromOfficialToWallet1TxSigned);
-            const transactionId = fuelTransferFromOfficialToWallet1Tx.getTransactionId(chainId);
+            const transactionId = fuelTransferFromOfficialToWallet1Tx.getTransactionId(fuelChainId);
             console.log("- transactionId:", transactionId);
             const recoveredAddress = Signer.recoverAddress(transactionId, fuelTransferFromOfficialToWallet1TxSigned);
             console.log("- recoveredAddress:", recoveredAddress);

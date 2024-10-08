@@ -21,7 +21,7 @@ build_contracts_and_update_local_genesis:
 
 .PHONY: run_fluent_node
 run_fluent_node:
-	#cd ../fluent; rm -rf datadir
+	cd ../fluent; rm -rf datadir
 	cd ../fluent; RUST_LOG=debug make fluent_run
 
 .PHONY: build_contracts_and_update_local_genesis_and_run_fluent_node

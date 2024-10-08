@@ -10,10 +10,12 @@ import (
 
 type AppConfig struct {
 	UtxoBGProcessingTimeoutSec int64
+	ChainId                    int64
 }
 
 func (c *AppConfig) parse() {
 	c.UtxoBGProcessingTimeoutSec = viperGetOrDefaultInt("app.utxo-bg-processing-timeout-sec", 2)
+	c.ChainId = viperGetOrDefaultInt("app.chain-id", 1337)
 }
 
 type RedisConfig struct {

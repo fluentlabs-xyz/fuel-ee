@@ -76,6 +76,7 @@ func New(
 	}
 
 	consensusParametersType, err := graphql_object.ConsensusParameters(
+		config,
 		consensusParametersVersionType,
 		txParametersType,
 		predicateParametersType,
@@ -219,7 +220,7 @@ func New(
 			_, _ = helpers.HttpWriteError(w, http.StatusBadRequest, errText)
 			return
 		}
-		log.Printf("Operation: '%s' Variables: '%+v' Query: '%s'", p.Operation, p.Variables, p.Query)
+		//log.Printf("Operation: '%s' Variables: '%+v' Query: '%s'", p.Operation, p.Variables, p.Query)
 		var schema *graphql.Schema
 
 		switch p.Operation {
