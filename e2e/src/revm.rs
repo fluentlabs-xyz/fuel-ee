@@ -25,11 +25,9 @@ use fuel_ee_core::fvm::{
     helpers::FUEL_TESTNET_BASE_ASSET_ID,
     types::{FVM_DEPOSIT_SIG, FVM_DEPOSIT_SIG_BYTES, FVM_WITHDRAW_SIG, FVM_WITHDRAW_SIG_BYTES},
 };
-use fuel_tx::{ConsensusParameters, Input, ScriptParameters, TransactionBuilder, TransactionRepr, TxId, TxPointer, UtxoId};
-use fuel_tx::consensus_parameters::ScriptParametersV1;
-use fuel_tx::field::{ScriptData, Witnesses};
+use fuel_tx::field::Witnesses;
+use fuel_tx::{ConsensusParameters, Input, TransactionBuilder, TransactionRepr, TxId, TxPointer, UtxoId};
 use fuel_vm::{fuel_asm::RegId, storage::MemoryStorage};
-use fuel_vm::fuel_asm::Instruction;
 use hashbrown::HashMap;
 use revm::{
     primitives::{AccountInfo, Bytecode, Env, ExecutionResult, TransactTo},
@@ -97,11 +95,13 @@ impl EvmTestingContext {
             info.rwasm_code = v.code.clone().map(Bytecode::new_raw);
             db.insert_account_info(*k, info);
         }
-        Self {
-            sdk: TestingContext::new(RuntimeContext::default()),
+        let mut testing_ctx = TestingContext::new(RuntimeContext::default());
+        let mut res = Self {
+            sdk: testing_ctx,
             genesis,
             db,
-        }
+        };
+        res
     }
 
     pub(crate) fn add_wasm_contract<I: Into<RwasmModule>>(
@@ -205,6 +205,11 @@ impl<'a> TxBuilder<'a> {
         self
     }
 
+    fn chain_id(mut self, chain_id: u64) -> Self {
+        self.env.tx.chain_id = Some(chain_id);
+        self
+    }
+
     fn gas_limit(mut self, gas_limit: u64) -> Self {
         self.env.tx.gas_limit = gas_limit;
         self
@@ -216,6 +221,10 @@ impl<'a> TxBuilder<'a> {
     }
 
     fn exec(&mut self) -> ExecutionResult {
+        let tx_chain_id = self.env.tx.chain_id;
+        if tx_chain_id.is_some() {
+            self.env.cfg.chain_id = tx_chain_id.unwrap();
+        }
         let mut evm = Evm::builder()
             .with_env(Box::new(take(&mut self.env)))
             .with_ref_db(&mut self.ctx.db)
@@ -227,7 +236,8 @@ impl<'a> TxBuilder<'a> {
 fn deploy_evm_tx(ctx: &mut EvmTestingContext, deployer: Address, init_bytecode: Bytes) -> Address {
     // let bytecode_type = BytecodeType::from_slice(init_bytecode.as_ref());
     // deploy greeting EVM contract
-    let result = TxBuilder::create(ctx, deployer, init_bytecode.clone().into()).exec();
+    let chain_id = ctx.genesis.config.chain_id;
+    let result = TxBuilder::create(ctx, deployer, init_bytecode.clone().into()).chain_id(chain_id).exec();
     if !result.is_success() {
         println!("{:?}", result);
         println!(
@@ -277,7 +287,8 @@ fn call_evm_tx_simple(
     value: Option<U256>,
 ) -> ExecutionResult {
     // call greeting EVM contract
-    let mut tx_builder = TxBuilder::call(ctx, caller, callee, value).input(input);
+    let chain_id = ctx.genesis.config.chain_id;
+    let mut tx_builder = TxBuilder::call(ctx, caller, callee, value).chain_id(chain_id).input(input);
     if let Some(gas_limit) = gas_limit {
         tx_builder = tx_builder.gas_limit(gas_limit);
     }
@@ -322,7 +333,7 @@ fn test_fvm_deposit_withdrawal_signatures_for_collisions() {
 fn test_fvm_deposit_and_transfer_between_accounts_tx() {
     let base_asset_id = AssetId::from_str(FUEL_TESTNET_BASE_ASSET_ID).unwrap();
     let chain_id = DEVNET_CHAIN_ID;
-    let chain_id = 0x1;
+    // let chain_id = 1337;
 
     let secret1 = "0x99e87b0e9158531eeeb503ff15266e2b23c2a2507b138c9d1b1f2ab458df2d61";
     let secret1_vec = revm::primitives::hex::decode(secret1).unwrap();
@@ -345,7 +356,7 @@ fn test_fvm_deposit_and_transfer_between_accounts_tx() {
     let mut consensus_params = ConsensusParameters::standard();
     consensus_params.set_chain_id(chain_id.into());
     let mut test_builder = fuel_vm::util::test_helpers::TestBuilder {
-        rng: StdRng::seed_from_u64(1234),
+        rng: StdRng::seed_from_u64(1),
         gas_price: 0,
         max_fee_limit: 600,
         script_gas_limit: 100,
@@ -367,8 +378,7 @@ fn test_fvm_deposit_and_transfer_between_accounts_tx() {
         PRECOMPILE_FVM,
         input.into(),
         Some(100_000_000),
-        Some(U256::from(initial_balance * 1_000_000_000)),
-    );
+        Some(U256::from(initial_balance * 1_000_000_000)));
     println!("move coins evm->fvm: {:?}", result);
     let output = result.output().unwrap_or_default();
     println!("output: {}", from_utf8(output).unwrap_or_default());
@@ -390,31 +400,27 @@ fn test_fvm_deposit_and_transfer_between_accounts_tx() {
             base_asset_id,
             TxPointer::new(BlockHeight::new(0), 0),
         )
-        .add_output(fuel_tx::Output::change(
-            secret2_address.clone(),
-            0,
-            base_asset_id,
-        ))
         .add_output(fuel_tx::Output::coin(
             secret1_address.clone(),
             coins_sent,
             base_asset_id,
+        ))
+        .add_output(fuel_tx::Output::change(
+            secret2_address.clone(),
+            0,
+            base_asset_id,
         ));
-    let mut tx1 = test_builder.build().transaction().clone();
+    let mut script_tx1 = test_builder.build().transaction().clone();
     println!(
         "tx1: {:?}",
-        &tx1
+        &script_tx1
     );
     println!(
         "tx1.witnesses()[0].as_vec(): {:x?}",
-        tx1.witnesses()[0].as_vec()
+        script_tx1.witnesses()[0].as_vec()
     );
-    let tx1: fuel_tx::Transaction = fuel_tx::Transaction::Script(tx1);
+    let tx1: fuel_tx::Transaction = fuel_tx::Transaction::Script(script_tx1.clone());
     let fuel_tx_bytes = Bytes::from(tx1.to_bytes());
-    // println!(
-    //     "tx1.to_bytes() as hex: {}",
-    //     revm::primitives::hex::encode(&fuel_tx_bytes)
-    // );
 
     println!("\n\n\n");
     let result = call_evm_tx(
@@ -429,6 +435,25 @@ fn test_fvm_deposit_and_transfer_between_accounts_tx() {
     let output = result.output().unwrap_or_default();
     println!("output: {}", from_utf8(output).unwrap_or_default());
     assert!(result.is_success());
+
+    // try to use the same coins as input - must report error
+
+    let tx1: fuel_tx::Transaction = fuel_tx::Transaction::Script(script_tx1.clone());
+    let fuel_tx_bytes = Bytes::from(tx1.to_bytes());
+
+    println!("\n\n\n");
+    let result = call_evm_tx(
+        &mut ctx,
+        secret2_address_as_evm.clone(),
+        PRECOMPILE_FVM,
+        fuel_tx_bytes.into(),
+        Some(1_000_000_000),
+        None,
+    );
+    println!("call_evm_tx result: {:?}", result);
+    let output = result.output().unwrap_or_default();
+    println!("output: {}", from_utf8(output).unwrap_or_default());
+    assert!(!result.is_success());
 }
 
 #[test]
@@ -473,8 +498,7 @@ fn test_fvm_deposit_then_withdraw() {
         PRECOMPILE_FVM,
         input.into(),
         Some(100_000_000),
-        Some(U256::from(coins_sent * 1e9 as u64)),
-    );
+        Some(U256::from(coins_sent * 1e9 as u64)));
     println!("move coins evm->fvm: {:?}", result);
     let output = result.output().unwrap_or_default();
     println!("output: {}", from_utf8(output).unwrap_or_default());
@@ -503,8 +527,7 @@ fn test_fvm_deposit_then_withdraw() {
         PRECOMPILE_FVM,
         input.into(),
         Some(3_000_000_000),
-        None,
-    );
+        None);
     println!("move coins fvm->evm: {:?}", result);
     let output = result.output().unwrap_or_default();
     println!("output: {}", from_utf8(output).unwrap_or_default());

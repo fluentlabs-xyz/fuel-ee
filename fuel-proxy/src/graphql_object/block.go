@@ -25,7 +25,7 @@ type BlockStruct struct {
 //	   pub consensus: Consensus,
 //	   pub transaction_ids: Vec<TransactionId>,
 //	}
-func Block(headerType *HeaderType, transactionType *TransactionType) (*BlockType, error) {
+func NewBlockType(headerType *HeaderType, transactionType *TransactionType) (*BlockType, error) {
 
 	objectConfig := graphql.ObjectConfig{Name: "Block", Fields: graphql.Fields{
 		"id": &graphql.Field{

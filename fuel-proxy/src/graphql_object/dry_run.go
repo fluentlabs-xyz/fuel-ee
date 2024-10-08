@@ -8,7 +8,7 @@ type DryRunType struct {
 
 //		pub struct DryRun {
 //	   #[arguments(txs: $txs, utxoValidation: $utxo_validation, gasPrice: $gas_price)]
-//	   pub dry_run: Vec<DryRunTransactionExecutionStatus>,
+//	   pub dry_run: Vec<NewDryRunTransactionExecutionStatusType>,
 //	}
 type DryRunStruct struct {
 	DryRun []DryRunTransactionExecutionStatusStruct `json:"dryRun"`

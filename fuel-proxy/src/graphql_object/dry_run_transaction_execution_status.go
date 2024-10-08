@@ -8,7 +8,7 @@ type DryRunTransactionExecutionStatusType struct {
 	SchemaFields SchemaFields
 }
 
-//	pub struct DryRunTransactionExecutionStatus {
+//	pub struct NewDryRunTransactionExecutionStatusType {
 //	   pub id: TransactionId,
 //	   pub status: MakeDryRunTransactionStatus,
 //	}
@@ -18,7 +18,7 @@ type DryRunTransactionExecutionStatusStruct struct {
 	Receipts []ReceiptStruct `json:"receipts"`
 }
 
-func DryRunTransactionExecutionStatus(dryRunTransactionStatusType *DryRunTransactionStatusType, receiptType *ReceiptType) (*DryRunTransactionExecutionStatusType, error) {
+func NewDryRunTransactionExecutionStatusType(dryRunTransactionStatusType *DryRunTransactionStatusType, receiptType *ReceiptType) (*DryRunTransactionExecutionStatusType, error) {
 	objectConfig := graphql.ObjectConfig{Name: "DryRunTransactionExecutionStatus", Fields: graphql.Fields{
 		"id": &graphql.Field{
 			Type: graphql.String,

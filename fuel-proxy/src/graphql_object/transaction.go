@@ -28,7 +28,7 @@ type TransactionStruct struct {
 //	   pub time: Tai64Timestamp,
 //	   pub application_hash: Bytes32,
 //	}
-func Transaction() (*TransactionType, error) {
+func NewTransactionType() (*TransactionType, error) {
 
 	objectConfig := graphql.ObjectConfig{Name: "Transaction", Fields: graphql.Fields{
 		"id": &graphql.Field{

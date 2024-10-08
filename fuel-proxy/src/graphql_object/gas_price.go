@@ -16,7 +16,7 @@ type GasPriceStruct struct {
 	GasPrice uint32 `json:"gasPrice"`
 }
 
-func GasPrice() (*GasPriceType, error) {
+func MakeGasPriceType() (*GasPriceType, error) {
 	objectConfig := graphql.ObjectConfig{Name: "GasPrice", Fields: graphql.Fields{
 		"gasPrice": &graphql.Field{
 			Type: graphql.Int,

@@ -16,7 +16,7 @@ type SubmitStruct struct {
 	Id *graphql_scalars.Bytes32 `json:"id"`
 }
 
-func MakeSubmitType() (*SubmitType, error) {
+func NewSubmitType() (*SubmitType, error) {
 	objectConfig := graphql.ObjectConfig{Name: "Submit", Fields: graphql.Fields{
 		"id": &graphql.Field{
 			Type: graphql_scalars.Bytes32Type,

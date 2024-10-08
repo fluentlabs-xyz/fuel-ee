@@ -23,6 +23,26 @@ pub const FUEL_TESTNET_BASE_ASSET_ID: &str =
 pub const FUEL_TESTNET_PRIVILEGED_ADDRESS: &str =
     "9f0e19d6c2a6283a3222426ab2630d35516b1799b503f37b02105bebe1b8a3e9";
 
+#[cfg(target_arch = "wasm32")]
+#[inline(always)]
+pub fn keccak256(input: &[u8]) -> B256 {
+    #[link(wasm_import_module = "fluentbase_v1preview")]
+    extern "C" {
+        fn _keccak256(data_offset: *const u8, data_len: u32, output32_offset: *mut u8);
+    }
+    let mut result = B256::ZERO;
+    unsafe {
+        _keccak256(input.as_ptr(), input.len() as u32, result.as_mut_ptr());
+    }
+    result
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+pub fn keccak256(data: &[u8]) -> B256 {
+    use keccak_hash::keccak;
+    B256::new(keccak(data).0)
+}
+
 pub fn fuel_testnet_consensus_params_from(
     max_gas_per_tx: Option<u64>,
     max_gas_per_predicate: Option<u64>,
@@ -35,7 +55,7 @@ pub fn fuel_testnet_consensus_params_from(
             max_inputs: 8,
             max_outputs: 8,
             max_witnesses: 8,
-            max_gas_per_tx: max_gas_per_tx.unwrap_or(30000000),
+            max_gas_per_tx: max_gas_per_tx.unwrap_or(10_000_000_000),
             max_size: 110 * 1024,
             max_bytecode_subsections: 255,
         }),
@@ -43,7 +63,7 @@ pub fn fuel_testnet_consensus_params_from(
             max_predicate_length: 1024 * 1024,
             max_predicate_data_length: 1024 * 1024,
             max_message_data_length: 1024 * 1024,
-            max_gas_per_predicate: max_gas_per_predicate.unwrap_or(30000000),
+            max_gas_per_predicate: max_gas_per_predicate.unwrap_or(30_000_000),
         }),
         script_params: ScriptParameters::V1(ScriptParametersV1 {
             max_script_length: 1024 * 1024,
@@ -54,14 +74,14 @@ pub fn fuel_testnet_consensus_params_from(
             max_storage_slots: 1760,
         }),
         fee_params: FeeParameters::V1(FeeParametersV1 {
-            gas_price_factor: 92,
-            gas_per_byte: 62,
+            gas_price_factor: 1_000_000_000,
+            gas_per_byte: 1,
         }),
         chain_id,
         gas_costs: gas_costs.unwrap_or_default(),
         base_asset_id: AssetId::from_str(FUEL_TESTNET_BASE_ASSET_ID)
             .expect("valid asset id format"),
-        block_gas_limit: block_gas_limit.unwrap_or(30000000),
+        block_gas_limit: block_gas_limit.unwrap_or(100_000_000_000),
         privileged_address: fuel_types::Address::from_str(FUEL_TESTNET_PRIVILEGED_ADDRESS)
             .expect("valid privileged address format"),
     })
@@ -69,18 +89,12 @@ pub fn fuel_testnet_consensus_params_from(
 
 pub fn fuel_testnet_consensus_params_from_cr<SDK: SharedAPI>(sdk: &SDK) -> ConsensusParameters {
     fuel_testnet_consensus_params_from(
+        None, // Some(sdk.tx_context().gas_limit),
         Some(sdk.tx_context().gas_limit),
-        Some(sdk.tx_context().gas_limit),
-        Some(sdk.block_context().gas_limit),
+        None, // Some(sdk.block_context().gas_limit),
         ChainId::new(sdk.block_context().chain_id),
         None,
     )
-}
-
-fn keccak256(data: &[u8], target: &mut Bytes32) {
-    use keccak_hash::keccak;
-    // TODO: "replace with SDK version"
-    *target = keccak(data).0;
 }
 
 pub trait PreimageKey {
@@ -91,8 +105,8 @@ pub trait PreimageKey {
     }
 
     fn preimage_key_raw(raw_key: &[u8]) -> IndexedHash {
-        let mut hash = Bytes32::default();
-        keccak256(raw_key, &mut hash);
+        // let mut hash = Bytes32::default();
+        let hash = keccak256(raw_key);
         Self::preimage_key(&hash)
     }
 }
@@ -106,7 +120,8 @@ pub trait StorageSlotPure {
 
     fn storage_slot_raw(raw_key: &[u8], slot: u32) -> IndexedHash {
         let mut hash = Bytes32::default();
-        keccak256(raw_key, &mut hash);
+        let hash = keccak256(raw_key);
+        // keccak256(raw_key, &mut hash);
         Self::storage_slot(&hash, slot)
     }
 }
@@ -276,15 +291,15 @@ impl IndexedHash {
     }
     pub(crate) fn from_data_slice(data: &[u8]) -> IndexedHash {
         let mut hash = Bytes32::default();
-        keccak256(data, &mut hash);
-        IndexedHash(hash)
+        let hash = keccak256(data);
+        IndexedHash(hash.0)
     }
 
     pub(crate) fn update_with_column(mut self, column: u32) -> IndexedHash {
         let mut preimage = vec![0u8; 32 + 4];
         preimage[..4].copy_from_slice(&column.to_le_bytes());
         preimage[4..].copy_from_slice(self.0.as_slice());
-        keccak256(&preimage, &mut self.0);
+        self.0 = keccak256(&preimage).0;
         self
     }
 
@@ -298,7 +313,7 @@ impl IndexedHash {
         preimage[..4].copy_from_slice(&column.to_le_bytes());
         preimage[4..8].copy_from_slice(&index.to_le_bytes());
         preimage[8..].copy_from_slice(self.0.as_slice());
-        keccak256(&preimage, &mut self.0);
+        self.0 = keccak256(&preimage).0;
         self
     }
 

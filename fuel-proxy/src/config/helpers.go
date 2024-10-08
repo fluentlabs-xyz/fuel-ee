@@ -50,7 +50,7 @@ func viperGetOrDefaultTimeDuration(
 	return d
 }
 
-// func viperGetOrDefaultFloat(key string, defaultValue float64) float64 {
-// 	viper.SetDefault(key, defaultValue)
-// 	return viper.GetFloat64(key)
-// }
+func viperGetOrDefaultFloat(key string, defaultValue float64) float64 {
+	viper.SetDefault(key, defaultValue)
+	return viper.GetFloat64(key)
+}

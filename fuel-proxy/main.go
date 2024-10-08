@@ -14,12 +14,6 @@ import (
 	"os"
 )
 
-type postData struct {
-	Query     string                 `json:"query"`
-	Operation string                 `json:"operationName"`
-	Variables map[string]interface{} `json:"variables"`
-}
-
 func main() {
 	helpers.RequireNoError(os.Setenv("TZ", "UTC"))
 	di := container.CreateContainer()
@@ -43,16 +37,14 @@ func main() {
 		),
 	)
 
-	ethClient, err := ethclient.Dial("http://127.0.0.1:8545")
-	if err != nil {
-		log.Fatal(err)
-	}
-	helpers.RequireNoError(di.Provide(func() *ethclient.Client { return ethClient }))
+	helpers.RequireNoError(di.Provide(func(config *config.Config) (*ethclient.Client, error) {
+		return ethclient.Dial(config.EthProvider.Url)
+	}))
 
 	helpers.RequireNoError(di.Provide(utxoService.New))
 	helpers.RequireNoError(di.Provide(graphqlServerService.New))
 
-	helpers.RequireNoError(di.Invoke(func(utxoService *utxoService.Service) {
+	helpers.RequireNoError(di.Invoke(func(utxoService *utxoService.Service, ethClient *ethclient.Client) {
 		runTest(ethClient, utxoService)
 	}))
 

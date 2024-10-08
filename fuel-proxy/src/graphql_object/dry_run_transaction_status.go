@@ -8,16 +8,16 @@ type DryRunTransactionStatusType struct {
 	SchemaFields UnionFields
 }
 
-//		pub enum MakeDryRunTransactionStatus {
-//	   SuccessStatus(MakeDryRunSuccessStatus),
-//	   FailureStatus(MakeDryRunFailureStatus),
+//	pub enum DryRunTransactionStatus {
+//	   SuccessStatus(DryRunSuccessStatus),
+//	   FailureStatus(DryRunFailureStatus),
 //	   #[cynic(fallback)]
 //	   Unknown,
 //	}
 type DryRunTransactionStatusStruct struct {
 }
 
-func MakeDryRunTransactionStatus(dryRunSuccessStatusType *DryRunSuccessStatusType, dryRunFailureStatusType *DryRunFailureStatusType) *DryRunTransactionStatusType {
+func NewDryRunTransactionStatusType(dryRunSuccessStatusType *DryRunSuccessStatusType, dryRunFailureStatusType *DryRunFailureStatusType) *DryRunTransactionStatusType {
 	config := graphql.UnionConfig{
 		Name: "DryRunTransactionStatus",
 		Types: []*graphql.Object{

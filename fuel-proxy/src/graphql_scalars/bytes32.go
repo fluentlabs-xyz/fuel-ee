@@ -45,6 +45,14 @@ func NewBytes32TryFromString(v string) (*Bytes32, error) {
 	return NewBytes32(res), nil
 }
 
+func NewBytes32TryFromInterface(v interface{}) (*Bytes32, error) {
+	res, ok := v.(string)
+	if !ok {
+		return nil, fmt.Errorf("can create bytes32 only from the string")
+	}
+	return NewBytes32TryFromString(res)
+}
+
 func NewBytes32TryFromStringOrPanic(v string) *Bytes32 {
 	output, err := NewBytes32TryFromString(v)
 	if err != nil {

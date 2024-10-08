@@ -31,6 +31,14 @@ func NewUtxoEntity(txId string, txOutputIndex string, owner string, assetId stri
 	return e
 }
 
+func (w *UtxoEntity) GetAssetId() (*graphql_scalars.Bytes32, error) {
+	return graphql_scalars.NewBytes32TryFromString(w.AssetId)
+}
+
+func (w *UtxoEntity) GetOwner() (*graphql_scalars.Bytes32, error) {
+	return graphql_scalars.NewBytes32TryFromString(w.Owner)
+}
+
 // UtxoId 34 bytes utxo id build from TxId+TxOutputIndex
 func (w *UtxoEntity) UtxoId() (*graphql_scalars.Bytes34, error) {
 	txId, err := graphql_scalars.NewBytes32TryFromString(w.TxId)

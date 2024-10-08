@@ -23,7 +23,7 @@ type NodeInfoStruct struct {
 	NodeVersion    string `json:"nodeVersion"`
 }
 
-func NodeInfo() (*NodeInfoType, error) {
+func MakeNodeInfoType() (*NodeInfoType, error) {
 	objectConfig := graphql.ObjectConfig{Name: "NodeInfo", Fields: graphql.Fields{
 		"utxoValidation": &graphql.Field{
 			Type: graphql.Boolean,

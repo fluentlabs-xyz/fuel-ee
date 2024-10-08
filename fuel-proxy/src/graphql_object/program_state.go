@@ -15,7 +15,7 @@ type ProgramStateStruct struct {
 	Data       string `json:"data"`
 }
 
-func ProgramState() (*ProgramStateType, error) {
+func MakeProgramStateType() (*ProgramStateType, error) {
 	objectConfig := graphql.ObjectConfig{Name: "ProgramState", Fields: graphql.Fields{
 		"returnType": &graphql.Field{
 			Type: graphql.String,

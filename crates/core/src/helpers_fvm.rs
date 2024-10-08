@@ -1,21 +1,24 @@
-use crate::fvm::types::WasmRelayer;
 use alloc::vec::Vec;
+use alloy_primitives::B256;
+use alloy_sol_types::SolValue;
+use fluentbase_sdk::SharedAPI;
 use fuel_core_executor::executor::{
     BlockExecutor,
     ExecutionData,
     ExecutionOptions,
     TxStorageTransaction,
 };
-use fuel_core_executor::ports::{MaybeCheckedTransaction, RelayerPort};
+use fuel_core_executor::ports::RelayerPort;
 use fuel_core_storage::{
     column::Column,
     kv_store::{KeyValueInspect, KeyValueMutate, WriteOperation},
     structured_storage::StructuredStorage,
     transactional::{Changes, ConflictPolicy, InMemoryTransaction, IntoTransaction},
 };
+use fuel_core_types::fuel_tx::field::{Inputs, Outputs};
 use fuel_core_types::{
     blockchain::header::PartialBlockHeader,
-    fuel_tx::{Cacheable, ConsensusParameters, ContractId, Receipt, Word},
+    fuel_tx::{Cacheable, ContractId, Receipt, Word},
     fuel_vm::{
         checked_transaction::{Checked, IntoChecked},
         interpreter::{CheckedMetadata, ExecutableTransaction, MemoryInstance},
@@ -23,8 +26,8 @@ use fuel_core_types::{
     },
     services::executor::Result,
 };
-use fuel_core_types::fuel_tx::field::{Inputs, Outputs};
-use fuel_core_types::fuel_vm::checked_transaction::CheckedTransaction;
+use fuel_core_types::fuel_tx::{Address, AssetId, TxId};
+use crate::fvm::types::{FVM_DEPOSIT_SIG_BYTES, FVM_WITHDRAW_SIG_BYTES};
 
 #[derive(Debug, Clone)]
 pub struct FvmTransactResult<Tx> {
@@ -234,20 +237,6 @@ where
 {
     // debug_log!("ecl(fvm_transact_commit): start");
 
-    // TODO warmup storage from state based on tx inputs?
-    // let inputs = checked_tx.transaction().inputs();
-    // for input in inputs {
-    //     match input {
-    //         Input::CoinSigned(v) => {}
-    //         Input::CoinPredicate(v) => {}
-    //         Input::Contract(v) => {}
-    //         Input::MessageCoinSigned(v) => {}
-    //         Input::MessageCoinPredicate(v) => {}
-    //         Input::MessageDataSigned(v) => {}
-    //         Input::MessageDataPredicate(v) => {}
-    //     }
-    // }
-
     let mut memory = MemoryInstance::new();
 
     let result = fvm_transact(
@@ -304,4 +293,16 @@ where
     }
 
     Ok(result)
+}
+
+pub fn log_deposit<SDK: SharedAPI>(sdk: &mut SDK, owner_address: &Address, coin_amount: u64, tx_id: &TxId, tx_output_index: u16, asset_id: &AssetId) {
+    let log_data = (owner_address.0, coin_amount, tx_id.0, tx_output_index, asset_id.0).abi_encode();
+    let topics = [B256::left_padding_from(FVM_DEPOSIT_SIG_BYTES.as_slice())];
+    sdk.emit_log(log_data.into(), &topics);
+}
+
+pub fn log_withdraw<SDK: SharedAPI>(sdk: &mut SDK, owner_address: &Address, tx_id: &TxId, tx_output_index: u16) {
+    let log_data = (owner_address.0, tx_id.0, tx_output_index).abi_encode();
+    let topics = [B256::left_padding_from(FVM_WITHDRAW_SIG_BYTES.as_slice())];
+    sdk.emit_log(log_data.into(), &topics);
 }

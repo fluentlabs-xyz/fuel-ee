@@ -17,7 +17,7 @@ type CoinTypeType struct {
 type CoinTypeStruct struct {
 }
 
-func MakeCoinType(coinType *CoinType, messageCoinType *MessageCoinType) *CoinTypeType {
+func NewCoinTypeType(coinType *CoinType, messageCoinType *MessageCoinType) *CoinTypeType {
 	config := graphql.UnionConfig{
 		Name: "CoinType",
 		Types: []*graphql.Object{

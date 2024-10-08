@@ -19,7 +19,8 @@ use fuel_ee_core::fvm::{
         FvmDepositInput, FvmWithdrawInput, WasmStorage,
     },
 };
-use fuel_tx::{TxId, UtxoId};
+use fuel_tx::{Address, TxId, UtxoId};
+use fuel_ee_core::helpers_fvm::{log_deposit, log_withdraw};
 
 #[derive(Contract)]
 pub struct FvmLoaderEntrypoint<SDK> {
@@ -84,15 +85,7 @@ impl<SDK: SharedAPI> FvmLoaderEntrypoint<SDK> {
             )
                 .expect("failed to save deposit utxo");
 
-            // UtxoId:       *graphql_scalars.NewBytes34TryFromStringOrPanic("0x00000000000000000000000000000000000000000000000000000000000000000000"),
-            // Amount:       1000,
-            // Owner:        *graphql_scalars.NewBytes32TryFromStringOrPanic("0x6b63804cfbf9856e68e5b6e7aef238dc8311ec55bec04df774003a2c96e0418e"),
-            // AssetId:      *graphql_scalars.NewBytes32TryFromStringOrPanic(types.FuelBaseAssetId),
-            // BlockCreated: 1,
-            // TxCreatedIdx: 0,
-            let log_data = (coin_amount, tx_id.0, tx_output_index, recipient_address.0, asset_id.0).abi_encode();
-            let topics = [B256::left_padding_from(FVM_DEPOSIT_SIG_BYTES.as_slice())];
-            self.sdk.emit_log(log_data.into(), &topics);
+            log_deposit(&mut self.sdk, &recipient_address, coin_amount, &tx_id, tx_output_index,  &asset_id);
 
             return ExitCode::Ok;
         } else if input.as_ref().starts_with(FVM_WITHDRAW_SIG_BYTES.as_slice()) {
@@ -101,14 +94,13 @@ impl<SDK: SharedAPI> FvmLoaderEntrypoint<SDK> {
             let utxo_ids: FvmWithdrawInput =
                 <FvmWithdrawInput as SolType>::abi_decode(input.slice(FVM_WITHDRAW_SIG_BYTES.len()..).as_ref(), true)
                     .expect("valid fvm withdraw input");
-            // panic!("utxo_ids {:?}", &utxo_ids);
             let FvmWithdrawInput {
                 utxos,
                 withdraw_amount,
             } = utxo_ids;
             let mut utxos_total_balance = 0;
             let withdraw_amount = withdraw_amount.as_limbs()[0];
-            let utxos: Vec<UtxoId> = utxos
+            let utxos_to_spend: Vec<UtxoId> = utxos
                 .iter()
                 .map(|v| {
                     UtxoId::new(
@@ -119,11 +111,11 @@ impl<SDK: SharedAPI> FvmLoaderEntrypoint<SDK> {
                     )
                 })
                 .collect();
-            if utxos.len() <= 0 {
-                panic!("provide utxos when withdrawing funds")
+            if utxos_to_spend.len() <= 0 {
+                panic!("utxos must be provided when withdrawing funds")
             }
             let mut last_owner: Option<fuel_core_types::fuel_types::Address> = None;
-            for utxo_id in &utxos {
+            for utxo_id in &utxos_to_spend {
                 let wasm_storage = WasmStorage { sdk: &mut self.sdk };
                 let mut storage = StructuredStorage::new(wasm_storage);
                 let coin = <StructuredStorage<WasmStorage<'_, SDK>> as StorageInspect<Coins>>::get(
@@ -141,7 +133,7 @@ impl<SDK: SharedAPI> FvmLoaderEntrypoint<SDK> {
                 }
                 if let Some(last_owner) = last_owner {
                     if &last_owner != coin.owner() {
-                        panic!("all utxo owners must be the same")
+                        panic!("all utxo owners must be the same across all utxos")
                     }
                 }
                 last_owner = Some(coin.owner().clone());
@@ -159,16 +151,16 @@ impl<SDK: SharedAPI> FvmLoaderEntrypoint<SDK> {
                 wasm_storage.deposit_withdraw_tx_next_index().to_be_bytes();
             let mut storage = StructuredStorage::new(wasm_storage);
 
-            // spend utxos (just delete them)
-            for utxo in &utxos {
+            let last_owner = last_owner.expect("utxo owner not found");
+            // spend utxos
+            for utxo_id in &utxos_to_spend {
                 <StructuredStorage<WasmStorage<'_, SDK>> as StorageMutate<Coins>>::remove(
                     &mut storage,
-                    &utxo,
+                    &utxo_id,
                 )
-                    .expect(&format!("failed to remove spent utxo: {}", utxo));
+                    .expect(&format!("failed to remove spent utxo: {}", utxo_id));
             }
             let balance_left = utxos_total_balance - withdraw_amount;
-            let last_owner = last_owner.expect("utxo owner not found");
             let mut utxo_id_opt: Option<UtxoId> = None;
             if balance_left > 0 {
                 // if there is fvm balance left - create utxo based on balance
@@ -176,7 +168,6 @@ impl<SDK: SharedAPI> FvmLoaderEntrypoint<SDK> {
                 coin.set_owner(last_owner);
                 coin.set_amount(balance_left);
                 coin.set_asset_id(base_asset_id);
-                // TODO need counter to form TxId dynamically and without collisions
                 let tx_id = TxId::new(deposit_withdraw_tx_index);
                 let output_index: u16 = 0;
                 let utxo_id = UtxoId::new(tx_id, output_index);
@@ -187,6 +178,10 @@ impl<SDK: SharedAPI> FvmLoaderEntrypoint<SDK> {
                 )
                     .expect("insert first utxo success");
                 utxo_id_opt = Some(utxo_id);
+                log_deposit(&mut self.sdk, &last_owner,balance_left, utxo_id.tx_id(), utxo_id.output_index(), &base_asset_id);
+            }
+            for utxo_id in &utxos_to_spend {
+                log_withdraw(&mut self.sdk, &last_owner, utxo_id.tx_id(), utxo_id.output_index());
             }
 
             // top up evm balance
@@ -198,14 +193,6 @@ impl<SDK: SharedAPI> FvmLoaderEntrypoint<SDK> {
                 10_000,
             );
 
-            let log_data = if let Some(utxo_id) = utxo_id_opt {
-                (withdraw_amount_wei, utxo_id.tx_id().0, utxo_id.output_index()).abi_encode()
-            } else {
-                (withdraw_amount_wei).abi_encode()
-            };
-            let topics = [B256::left_padding_from(FVM_WITHDRAW_SIG_BYTES.as_slice()), last_owner.0.into()];
-            self.sdk.emit_log(log_data.into(), &topics);
-
             return ExitCode::Ok;
         } else if input.as_ref().starts_with(FVM_DRY_RUN_SIG_BYTES.as_slice()) {
             let raw_tx_bytes: Bytes = input.slice(FVM_DRY_RUN_SIG_BYTES.len()..).into();
@@ -214,7 +201,7 @@ impl<SDK: SharedAPI> FvmLoaderEntrypoint<SDK> {
         }
 
         let result = _exec_fuel_tx(&mut self.sdk, u64::MAX, true, input);
-        result.exit_code.into()
+        self.sdk.exit(result.exit_code);
     }
 }
 

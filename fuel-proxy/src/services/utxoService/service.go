@@ -3,14 +3,16 @@ package utxoService
 import (
 	"bytes"
 	"context"
+	"errors"
+	"fmt"
 	"github.com/ethereum/go-ethereum"
+	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/fluentlabs-xyz/fuel-ee/src/config"
 	"github.com/fluentlabs-xyz/fuel-ee/src/helpers"
 	"github.com/fluentlabs-xyz/fuel-ee/src/repo/utxoRepo"
 	"github.com/fluentlabs-xyz/fuel-ee/src/types"
 	"github.com/go-redis/redis/v8"
-	"github.com/holiman/uint256"
 	log "github.com/sirupsen/logrus"
 	"math/big"
 	"time"
@@ -52,60 +54,116 @@ func (s *Service) Repo() *utxoRepo.UtxoRepo {
 func (s *Service) startBgProcessing() {
 	timeoutSec := s.config.App.UtxoBGProcessingTimeoutSec
 	doBeforeCycle := func() {
-		log.Infof("UtxoBGProcessing: next cycle in %d sec", timeoutSec)
+		//log.Infof("UtxoBGProcessing: next cycle in %d sec", timeoutSec)
 		time.Sleep(time.Duration(timeoutSec) * time.Second)
+		s.processCycle()
 	}
 	for {
 		doBeforeCycle()
+	}
+}
 
-		lastProcessedBlockNumber, err := s.utxoRepo.LastProcessedBlockNumber(context.Background())
-		if err != nil {
-			log.Printf("error when getting LastProcessedBlockNumber: %s", err)
-		}
+func (s *Service) processCycle() {
+	lastProcessedBlockNumber, err := s.utxoRepo.LastProcessedBlockNumber(context.Background())
+	if err != nil {
+		log.Printf("error when getting LastProcessedBlockNumber: %s", err)
+		return
+	}
 
-		query := ethereum.FilterQuery{
-			FromBlock: big.NewInt(int64(lastProcessedBlockNumber + 1)),
-		}
-		logItems, err := s.ethClient.FilterLogs(context.Background(), query)
-		if err != nil {
-			log.Fatal(err)
-		}
-		for _, logItem := range logItems {
-			log.Printf("found new logItem: %+v", logItem)
-			if len(logItem.Data) != 160 {
-				log.Printf("error: cannot add log item, because it's data len is %d. logItem: %+v. processing stopped", len(logItem.Data), logItem)
+	blockBatchSize := int64(100)
+	query := ethereum.FilterQuery{
+		FromBlock: big.NewInt(int64(lastProcessedBlockNumber + 1)),
+	}
+	query.FromBlock.Add(query.FromBlock, big.NewInt(blockBatchSize))
+
+	logItems, err := s.ethClient.FilterLogs(context.Background(), query)
+	if err != nil {
+		log.Printf("error when filtering logs: %s", err)
+		return
+	}
+	prevBlockNumber := uint64(0)
+	if len(logItems) > 0 {
+		prevBlockNumber = logItems[0].BlockNumber
+	}
+	for _, logItem := range logItems {
+		log.Printf("new logItem: %+v", logItem)
+		selector := logItem.Topics[0]
+
+		if bytes.Equal(selector.Bytes(), types.FvmDepositSigBytesAligned32) {
+			if err = s.processDeposit(&logItem); err != nil {
+				log.Printf("error while processing deposit: %s", err)
 				break
 			}
-			amountHex := helpers.BytesToHexNumberStringPrefixed(logItem.Data[:32])
-			txIdHex := helpers.BytesToHexStringPrefixed(logItem.Data[32:64])
-			txOutputIndexHex := helpers.BytesToHexNumberStringPrefixed(logItem.Data[64:96])
-			recipientAddressHex := helpers.BytesToHexStringPrefixed(logItem.Data[96:128])
-			assetIdHex := helpers.BytesToHexStringPrefixed(logItem.Data[128:160])
-			selector := logItem.Topics[0]
-
-			// filter deposits only
-			if !bytes.Equal(selector.Bytes(), types.FvmDepositSig32Bytes) {
-				continue
-			}
-			amount, err := uint256.FromHex(amountHex)
-			if err != nil {
-				log.Printf("when converting amount '%s' got error: %s. processing stopped", amountHex, err)
+		} else if bytes.Equal(selector.Bytes(), types.FvmWithdrawSigBytesAligned32) {
+			if err = s.processWithdraw(&logItem); err != nil {
+				log.Printf("error while processing withdraw: %s", err)
 				break
 			}
+		} else {
+			log.Printf("unprocessed log item: %+v", logItem)
+		}
 
-			err = s.utxoRepo.SaveOne(
-				context.Background(),
-				utxoRepo.NewUtxoEntity(txIdHex, txOutputIndexHex, recipientAddressHex, assetIdHex, amount.Uint64(), 1, 0),
-			)
+		if logItem.BlockNumber > prevBlockNumber {
+			err = s.utxoRepo.SaveLastProcessedBlockNumber(context.Background(), prevBlockNumber)
 			if err != nil {
-				log.Printf("failed to process logs, error: %s. processing stopped", err)
+				log.Printf("failed to save last processed block number: %s", err)
 				break
 			}
-
-			err = s.utxoRepo.SaveLastProcessedBlockNumber(context.Background(), logItem.BlockNumber)
-			if err != nil {
-				log.Printf("error when saving last processed block number: %s", err)
-			}
+			prevBlockNumber = logItem.BlockNumber
 		}
 	}
+}
+func (s *Service) processDeposit(logItem *ethtypes.Log) error {
+	if len(logItem.Data) != 32+32+32+32+32 {
+		return errors.New(fmt.Sprintf("cannot process log item, because it's data len is %d. logItem: %+v", len(logItem.Data), logItem))
+	}
+	idx := 0
+	recipientAddressHex := helpers.BytesToHexStringPrefixed(logItem.Data[idx : idx+32])
+	idx += 32
+	amountHex := helpers.BytesToHexNumberStringPrefixed(logItem.Data[idx : idx+32])
+	idx += 32
+	txIdHex := helpers.BytesToHexStringPrefixed(logItem.Data[idx : idx+32])
+	idx += 32
+	txOutputIndexHex := helpers.BytesToHexNumberStringPrefixed(logItem.Data[idx : idx+32])
+	idx += 32
+	assetIdHex := helpers.BytesToHexStringPrefixed(logItem.Data[idx : idx+32])
+
+	amount, err := helpers.HexStringToBinInt(amountHex)
+	if err != nil {
+		return errors.New(fmt.Sprintf("failed converting hex amount '%s' to big int: %s", amountHex, err))
+	}
+
+	err = s.utxoRepo.SaveOne(
+		context.Background(),
+		utxoRepo.NewUtxoEntity(txIdHex, txOutputIndexHex, recipientAddressHex, assetIdHex, amount.Uint64(), 0, 0),
+	)
+	if err != nil {
+		return errors.New(fmt.Sprintf("failed persisting record: %s", err))
+	}
+
+	return nil
+}
+
+func (s *Service) processWithdraw(logItem *ethtypes.Log) error {
+	if len(logItem.Data) != 32+32+32 {
+		return errors.New(fmt.Sprintf("cannot process log item, because it's data len is %d. logItem: %+v", len(logItem.Data), logItem))
+	}
+	idx := 0
+	ownerHex := helpers.BytesToHexStringPrefixed(logItem.Data[idx : idx+32])
+	idx += 32
+	txIdHex := helpers.BytesToHexStringPrefixed(logItem.Data[idx : idx+32])
+	idx += 32
+	txOutputIndexHex := helpers.BytesToHexNumberStringPrefixed(logItem.Data[idx : idx+32])
+
+	err := s.utxoRepo.DeleteByFields(
+		context.Background(),
+		ownerHex,
+		txIdHex,
+		txOutputIndexHex,
+	)
+	if err != nil {
+		return errors.New(fmt.Sprintf("failed persisting record: %s", err))
+	}
+
+	return nil
 }

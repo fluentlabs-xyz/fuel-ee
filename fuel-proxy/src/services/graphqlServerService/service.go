@@ -88,7 +88,7 @@ func New(
 		log.Fatalf("error: %v", err)
 	}
 
-	transactionType, err := graphql_object.Transaction()
+	transactionType, err := graphql_object.NewTransactionType()
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
@@ -98,47 +98,47 @@ func New(
 		log.Fatalf("error: %v", err)
 	}
 
-	blockType, err := graphql_object.Block(headerType, transactionType)
+	blockType, err := graphql_object.NewBlockType(headerType, transactionType)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
 
-	chainInfoType, err := graphql_object.ChainInfo(blockType, consensusParametersType)
+	chainInfoType, err := graphql_object.MakeChainInfoType(blockType, consensusParametersType)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
 
-	nodeInfoType, err := graphql_object.NodeInfo()
+	nodeInfoType, err := graphql_object.MakeNodeInfoType()
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
 
-	pageInfoType, err := graphql_object.PageInfo()
+	pageInfoType, err := graphql_object.MakePageInfoType()
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
 
-	gasPriceType, err := graphql_object.GasPrice()
+	gasPriceType, err := graphql_object.MakeGasPriceType()
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
 
-	programStateType, err := graphql_object.ProgramState()
+	programStateType, err := graphql_object.MakeProgramStateType()
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
 
-	dryRunSuccessStatusType, err := graphql_object.MakeDryRunSuccessStatus(programStateType)
+	dryRunSuccessStatusType, err := graphql_object.NewDryRunSuccessStatusType(programStateType)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
 
-	dryRunFailureStatusType, err := graphql_object.MakeDryRunFailureStatus(programStateType)
+	dryRunFailureStatusType, err := graphql_object.NewDryRunFailureStatusType(programStateType)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
 
-	dryRunTransactionStatusType := graphql_object.MakeDryRunTransactionStatus(dryRunSuccessStatusType, dryRunFailureStatusType)
+	dryRunTransactionStatusType := graphql_object.NewDryRunTransactionStatusType(dryRunSuccessStatusType, dryRunFailureStatusType)
 
 	receiptTypeType := graphql_object.MakeReceiptType()
 
@@ -147,12 +147,29 @@ func New(
 		log.Fatalf("error: %v", err)
 	}
 
-	dryRunTransactionExecutionStatusType, err := graphql_object.DryRunTransactionExecutionStatus(dryRunTransactionStatusType, receiptType)
+	dryRunTransactionExecutionStatusType, err := graphql_object.NewDryRunTransactionExecutionStatusType(dryRunTransactionStatusType, receiptType)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
 
-	submitType, err := graphql_object.MakeSubmitType()
+	submitType, err := graphql_object.NewSubmitType()
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+
+	coinType, err := graphql_object.MakeCoin()
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+
+	messageCoinType, err := graphql_object.NewMessageCoinType()
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+
+	coinTypeType := graphql_object.NewCoinTypeType(coinType, messageCoinType)
+
+	getCoinsType, err := graphql_object.NewGetCoinsType(pageInfoType, coinType)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
@@ -169,7 +186,7 @@ func New(
 		log.Fatalf("error: %v", err)
 	}
 
-	getCoinsEntry, err := graphql_entrypoints.MakeGetCoinsEntry(pageInfoType)
+	getCoinsEntry, err := graphql_entrypoints.MakeGetCoinsEntry(utxoService, getCoinsType)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
@@ -184,22 +201,10 @@ func New(
 		log.Fatalf("error: %v", err)
 	}
 
-	submitEntry, err := graphql_entrypoints.MakeSubmitEntry(ethClient, submitType)
+	submitEntry, err := graphql_entrypoints.MakeSubmitEntry(ethClient, submitType, config)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
-
-	coinType, err := graphql_object.MakeCoin()
-	if err != nil {
-		log.Fatalf("error: %v", err)
-	}
-
-	messageCoinType, err := graphql_object.MakeMessageCoin()
-	if err != nil {
-		log.Fatalf("error: %v", err)
-	}
-
-	coinTypeType := graphql_object.MakeCoinType(coinType, messageCoinType)
 
 	getCoinsToSpendEntry, err := graphql_entrypoints.MakeGetCoinsToSpendEntry(utxoService, coinTypeType)
 	if err != nil {
@@ -214,7 +219,7 @@ func New(
 			_, _ = helpers.HttpWriteError(w, http.StatusBadRequest, errText)
 			return
 		}
-		log.Printf("Operation: '%s' Variables: '%s' Query: '%s'", p.Operation, p.Variables, p.Query)
+		log.Printf("Operation: '%s' Variables: '%+v' Query: '%s'", p.Operation, p.Variables, p.Query)
 		var schema *graphql.Schema
 
 		switch p.Operation {
@@ -222,16 +227,14 @@ func New(
 			schema = getChainEntry.SchemaFields.Schema
 		case "getNodeInfo":
 			schema = getNodeInfoEntry.SchemaFields.Schema
-		case "getCoins":
-			_, _ = helpers.HttpWriteError(w, http.StatusMethodNotAllowed, "temporarily disabled")
-			return
-			schema = getCoinsEntry.SchemaFields.Schema
 		case "estimateGasPrice":
 			schema = estimateGasPriceEntry.SchemaFields.Schema
 		case "dryRun":
 			schema = dryRunEntry.SchemaFields.Schema
 		case "submit":
 			schema = submitEntry.SchemaFields.Schema
+		case "getCoins":
+			schema = getCoinsEntry.SchemaFields.Schema
 		case "getCoinsToSpend":
 			schema = getCoinsToSpendEntry.SchemaFields.Schema
 		default:

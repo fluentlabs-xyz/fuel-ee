@@ -18,23 +18,6 @@ type GetCoinsToSpendEntry struct {
 	SchemaFields graphql_object.SchemaFields
 }
 
-//	{
-//	 "data": {
-//	   "coinsToSpend": [
-//	     [
-//	       {
-//	         "type": "Coin",
-//	         "utxoId": "0xce1e6751f5a4bbb53e3f63e9f8bfcf52281429a862d25e862e45c0cafcbf8daa0001",
-//	         "owner": "0x6b63804cfbf9856e68e5b6e7aef238dc8311ec55bec04df774003a2c96e0418e",
-//	         "amount": "1152921504606846974",
-//	         "assetId": "0xf8f8b6283d7fa5b672b530cbb84fcccb4ff8dc40f8176ef4544ddb1f1952ad07",
-//	         "blockCreated": "2",
-//	         "txCreatedIdx": "0"
-//	       }
-//	     ]
-//	   ]
-//	 }
-//	}
 type GetCoinsToSpendStruct struct {
 }
 
@@ -52,11 +35,9 @@ func MakeGetCoinsToSpendEntry(
 			Args: graphql.FieldConfigArgument{
 				ownerArgName: &graphql.ArgumentConfig{
 					Type: graphql_scalars.AddressType,
-					//DefaultValue: []graphql_scalars.HexString{},
 				},
 				queryPerAssetArgName: &graphql.ArgumentConfig{
 					Type: graphql.NewList(graphql_object.SpendQueryElementInput),
-					//DefaultValue: []graphql_scalars.HexString{},
 				},
 				excludedIdsArgName: &graphql.ArgumentConfig{
 					Type: graphql_input_objects.ExcludeInput,
@@ -64,11 +45,8 @@ func MakeGetCoinsToSpendEntry(
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				ownerArg := p.Args[ownerArgName]
-				queryPerAssetArg := p.Args[queryPerAssetArgName]
+				//queryPerAssetArg := p.Args[queryPerAssetArgName]
 				excludedIdsArg := p.Args[excludedIdsArgName]
-				log.Printf("ownerArg: %s", ownerArg)
-				log.Printf("queryPerAssetArg: %s", queryPerAssetArg)
-				log.Printf("excludedIdsArg: %s", excludedIdsArg)
 				owner, ok := ownerArg.(*graphql_scalars.Address)
 				if !ok {
 					errText := "param [ownerArg] must be of *graphql_scalars.Address type"
@@ -84,16 +62,19 @@ func MakeGetCoinsToSpendEntry(
 				var excludedIds []*graphql_scalars.Bytes34
 				excludedIdsInterfaces, ok := excludedIdsArgInterfaces["utxos"].([]interface{})
 				if !ok {
-					errText := "param [excludedIdsArgInterfaces] must have 'utxos' key which must be of type []interface{}"
+					errText := "param [excludedIds] must have 'utxos' key which must be of type []interface{}"
 					log.Printf(errText)
 					return nil, errors.New(errText)
 				}
 				if len(excludedIdsInterfaces) > 0 {
-					excludedIds, ok = excludedIdsArgInterfaces["utxos"].([]*graphql_scalars.Bytes34)
-					if !ok {
-						errText := "param [excludedIdsArgInterfaces] must have 'utxosInterfaces' key which values are of []*graphql_scalars.Bytes34 type"
-						log.Printf(errText)
-						return nil, errors.New(errText)
+					for _, excludedIdsInterface := range excludedIdsInterfaces {
+						excludedId, ok := excludedIdsInterface.(*graphql_scalars.Bytes34)
+						if !ok {
+							errText := "param [excludedIdsArgInterfaces] must have 'utxos' key which values are of []*graphql_scalars.Bytes34 type"
+							log.Printf(errText)
+							return nil, errors.New(errText)
+						}
+						excludedIds = append(excludedIds, excludedId)
 					}
 				}
 				excludedIdsStrings := make([]string, 0, len(excludedIds))
@@ -102,40 +83,22 @@ func MakeGetCoinsToSpendEntry(
 						excludedIdsStrings = append(excludedIdsStrings, excludedId.String())
 					}
 				}
-				// {
-				//  "data": {
-				//    "coinsToSpend": [
-				//      [
-				//        {
-				//          "type": "Coin",
-				//          "utxoId": "0xa9d5261a68ec08433015f7747d88d0541ced59213224fb96e5ba33e303314afb0001",
-				//          "ownerArg": "0x6b63804cfbf9856e68e5b6e7aef238dc8311ec55bec04df774003a2c96e0418e",
-				//          "amount": "1152921504606846975",
-				//          "assetId": "0xf8f8b6283d7fa5b672b530cbb84fcccb4ff8dc40f8176ef4544ddb1f1952ad07",
-				//          "blockCreated": "1",
-				//          "txCreatedIdx": "0"
-				//        }
-				//      ]
-				//    ]
-				//  }
-				// }
-				// TODO query from some DB
 				utxos, err := utxoService.Repo().FindAllByParams(context.Background(), strings.ToLower(owner.String()), "*", "*", false)
 				if err != nil {
-					errText := "param [excludedIdsArgInterfaces] must have 'utxosInterfaces' key which values are of []interface{} type"
+					errText := "param [excludedIdsArgInterfaces] must have 'utxos' key which values are of []interface{} type"
 					log.Printf(errText)
 					return nil, errors.New(errText)
 				}
 				res := make([][]*graphql_object.CoinStruct, 0)
 				for _, utxo := range utxos {
-					if slices.Contains(excludedIdsStrings, utxo.TxId) {
-						continue
-					}
 					utxoId, err := utxo.UtxoId()
 					if err != nil {
 						errText := fmt.Sprintf("failed to get utxo id, error: %s", err)
 						log.Printf(errText)
 						return nil, errors.New(errText)
+					}
+					if slices.Contains(excludedIdsStrings, utxoId.String()) {
+						continue
 					}
 					coin := graphql_object.CoinStruct{
 						UtxoId:       utxoId,

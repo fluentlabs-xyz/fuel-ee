@@ -10,16 +10,16 @@ const EthFuelVMPrecompileAddress = "0x0000000000000000000000000000000000005250"
 
 const FvmDepositSig = 3934318243 // _fvm_deposit(uint64)
 var FvmDepositSigBytes = helpers.Uint32ToBytesBEMust(FvmDepositSig, 4)
-var FvmDepositSig32Bytes = helpers.Uint32ToBytesBEMust(FvmDepositSig, 32)
+var FvmDepositSigBytesAligned32 = helpers.Uint32ToBytesBEMust(FvmDepositSig, 32)
 
 const FvmWithdrawSig = 2866282671 // _fvm_withdraw(uint64)
 var FvmWithdrawSigBytes = helpers.Uint32ToBytesBEMust(FvmWithdrawSig, 4)
-var FvmWithdrawSig32Bytes = helpers.Uint32ToBytesBEMust(FvmWithdrawSig, 32)
+var FvmWithdrawSigBytesAligned32 = helpers.Uint32ToBytesBEMust(FvmWithdrawSig, 32)
 
 const FvmDryRunSig = 567857912 // _fvm_dry_run(uint64)
 var FvmDryRunSigBytes = helpers.Uint32ToBytesBEMust(FvmDryRunSig, 4)
-var FvmDryRunSig32Bytes = helpers.Uint32ToBytesBEMust(FvmDryRunSig, 32)
+var FvmDryRunSigBytesAligned32 = helpers.Uint32ToBytesBEMust(FvmDryRunSig, 32)
 
 const FvmExecSig = 1692387067 // _fvm_exec(uint64)
 var FvmExecSigBytes = helpers.Uint32ToBytesBEMust(FvmExecSig, 4)
-var FvmExecSig32Bytes = helpers.Uint32ToBytesBEMust(FvmExecSig, 32)
+var FvmExecSigBytesAligned32 = helpers.Uint32ToBytesBEMust(FvmExecSig, 32)

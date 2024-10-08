@@ -17,9 +17,9 @@ use fuel_core_types::{
     fuel_types::{canonical::Deserialize, BlockHeight, ContractId},
     tai64::Tai64,
 };
-use fuel_core_types::fuel_tx::field::Witnesses;
-use fuel_core_types::fuel_tx::Transaction;
+use fuel_core_types::services::executor::Event;
 use hex_literal::hex;
+use crate::helpers_fvm::{log_deposit, log_withdraw};
 
 pub const FUEL_VM_NON_CONTRACT_LOGS_ADDRESS: Bytes32 =
     hex!("00000000000000000000000000000000000000000000000000004675656C564D"); // ANSI: FuelVM
@@ -62,8 +62,10 @@ pub fn _exec_fuel_tx<SDK: SharedAPI>(
         BlockExecutor::new(crate::fvm::types::WasmRelayer {}, execution_options.clone(), consensus_params.clone())
             .expect("failed to create block executor");
     let checked_transaction = block_executor
-        .convert_maybe_checked_tx_to_checked_tx(maybe_checked_tx, &header)
-        .expect("failed to convert tx into checked");
+        .convert_maybe_checked_tx_to_checked_tx(maybe_checked_tx, &header);
+    let Ok(checked_transaction) = checked_transaction else {
+        panic!("failed to convert tx into checked: {}", checked_transaction.err().unwrap())
+    };
 
     let receipts = match checked_transaction {
         CheckedTransaction::Script(checked_tx) => {
@@ -173,7 +175,7 @@ pub fn _exec_fuel_tx<SDK: SharedAPI>(
             } => {
                 // reason has 2 fields: PanicReason, RawInstruction both can be represented as
                 // (uint8,uint64)
-                let sig = derive_keccak256!("Panic(uint64,uint64,uint64,uint64,bytes32)");
+                let sig = derive_keccak256!("Panic(uint64,uint64,uint64,uint64,bytes32)"); // 0x9db29f8d9b2779e13fc1fc48d9ddf53b5b649b7828917898e32e751ecfa5ba0d
                 let log_data = (
                     *reason.reason() as u64,
                     *reason.instruction() as u64,
@@ -260,7 +262,7 @@ pub fn _exec_fuel_tx<SDK: SharedAPI>(
                 sdk.emit_log(log_data.into(), &topics);
             }
             fuel_tx::Receipt::ScriptResult { result, gas_used } => {
-                let sig = derive_keccak256!("ScriptResult(uint64,uint64)");
+                let sig = derive_keccak256!("ScriptResult(uint64,uint64)"); // 0xae59d99ed919c32e98a3e1b6684ca6b48d24b81dec37e0f1368c05cd42402653
                 let result_u64: u64 = (*result).into();
                 let log_data = (result_u64, gas_used).abi_encode();
                 let topics = [B256::from(sig)];
@@ -317,11 +319,19 @@ pub fn _exec_fuel_tx<SDK: SharedAPI>(
             }
         }
     }
-    // let mut receipts_encoded = Vec::<u8>::new();
-    // receipts
-    //     .encode(&mut receipts_encoded)
-    //     .expect("failed to encode receipts");
-    // LowLevelSDK::write(receipts_encoded.as_ptr(), receipts_encoded.len() as u32);
+    for event in &execution_data.events {
+        match event {
+            Event::CoinCreated(coin) => {
+                log_deposit(sdk, &coin.owner, coin.amount, coin.utxo_id.tx_id(), coin.utxo_id.output_index(), &coin.asset_id);
+            }
+            Event::CoinConsumed(coin) => {
+                log_withdraw(sdk, &coin.owner, coin.utxo_id.tx_id(), coin.utxo_id.output_index());
+            }
+            Event::MessageImported(_) => {}
+            Event::MessageConsumed(_) => {}
+            Event::ForcedTransactionFailed { .. } => {}
+        }
+    };
 
     FvmMethodOutput {
         output: Default::default(),

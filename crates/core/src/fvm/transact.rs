@@ -7,7 +7,7 @@ use fuel_core_executor::executor::{BlockExecutor, ExecutionData, ExecutionOption
 use fuel_core_executor::ports::RelayerPort;
 use fuel_core_types::{
     blockchain::header::PartialBlockHeader,
-    fuel_tx::{Cacheable, ConsensusParameters, ContractId, Word},
+    fuel_tx::{Cacheable, ContractId, Word},
     fuel_vm::{
         checked_transaction::{Checked, IntoChecked},
         interpreter::{CheckedMetadata, ExecutableTransaction},

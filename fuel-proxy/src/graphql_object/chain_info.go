@@ -15,7 +15,7 @@ type ChainInfoType struct {
 type ChainInfoStruct struct {
 }
 
-func ChainInfo(blockType *BlockType, consensusParametersType *ConsensusParametersType) (*ChainInfoType, error) {
+func MakeChainInfoType(blockType *BlockType, consensusParametersType *ConsensusParametersType) (*ChainInfoType, error) {
 	objectConfig := graphql.ObjectConfig{Name: "ChainInfo", Fields: graphql.Fields{
 		"daHeight": &graphql.Field{
 			Type: graphql.String,

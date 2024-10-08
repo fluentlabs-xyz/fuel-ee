@@ -46,7 +46,7 @@ func MakeCoin() (*CoinType, error) {
 	// }
 	objectConfig := graphql.ObjectConfig{Name: "Coin", Fields: graphql.Fields{
 		"amount": &graphql.Field{
-			Type: graphql.Int,
+			Type: graphql.String,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				coin, ok := p.Source.(*CoinStruct)
 				if ok {
@@ -56,7 +56,7 @@ func MakeCoin() (*CoinType, error) {
 			},
 		},
 		"blockCreated": &graphql.Field{
-			Type: graphql.Int,
+			Type: graphql.String,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				coin, ok := p.Source.(*CoinStruct)
 				if ok {
@@ -66,7 +66,7 @@ func MakeCoin() (*CoinType, error) {
 			},
 		},
 		"txCreatedIdx": &graphql.Field{
-			Type: graphql.Int,
+			Type: graphql.String,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				coin, ok := p.Source.(*CoinStruct)
 				if ok {

@@ -1,6 +1,9 @@
 package graphql_object
 
-import "github.com/graphql-go/graphql"
+import (
+	"github.com/fluentlabs-xyz/fuel-ee/src/graphql_scalars"
+	"github.com/graphql-go/graphql"
+)
 
 type PageInfoType struct {
 	SchemaFields SchemaFields
@@ -19,30 +22,46 @@ type PageInfoStruct struct {
 	EndCursor       string `json:"endCursor"`
 }
 
-func PageInfo() (*PageInfoType, error) {
+func MakePageInfoType() (*PageInfoType, error) {
 	objectConfig := graphql.ObjectConfig{Name: "PageInfo", Fields: graphql.Fields{
 		"hasPreviousPage": &graphql.Field{
 			Type: graphql.Boolean,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				v, ok := p.Source.(bool)
+				if ok {
+					return v, nil
+				}
 				return false, nil
 			},
 		},
 		"hasNextPage": &graphql.Field{
 			Type: graphql.Boolean,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				v, ok := p.Source.(bool)
+				if ok {
+					return v, nil
+				}
 				return false, nil
 			},
 		},
 		"startCursor": &graphql.Field{
-			Type: graphql.String,
+			Type: graphql_scalars.Bytes34Type,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return "", nil
+				v, ok := p.Source.(*graphql_scalars.Bytes34)
+				if ok {
+					return v, nil
+				}
+				return graphql_scalars.NewBytes34TryFromStringOrPanic("0x00000000000000000000000000000000000000000000000000000000000000000000"), nil
 			},
 		},
 		"endCursor": &graphql.Field{
-			Type: graphql.String,
+			Type: graphql_scalars.Bytes34Type,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return "", nil
+				v, ok := p.Source.(*graphql_scalars.Bytes34)
+				if ok {
+					return v, nil
+				}
+				return graphql_scalars.NewBytes34TryFromStringOrPanic("0x00000000000000000000000000000000000000000000000000000000000000000000"), nil
 			},
 		},
 	}}

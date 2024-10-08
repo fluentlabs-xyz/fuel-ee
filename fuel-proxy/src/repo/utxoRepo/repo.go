@@ -87,7 +87,7 @@ func (r *UtxoRepo) FindAllByParams(ctx context.Context, ownerId, TxId, TxOutputI
 		if w.IsSpent && !includeSpent {
 			continue
 		}
-		wUniqueId := r.GenerateKey(w)
+		wUniqueId := r.GenerateKeyUsingEntity(w)
 		entities[wUniqueId] = w
 	}
 
@@ -123,7 +123,7 @@ func (r *UtxoRepo) saveOneUsingPipeliner(ctx context.Context, p redis.Pipeliner,
 	if w == nil {
 		return errors.Errorf("param [w] must be set")
 	}
-	key := r.GenerateKey(w)
+	key := r.GenerateKeyUsingEntity(w)
 	p.HSet(ctx, key, "IsSpent", strconv.FormatBool(w.IsSpent))
 	p.HSet(ctx, key, "TxId", strings.ToLower(w.TxId))
 	p.HSet(ctx, key, "TxOutputIndex", strings.ToLower(w.TxOutputIndex))
@@ -206,7 +206,16 @@ func (r *UtxoRepo) scanDataInto(data map[string]string, w *UtxoEntity) error {
 }
 
 func (r *UtxoRepo) Delete(ctx context.Context, w *UtxoEntity) error {
-	key := r.GenerateKey(w)
+	key := r.GenerateKeyUsingEntity(w)
+	if cmd := r.redisClient.Del(ctx, key); cmd.Err() != nil {
+		return cmd.Err()
+	}
+
+	return nil
+}
+
+func (r *UtxoRepo) DeleteByFields(ctx context.Context, owner, txId, txOutputIdx string) error {
+	key := r.GenerateKeyUsingFields(owner, txId, txOutputIdx)
 	if cmd := r.redisClient.Del(ctx, key); cmd.Err() != nil {
 		return cmd.Err()
 	}
@@ -226,6 +235,10 @@ func (r *UtxoRepo) GenerateKeyUsingParams(ownerId, TxId, TxOutputIdx string) str
 	return repo.FormUtxoHashmapKeyTemplate(ownerId, TxId, TxOutputIdx)
 }
 
-func (r *UtxoRepo) GenerateKey(w *UtxoEntity) string {
-	return repo.FormUtxoHashmapKeyTemplate(w.Owner, w.TxId, w.TxOutputIndex)
+func (r *UtxoRepo) GenerateKeyUsingEntity(w *UtxoEntity) string {
+	return r.GenerateKeyUsingFields(w.Owner, w.TxId, w.TxOutputIndex)
+}
+
+func (r *UtxoRepo) GenerateKeyUsingFields(owner, txId, txOutputIdx string) string {
+	return repo.FormUtxoHashmapKeyTemplate(owner, txId, txOutputIdx)
 }

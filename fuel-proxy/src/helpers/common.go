@@ -4,7 +4,9 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	log "github.com/sirupsen/logrus"
+	"math/big"
 	"strings"
 )
 
@@ -25,9 +27,9 @@ func BytesToHexNumberString(v []byte) string {
 	if res == "" {
 		return "00"
 	}
-	//if len(res)%2 != 0 {
-	//	return "0" + res
-	//}
+	if len(res)%2 != 0 {
+		return "0" + res
+	}
 	return res
 }
 
@@ -78,4 +80,14 @@ func Uint32ToBytesBEMust(v uint32, len int32) []byte {
 		log.Panic(err)
 	}
 	return res
+}
+
+func HexStringToBinInt(vHex string) (*big.Int, error) {
+	vHex = strings.TrimPrefix(vHex, "0x")
+	res := new(big.Int)
+	res, ok := res.SetString(vHex, 16)
+	if !ok {
+		return nil, errors.New(fmt.Sprintf("failed converting hex res '%s' to big int", vHex))
+	}
+	return res, nil
 }
