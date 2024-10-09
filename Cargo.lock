@@ -1967,11 +1967,8 @@ dependencies = [
  "eth_trie",
  "fluentbase-poseidon",
  "fluentbase-types 0.1.0",
- "fluentbase-zktrie",
  "halo2curves 0.6.1 (git+https://github.com/privacy-scaling-explorations/halo2curves?tag=v0.6.1)",
  "hashbrown 0.14.5",
- "hex",
- "hex-literal",
  "k256",
  "keccak-hash 0.10.0",
  "rwasm",
@@ -2010,6 +2007,7 @@ dependencies = [
  "proc-macro-error",
  "proc-macro2",
  "quote",
+ "regex",
  "serde",
  "syn 2.0.79",
  "syn-solidity",
@@ -2058,18 +2056,6 @@ dependencies = [
  "revm-primitives 4.0.0 (git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel)",
  "rwasm",
  "strum_macros 0.26.4",
-]
-
-[[package]]
-name = "fluentbase-zktrie"
-version = "0.1.0"
-dependencies = [
- "byteorder",
- "fluentbase-poseidon",
- "halo2curves 0.6.1 (git+https://github.com/privacy-scaling-explorations/halo2curves?tag=v0.6.1)",
- "hex",
- "lazy_static",
- "uint 0.9.5",
 ]
 
 [[package]]

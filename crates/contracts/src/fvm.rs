@@ -3,6 +3,7 @@ use alloy_sol_types::SolType;
 use core::str::FromStr;
 use fluentbase_sdk::Bytes;
 use fluentbase_sdk::{basic_entrypoint, derive::Contract, ExitCode, SharedAPI, U256};
+use fluentbase_sdk::derive::{router, signature};
 use fuel_core_storage::{
     structured_storage::StructuredStorage, tables::Coins, StorageInspect,
     StorageMutate,
