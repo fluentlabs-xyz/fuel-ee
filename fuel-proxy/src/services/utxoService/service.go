@@ -11,7 +11,6 @@ import (
 	"github.com/fluentlabs-xyz/fuel-ee/src/config"
 	"github.com/fluentlabs-xyz/fuel-ee/src/helpers"
 	"github.com/fluentlabs-xyz/fuel-ee/src/repo/utxoRepo"
-	"github.com/fluentlabs-xyz/fuel-ee/src/types"
 	"github.com/go-redis/redis/v8"
 	log "github.com/sirupsen/logrus"
 	"math/big"
@@ -66,7 +65,7 @@ func (s *Service) startBgProcessing() {
 func (s *Service) processCycle() {
 	lastProcessedBlockNumber, err := s.utxoRepo.LastProcessedBlockNumber(context.Background())
 	if err != nil {
-		log.Printf("error when getting LastProcessedBlockNumber: %s", err)
+		log.Printf("error when getting last processed block number: %s", err)
 		return
 	}
 
@@ -89,12 +88,12 @@ func (s *Service) processCycle() {
 		log.Printf("new logItem: %+v", logItem)
 		selector := logItem.Topics[0]
 
-		if bytes.Equal(selector.Bytes(), types.FvmDepositSigBytesAligned32) {
+		if bytes.Equal(selector.Bytes(), s.config.Blockchain.FvmDepositSigBytes32) {
 			if err = s.processDeposit(&logItem); err != nil {
 				log.Printf("error while processing deposit: %s", err)
 				break
 			}
-		} else if bytes.Equal(selector.Bytes(), types.FvmWithdrawSigBytesAligned32) {
+		} else if bytes.Equal(selector.Bytes(), s.config.Blockchain.FvmWithdrawSigBytes32) {
 			if err = s.processWithdraw(&logItem); err != nil {
 				log.Printf("error while processing withdraw: %s", err)
 				break

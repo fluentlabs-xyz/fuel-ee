@@ -44,10 +44,6 @@ func main() {
 	helpers.RequireNoError(di.Provide(utxoService.New))
 	helpers.RequireNoError(di.Provide(graphqlServerService.New))
 
-	helpers.RequireNoError(di.Invoke(func(utxoService *utxoService.Service, ethClient *ethclient.Client) {
-		runTest(ethClient, utxoService)
-	}))
-
 	container.MustInvoke(
 		di, func(
 			utxoService *utxoService.Service,

@@ -9,7 +9,7 @@ use fluentbase_genesis::{
     ,
 };
 use fluentbase_poseidon::poseidon_hash;
-use fluentbase_runtime::{DefaultEmptyRuntimeDatabase, RuntimeContext};
+use fluentbase_runtime::{RuntimeContext};
 use fluentbase_sdk::runtime::TestingContext;
 use fluentbase_types::{calc_create_address, Account, Address, Bytes, NativeAPI, SharedAPI, DEVNET_CHAIN_ID, KECCAK_EMPTY, POSEIDON_EMPTY, PRECOMPILE_FVM, U256};
 use fuel_core_types::{
@@ -155,8 +155,7 @@ impl EvmTestingContext {
     {
         let mut evm = Evm::builder().with_db(&mut self.db).build();
         let runtime_context = RuntimeContext::default()
-            .with_depth(0u32)
-            .with_jzkt(Box::new(DefaultEmptyRuntimeDatabase::default()));
+            .with_depth(0u32);
         let native_sdk = fluentbase_sdk::runtime::RuntimeContextWrapper::new(runtime_context);
         f(RwasmDbWrapper::new(&mut evm.context.evm, native_sdk))
     }
@@ -309,13 +308,7 @@ fn call_evm_tx(
 
 
 #[test]
-fn test_fvm_deposit_withdrawal_signatures_for_collisions() {
-    assert_eq!(FVM_DEPOSIT_SIG, 0xea80eea3);
-    assert_eq!(FVM_WITHDRAW_SIG, 0xaad800af);
-    assert_eq!(FVM_DRY_RUN_SIG, 567857912);
-    assert_eq!(FVM_EXEC_SIG, 1692387067);
-    assert_eq!(FVM_DEPOSIT_SIG_BYTES, [234, 128, 238, 163]);
-    assert_eq!(FVM_WITHDRAW_SIG_BYTES, [170, 216, 0, 175]);
+fn test_check_signatures_for_collisions() {
     let values = [
         TransactionRepr::Create as u8,
         TransactionRepr::Mint as u8,

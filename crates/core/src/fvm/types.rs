@@ -22,10 +22,10 @@ use fuel_core_types::{
     services::relayer::Event,
 };
 
-pub const FVM_DEPOSIT_SIG: u32 = derive_keccak256_id!("_fvm_deposit(uint64)");
-pub const FVM_WITHDRAW_SIG: u32 = derive_keccak256_id!("_fvm_withdraw(uint64)");
-pub const FVM_DRY_RUN_SIG: u32 = derive_keccak256_id!("_fvm_dry_run(uint64)");
-pub const FVM_EXEC_SIG: u32 = derive_keccak256_id!("_fvm_exec(uint64)");
+pub const FVM_DEPOSIT_SIG: u32 = derive_keccak256_id!("function fvm_deposit(bytes msg)");
+pub const FVM_WITHDRAW_SIG: u32 = derive_keccak256_id!("function fvm_withdraw(bytes msg)");
+pub const FVM_DRY_RUN_SIG: u32 = derive_keccak256_id!("function fvm_dry_run(bytes msg)");
+pub const FVM_EXEC_SIG: u32 = derive_keccak256_id!("function fvm_exec(bytes msg)");
 
 pub const FVM_DEPOSIT_SIG_BYTES: [u8; 4] = FVM_DEPOSIT_SIG.to_be_bytes();
 pub const FVM_WITHDRAW_SIG_BYTES: [u8; 4] = FVM_WITHDRAW_SIG.to_be_bytes();
@@ -371,27 +371,6 @@ impl<'a, SDK: SharedAPI> WasmStorage<'a, SDK> {
         Some(res.into())
     }
 
-    // pub fn coins_update(&mut self, raw_key: &Bytes34, v: &CoinsHolderHelper) {
-    //     let (address, asset_id, balance) = v.to_u256_tuple();
-    //     let ch = CoinsHelper::new(raw_key);
-    //     self.sdk.write_storage(ch.owner_storage_slot(), address);
-    //     self.sdk.write_storage(ch.asset_id_storage_slot(), asset_id);
-    //     self.sdk.write_storage(ch.balance_storage_slot(), balance);
-    // }
-    //
-    // pub fn coins(&self, raw_key: &Bytes34) -> Option<CoinsHolderHelper> {
-    //     let ch = CoinsHelper::new(raw_key);
-    //     let owner = self.sdk.storage(&ch.owner_storage_slot());
-    //     if owner == U256::ZERO {
-    //         return None;
-    //     }
-    //     let asset_id = self.sdk.storage(&ch.asset_id_storage_slot());
-    //     let balance = self.sdk.storage(&ch.balance_storage_slot());
-    //     Some(CoinsHolderHelper::from_u256_tuple(
-    //         &owner, &asset_id, &balance,
-    //     ))
-    // }
-
     pub fn coins_update(&mut self, raw_key: &Bytes34, data: &[u8]) -> anyhow::Result<()> {
         anyhow::ensure!(
             data.len() <= COINS_MAX_ENCODED_LEN,
@@ -429,25 +408,6 @@ impl<'a, SDK: SharedAPI> WasmStorage<'a, SDK> {
         Some(res.into())
     }
 
-    // pub fn utxo_owner_update(&mut self, raw_key: &Bytes34, data: Address) -> anyhow::Result<()> {
-    //     anyhow::ensure!(
-    //         data.len() <= COINS_MAX_ENCODED_LEN,
-    //         anyhow::Error::msg("coins encoded len must fit max len")
-    //     );
-    //     let helper = CoinsHelper::new(raw_key);
-    //     let slot = helper.owner_storage_slot();
-    //     let address_u256 = U256::from_be_slice(&data.0.as_slice());
-    //     self.sdk.write_storage(slot, address_u256);
-    //     Ok(())
-    // }
-    //
-    // pub fn utxo_owner(&self, raw_key: &Bytes34) -> Address {
-    //     let helper = CoinsHelper::new(raw_key);
-    //     let slot = helper.owner_storage_slot();
-    //     let address_u256 = self.sdk.storage(&slot);
-    //     Address::from_slice(&address_u256.to_be_bytes::<32>()[12..])
-    // }
-
     pub fn deposit_withdraw_tx_next_index(&mut self) -> U256 {
         DepositWithdrawalIndexHelper::new(self.sdk).next_index()
     }
@@ -464,14 +424,6 @@ impl<'a, SDK: SharedAPI> KeyValueInspect for WasmStorage<'a, SDK> {
         assert!(key.len() > 0, "key len greater 0");
 
         match column {
-            // Column::Metadata => {
-            //     // key -> [u8]
-            //     // value -> [u8]
-            //
-            //     let raw_metadata = self.metadata(key);
-            //
-            //     Ok(raw_metadata.map(|v| v.to_vec()))
-            // }
             Column::ContractsRawCode => {
                 // key -> ContractId
                 // value -> [u8]
@@ -516,23 +468,6 @@ impl<'a, SDK: SharedAPI> KeyValueInspect for WasmStorage<'a, SDK> {
                 let value_data = self.coins(&contracts_assets_key);
 
                 Ok(value_data.map(|v| v.to_vec()))
-
-                // let utxo_id_key: Bytes34 = key.try_into().expect("34 bytes key");
-                // let Some(coins_holder_helper) = self.coins(&utxo_id_key) else {
-                //     return Ok(None);
-                // };
-                // let fuel_address = FuelAddress::new(*coins_holder_helper.address());
-                // let (account, _is_cold) = self.sdk.account(&fuel_address.fluent_address());
-                // let amount = account.balance / U256::from(1_000_000_000);
-                // let compressed_coin = CompressedCoin::V1(CompressedCoinV1 {
-                //     owner: *coins_holder_helper.address(),
-                //     amount: coins_holder_helper.balance(),
-                //     asset_id: *coins_holder_helper.asset_id(),
-                //     tx_pointer: Default::default(),
-                // });
-                // let r =
-                //     postcard::to_allocvec(&compressed_coin).expect("compressed coin serialized");
-                // Ok(Some(r))
             }
 
             Column::ContractsStateMerkleData => {
@@ -628,42 +563,6 @@ impl<'a, SDK: SharedAPI> KeyValueMutate for WasmStorage<'a, SDK> {
                 self.coins_update(&key, buf).map_err(|_| {
                     fuel_core_storage::Error::Other(anyhow::Error::msg("failed to update coins"))
                 })?;
-
-                // if buf.len() <= 0 {
-                //     deletion process
-                //     let old_value = KeyValueInspect::get(&self, key, column)?;
-                //     if let Some(old_value) = old_value {
-                //         let compressed_coin: CompressedCoin =
-                //             postcard::from_bytes(old_value.as_slice())
-                //                 .expect("compressed coin");
-                //         let fuel_address = FuelAddress::new(*compressed_coin.owner());
-                //         let (mut account, _) = self.sdk.account(&fuel_address.fluent_address());
-                //         account.balance -= U256::from(1_000_000_000)
-                //             * U256::from(compressed_coin.amount().as_u64());
-                //         self.sdk.write_account(account, AccountStatus::Modified);
-                //     }
-                //     delete existing mapping
-                //     let coins_owner_with_balance = CoinsHolderHelper::default();
-                //     self.coins_update(&utxo_id_key, &coins_owner_with_balance);
-                //     self.coins_update(&utxo_id_key, &[]);
-                //
-                //     return Ok(0);
-                // }
-
-                // let compressed_coin: CompressedCoin =
-                //     postcard::from_bytes(buf).expect("compressed coin");
-                // let coins = CoinsHolderHelper::from(
-                //     compressed_coin.owner(),
-                //     *compressed_coin.asset_id(),
-                //     *compressed_coin.amount(),
-                // );
-                // self.coins_update(&utxo_id_key, &coins);
-                //
-                // let fuel_address = FuelAddress::new(*coins.address());
-                // let (mut account, _) = self.sdk.account(&fuel_address.fluent_address());
-                // let coin_amount = U256::from(1_000_000_000) * U256::from(coins.balance());
-                // account.balance += coin_amount;
-                // self.sdk.write_account(account, AccountStatus::Modified);
             }
 
             Column::ContractsStateMerkleData => {
@@ -782,27 +681,6 @@ impl<'a, SDK: SharedAPI> Modifiable for WasmStorage<'a, SDK> {
         Ok(())
     }
 }
-
-// fn utxo_id_to_bytes34(utxo_id: &UtxoId) -> Bytes34 {
-//     let mut res: Bytes34 = [0u8; 34];
-//     res.as_mut_slice()[..32].copy_from_slice(utxo_id.tx_id().as_slice());
-//     res.as_mut_slice()[32..].copy_from_slice(&utxo_id.output_index().to_le_bytes());
-//
-//     res
-// }
-//
-// fn utxo_id_from_bytes34(utxo_id_bytes: &Bytes34) -> UtxoId {
-//     let utxo_id_slice = utxo_id_bytes.as_slice();
-//     let mut utxo_id = UtxoId::new(
-//         TxId::from_bytes(&utxo_id_slice[..32]).expect("failed to extract tx_id from utxo slice"),
-//         u16::from_le_bytes(
-//             utxo_id_slice[32..]
-//                 .try_into()
-//                 .expect("failed to extract output index utxo slice"),
-//         ),
-//     );
-//     utxo_id
-// }
 
 #[cfg(test)]
 mod tests {

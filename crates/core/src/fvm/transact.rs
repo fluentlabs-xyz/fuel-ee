@@ -46,18 +46,6 @@ where
     //     }
     // }
 
-    // let mut memory = MemoryInstance::new();
-    // let res = fvm_transact(
-    //     &mut storage,
-    //     checked_tx,
-    //     header,
-    //     coinbase_contract_id,
-    //     gas_price,
-    //     &mut memory,
-    //     consensus_params,
-    //     true,
-    // )?;
-
     let result = fvm_transact_commit(
         &mut storage,
         checked_tx,

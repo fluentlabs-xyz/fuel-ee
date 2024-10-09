@@ -30,12 +30,20 @@ func viperGetOrDefaultInt(
 	return viper.GetInt64(key)
 }
 
-func viperGetOrDefaultUint(
+func viperGetOrDefaultUint64(
 	key string,
 	defaultValue uint64,
 ) uint64 {
 	viper.SetDefault(key, defaultValue)
 	return viper.GetUint64(key)
+}
+
+func viperGetOrDefaultUint32(
+	key string,
+	defaultValue uint32,
+) uint32 {
+	viper.SetDefault(key, defaultValue)
+	return viper.GetUint32(key)
 }
 
 func viperGetOrDefaultTimeDuration(

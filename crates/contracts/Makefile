@@ -1,4 +1,4 @@
-PRECOMPILES=fvm fvm_codec
+PRECOMPILES=fvm
 CUR_DIR="$(shell pwd)"
 OUT_DIR="${CUR_DIR}/assets"
 RUSTFLAGS='-C link-arg=-zstack-size=131072 -C target-feature=+bulk-memory'

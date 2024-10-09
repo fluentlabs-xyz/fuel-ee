@@ -197,7 +197,7 @@ func New(
 		log.Fatalf("error: %v", err)
 	}
 
-	dryRunEntry, err := graphql_entrypoints.MakeDryRunEntry(ethClient, dryRunTransactionExecutionStatusType)
+	dryRunEntry, err := graphql_entrypoints.MakeDryRunEntry(ethClient, dryRunTransactionExecutionStatusType, config)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}

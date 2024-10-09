@@ -46,7 +46,7 @@ func ConsensusParameters(
 		"chainId": &graphql.Field{
 			Type: graphql.String,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return config.App.ChainId, nil
+				return config.Blockchain.ChainId, nil
 			},
 		},
 		"txParams": &graphql.Field{

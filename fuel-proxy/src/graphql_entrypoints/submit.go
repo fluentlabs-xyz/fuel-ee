@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	ethereumTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -44,28 +43,16 @@ func MakeSubmitEntry(ethClient *ethclient.Client, submitType *graphql_object.Sub
 				if !ok {
 					return nil, errors.New("each encoded transaction must be a hex string")
 				}
-				log.Printf("transactionHexString: %s", transactionHexString)
+				log.Printf("Submit: transactionHexString: %s", transactionHexString)
 
 				// send tx to reth node for emulation/estimation process (to get status, receipts, gas spent)
-				//data := append(types.FvmExecSigBytes, transactionHexString.Value()...)
 				data := transactionHexString.Value()
 				from := common.HexToAddress(types.FuelRelayerAccountAddress)
 				to := common.HexToAddress(types.EthFuelVMPrecompileAddress)
-				callMsg := ethereum.CallMsg{
-					From: from,
-					To:   &to,
-					Data: append(types.FvmDryRunSigBytes, data...),
-				}
-				estimatedGas, err := ethClient.EstimateGas(context.Background(), callMsg)
-				if err != nil {
-					return nil, errors.New(fmt.Sprintf("Submit: failed to estimate gas, error: %s", err))
-				}
-				log.Printf("estimatedGas: %d", estimatedGas)
 				chainId, err := ethClient.ChainID(context.Background())
 				if err != nil {
 					return nil, errors.New(fmt.Sprintf("Submit: failed to fetch chain id, error: %s", err))
 				}
-				log.Printf("chainId: %d", chainId)
 				nonce, err := ethClient.PendingNonceAt(context.Background(), from)
 				if err != nil {
 					return nil, errors.New(fmt.Sprintf("Submit: failed to fetch pending nonce, error: %s", err))
@@ -74,15 +61,14 @@ func MakeSubmitEntry(ethClient *ethclient.Client, submitType *graphql_object.Sub
 				if err != nil {
 					return nil, errors.New(fmt.Sprintf("Submit: failed to estimate gas price, error: %s", err))
 				}
-				log.Printf("gasPrice: %d", gasPrice)
 				tx := ethereumTypes.NewTx(&ethereumTypes.AccessListTx{
 					Gas:      300_000_000,
 					GasPrice: gasPrice,
 					To:       &to,
 					Nonce:    nonce,
-					Data:     data,
+					Data:     append(config.Blockchain.FvmExecSigBytes, data...),
 				})
-				log.Printf("tx.Hash(): %s tx.Hash().String(): %s", tx.Hash(), tx.Hash().String())
+				log.Printf("Submit: tx.Hash(): %s tx.Hash().String(): %s", tx.Hash(), tx.Hash().String())
 				privateKey, err := crypto.HexToECDSA(config.Relayer.PrivateKey)
 				if err != nil {
 					return nil, errors.New(fmt.Sprintf("Submit: failed to create private key, error: %s", err))
@@ -91,12 +77,12 @@ func MakeSubmitEntry(ethClient *ethclient.Client, submitType *graphql_object.Sub
 				if err != nil {
 					return nil, errors.New(fmt.Sprintf("Submit: failed to sign tx, error: %s", err))
 				}
-				log.Printf("len(signedTx.Data()) %d", len(signedTx.Data()))
+				log.Printf("Submit: len(signedTx.Data()) %d", len(signedTx.Data()))
 				err = ethClient.SendTransaction(context.Background(), signedTx)
 				if err != nil {
 					return nil, errors.New(fmt.Sprintf("Submit: failed to send tx, error: %s", err))
 				}
-				log.Printf("signedTx.Hash().Hex(): %s signedTx.To(): %s", signedTx.Hash().Hex(), signedTx.To())
+				log.Printf("Submit: signedTx.Hash().Hex(): %s signedTx.To(): %s", signedTx.Hash().Hex(), signedTx.To())
 				isPending := true
 				for isPending {
 					tx, isPending, err = ethClient.TransactionByHash(context.Background(), signedTx.Hash())

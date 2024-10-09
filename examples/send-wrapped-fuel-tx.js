@@ -44,6 +44,11 @@ const main = async () => {
 
     const web3 = new Web3(web3Url);
 
+    const FvmDepositSig = 2311579102
+    let FvmDepositSigBytes = dec2hexReverse(FvmDepositSig)
+    const FvmWithdrawSig = 3481020119
+    let FvmWithdrawSigBytes = dec2hexReverse(FvmWithdrawSig)
+
     let doSendEthToEthBalance = 0;
     let doDepositEthToFuel = 1;
     let doWithdrawEthFromFuel = 0;
@@ -109,10 +114,6 @@ const main = async () => {
             console.log(`sending balance to ${account.address}->${fuelWalletOfficial.address.toHexString()}`)
             const gasPrice = await web3.eth.getGasPrice(ETH_DATA_FORMAT);
             let ethAmountToSend = web3.utils.toWei(300, "ether");
-            const FvmDepositSig = 3934318243
-            // const FvmDepositSigBytes = new DataView(new ArrayBuffer(FvmDepositSig));
-            let FvmDepositSigBytes = dec2hexReverse(FvmDepositSig)
-            console.log(`FvmDepositSigBytes: ${Buffer.from(FvmDepositSigBytes).toString('hex')}`)
             let data = [];
             data = data.concat(FvmDepositSigBytes)
             console.log(`data: ${Buffer.from(data).toString('hex')}`)
@@ -144,10 +145,6 @@ const main = async () => {
             console.log(`sending balance to ${fuelWalletOfficial.address.toHexString()}->${account.address}`)
             const gasPrice = await web3.eth.getGasPrice(ETH_DATA_FORMAT);
             let ethAmountToSend = web3.utils.toWei(0.01, "ether");
-            const FvmWithdrawSig = 2866282671
-            // const FvmDepositSigBytes = new DataView(new ArrayBuffer(FvmDepositSig));
-            let FvmWithdrawSigBytes = dec2hexReverse(FvmWithdrawSig)
-            console.log(`FvmWithdrawSigBytes: ${Buffer.from(FvmWithdrawSigBytes).toString('hex')}`)
             let data = [];
             data = data.concat(FvmWithdrawSigBytes)
             console.log(`data: ${Buffer.from(data).toString('hex')}`)
