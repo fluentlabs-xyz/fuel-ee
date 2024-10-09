@@ -3,7 +3,7 @@ CUR_DIR="$(shell pwd)"
 OUT_DIR="${CUR_DIR}/assets"
 RUSTFLAGS='-C link-arg=-zstack-size=131072 -C target-feature=+bulk-memory'
 
-all: $(PRECOMPILES)
+all: abi abi_to_rs $(PRECOMPILES)
 
 .PHONY: $(PRECOMPILES)
 $(PRECOMPILES):
@@ -18,7 +18,8 @@ $(PRECOMPILES):
 abi:
 	solc --abi assets/solidity/Events.sol -o assets/solidity/generated --overwrite
 	cat assets/solidity/generated/FuelEE.abi | jq > assets/solidity/generated/FuelEE.pretty.abi.json
+	cat assets/solidity/generated/IFuelEE.abi | jq > assets/solidity/generated/IFuelEE.pretty.abi.json
 
 .PHONY: abi_to_rs
 abi_to_rs:
-	cargo run -p fuel-ee-contracts --profile dev --bin fuel-ee-contracts-abi-rs-gen
+	cd ../abi_rs_gen; cargo run -p fuel-ee-abi-rs-gen --profile dev --bin fuel-ee-contracts-abi-rs-gen

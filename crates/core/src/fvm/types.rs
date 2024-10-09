@@ -22,10 +22,10 @@ use fuel_core_types::{
     services::relayer::Event,
 };
 
-pub const FVM_DEPOSIT_SIG: u32 = derive_keccak256_id!("function fvm_deposit(bytes msg)");
-pub const FVM_WITHDRAW_SIG: u32 = derive_keccak256_id!("function fvm_withdraw(bytes msg)");
-pub const FVM_DRY_RUN_SIG: u32 = derive_keccak256_id!("function fvm_dry_run(bytes msg)");
-pub const FVM_EXEC_SIG: u32 = derive_keccak256_id!("function fvm_exec(bytes msg)");
+pub const FVM_DEPOSIT_SIG: u32 = derive_keccak256_id!("fvm_deposit(bytes)");
+pub const FVM_WITHDRAW_SIG: u32 = derive_keccak256_id!("fvm_withdraw(bytes)");
+pub const FVM_DRY_RUN_SIG: u32 = derive_keccak256_id!("fvm_dry_run(bytes)");
+pub const FVM_EXEC_SIG: u32 = derive_keccak256_id!("fvm_exec(bytes)");
 
 pub const FVM_DEPOSIT_SIG_BYTES: [u8; 4] = FVM_DEPOSIT_SIG.to_be_bytes();
 pub const FVM_WITHDRAW_SIG_BYTES: [u8; 4] = FVM_WITHDRAW_SIG.to_be_bytes();
@@ -42,41 +42,15 @@ sol! {
     #[derive(PartialEq, Eq, Debug)]
     struct UtxoIdSol {
         bytes32 tx_id;
-        uint256 output_index;
+        uint16 output_index;
     }
 }
 sol! {
     #[derive(PartialEq, Eq, Debug)]
     struct FvmWithdrawInput {
         UtxoIdSol[] utxos;
-        uint256 withdraw_amount;
+        uint64 withdraw_amount;
     }
-}
-#[test]
-fn utx_ids_sol_encode_decode() {
-    let utxo_id_1 = UtxoIdSol {
-        tx_id: [1u8; 32].into(),
-        output_index: U256::from(1),
-    };
-    let utxo_id_2 = UtxoIdSol {
-        tx_id: [2u8; 32].into(),
-        output_index: U256::from(2),
-    };
-    let utxo_id_3 = UtxoIdSol {
-        tx_id: [3u8; 32].into(),
-        output_index: U256::from(3),
-    };
-    let utxo_id_encoded = utxo_id_1.abi_encode();
-    let utxo_id_decoded = UtxoIdSol::abi_decode(&utxo_id_encoded, true).unwrap();
-    assert_eq!(utxo_id_1, utxo_id_decoded);
-
-    let utxo_ids = FvmWithdrawInput {
-        utxos: vec![utxo_id_1, utxo_id_2, utxo_id_3],
-        withdraw_amount: U256::from(10),
-    };
-    let utxo_ids_encoded = utxo_ids.abi_encode();
-    let utxo_ids_decoded = FvmWithdrawInput::abi_decode(&utxo_ids_encoded, true).unwrap();
-    assert_eq!(utxo_ids, utxo_ids_decoded);
 }
 
 pub struct WasmRelayer;

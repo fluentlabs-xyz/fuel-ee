@@ -35,9 +35,8 @@ zeth-primitives = { workspace = true, default-features = false, features = [
 ] }
 alloy-rlp = { workspace = true, default-features = false }
 alloy-sol-types = { workspace = true }
-#ethers = { version = "2.0.14", default-features = true }
 
 [features]
 default = []
 fvm = []
-fvm_codec = []
+testing = []

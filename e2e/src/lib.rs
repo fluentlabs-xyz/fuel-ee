@@ -3,3 +3,4 @@ extern crate core;
 
 #[cfg(test)]
 mod revm;
+pub mod generated;

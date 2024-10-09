@@ -45,5 +45,7 @@ fuel-core-types = { workspace = true, default-features = false, features = ["ser
 fuel-core-storage = { workspace = true, default-features = false, features = ["alloc", "test-helpers"] }
 fuel-core-executor = { workspace = true, default-features = false, features = ["alloc", "test-helpers"] }
 
-# fluen's fuel
 fuel-ee-core = { workspace = true }
+fuel-ee-contracts = { workspace = true, features = ["testing"] }
+
+ethers = { workspace = true }

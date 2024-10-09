@@ -96,15 +96,12 @@ impl<SDK: SharedAPI> FvmLoader<SDK> {
             withdraw_amount,
         } = utxo_ids;
         let mut utxos_total_balance = 0;
-        let withdraw_amount = withdraw_amount.as_limbs()[0];
         let utxos_to_spend: Vec<UtxoId> = utxos
             .iter()
             .map(|v| {
                 UtxoId::new(
                     TxId::new(v.tx_id.0),
-                    v.output_index.as_limbs()[0]
-                        .try_into()
-                        .expect("output index must be a valid u16 number"),
+                    v.output_index,
                 )
             })
             .collect();
@@ -227,7 +224,7 @@ pub struct FvmLoaderEntrypoint<SDK> {
 }
 
 pub trait RouterAPI {
-    fn fvm_deposit(&mut self, msg: &[u8]);
+    fn fvm_deposit(&mut self, msg: [u8; 32]);
     fn fvm_withdraw(&mut self, msg: &[u8]);
     fn fvm_dry_run(&mut self, msg: &[u8]);
     fn fvm_exec(&mut self, msg: &[u8]);
@@ -235,27 +232,27 @@ pub trait RouterAPI {
 
 #[router(mode = "solidity")]
 impl<SDK: SharedAPI> RouterAPI for FvmLoaderEntrypoint<SDK> {
-    #[signature("function fvm_deposit(bytes msg)")]
-    fn fvm_deposit(&mut self, msg: &[u8]) {
+    #[signature("fvm_deposit(uint8[32])")]
+    fn fvm_deposit(&mut self, msg: [u8; 32]) {
         let asset_id: AssetId = AssetId::from_str(FUEL_TESTNET_BASE_ASSET_ID).unwrap();
-        let exit_code = FvmLoader::deposit(&mut self.sdk, msg, &asset_id);
+        let exit_code = FvmLoader::deposit(&mut self.sdk, &msg, &asset_id);
         self.sdk.exit(exit_code.into_i32());
     }
 
-    #[signature("function fvm_withdraw(bytes msg)")]
+    #[signature("fvm_withdraw(bytes)")]
     fn fvm_withdraw(&mut self, msg: &[u8]) {
         let asset_id: AssetId = AssetId::from_str(FUEL_TESTNET_BASE_ASSET_ID).unwrap();
         let exit_code = FvmLoader::withdraw(&mut self.sdk, msg, &asset_id);
         self.sdk.exit(exit_code.into_i32());
     }
 
-    #[signature("function fvm_dry_run(bytes msg)")]
+    #[signature("fvm_dry_run(bytes)")]
     fn fvm_dry_run(&mut self, msg: &[u8]) {
         let exit_code = FvmLoader::dry_run(&mut self.sdk, msg);
         self.sdk.exit(exit_code.into_i32());
     }
 
-    #[signature("function fvm_exec(bytes msg)")]
+    #[signature("fvm_exec(bytes)")]
     fn fvm_exec(&mut self, msg: &[u8]) {
         let exit_code = FvmLoader::exec(&mut self.sdk, msg);
         self.sdk.exit(exit_code.into_i32());
@@ -268,5 +265,5 @@ impl<SDK: SharedAPI> FvmLoaderEntrypoint<SDK> {
     }
 }
 
-basic_entrypoint!(FvmLoader);
-// basic_entrypoint!(FvmLoaderEntrypoint);
+// basic_entrypoint!(FvmLoader);
+basic_entrypoint!(FvmLoaderEntrypoint);

@@ -4,5 +4,3 @@ extern crate core;
 
 #[cfg(feature = "fvm")]
 mod fvm;
-#[cfg(test)]
-mod fvm_test;

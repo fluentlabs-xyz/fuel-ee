@@ -3,6 +3,7 @@ use core::{
     mem::take,
     str::{from_utf8, FromStr},
 };
+use ethers::abi::AbiEncode;
 use fluentbase_genesis::{
     devnet::{devnet_genesis_from_file, GENESIS_POSEIDON_HASH_SLOT},
     Genesis
@@ -29,6 +30,7 @@ use fuel_tx::field::Witnesses;
 use fuel_tx::{ConsensusParameters, Input, TransactionBuilder, TransactionRepr, TxId, TxPointer, UtxoId};
 use fuel_vm::{fuel_asm::RegId, storage::MemoryStorage};
 use hashbrown::HashMap;
+use hex::FromHex;
 use revm::{
     primitives::{AccountInfo, Bytecode, Env, ExecutionResult, TransactTo},
     rwasm::RwasmDbWrapper,
@@ -37,6 +39,7 @@ use revm::{
     InMemoryDB,
 };
 use rwasm::rwasm::{BinaryFormat, RwasmModule};
+use crate::generated::i_fuel_ee::FvmDepositCall;
 
 #[allow(dead_code)]
 struct EvmTestingContext {
@@ -483,8 +486,9 @@ fn test_fvm_deposit_then_withdraw() {
 
     // FVM deposit
     let mut input = Vec::<u8>::new();
-    input.extend_from_slice(FVM_DEPOSIT_SIG_BYTES.as_slice());
-    input.extend_from_slice(secret2_address.as_slice());
+    // input.extend_from_slice(FVM_DEPOSIT_SIG_BYTES.as_slice());
+    let fvm_deposit_call = FvmDepositCall{ address_32: secret2_address.0 };
+    input.extend_from_slice(fvm_deposit_call.encode().as_slice());
     let result = call_evm_tx_simple(
         &mut ctx,
         secret1_address_as_evm.clone(),
@@ -492,7 +496,7 @@ fn test_fvm_deposit_then_withdraw() {
         input.into(),
         Some(100_000_000),
         Some(U256::from(coins_sent * 1e9 as u64)));
-    println!("move coins evm->fvm: {:?}", result);
+    println!("move coins evm->fvm result: {:?}", result);
     let output = result.output().unwrap_or_default();
     println!("output: {}", from_utf8(output).unwrap_or_default());
     assert!(result.is_success());
@@ -509,9 +513,9 @@ fn test_fvm_deposit_then_withdraw() {
     let utxo_ids: FvmWithdrawInput = FvmWithdrawInput {
         utxos: vec![UtxoIdSol {
             tx_id: tx_id.0.into(),
-            output_index: U256::from(output_index),
+            output_index,
         }],
-        withdraw_amount: U256::from(0x1),
+        withdraw_amount: 0x1,
     };
     input.extend_from_slice(&utxo_ids.abi_encode());
     let result = call_evm_tx_simple(
@@ -521,7 +525,7 @@ fn test_fvm_deposit_then_withdraw() {
         input.into(),
         Some(3_000_000_000),
         None);
-    println!("move coins fvm->evm: {:?}", result);
+    println!("move coins fvm->evm result: {:?}", result);
     let output = result.output().unwrap_or_default();
     println!("output: {}", from_utf8(output).unwrap_or_default());
     assert!(result.is_success());

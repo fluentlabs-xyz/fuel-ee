@@ -116,10 +116,7 @@ const main = async () => {
             let ethAmountToSend = web3.utils.toWei(300, "ether");
             let data = [];
             data = data.concat(FvmDepositSigBytes)
-            console.log(`data: ${Buffer.from(data).toString('hex')}`)
             data = data.concat(...fuelWalletOfficial.address.toBytes())
-            console.log(`data: ${Buffer.from(data).toString('hex')}`)
-            // process.exit(0)
 
             let rawTransaction = {
                 from: account.address,
@@ -139,6 +136,7 @@ const main = async () => {
                 })
             ;
             console.log(`balance sent`);
+            process.exit(0)
         }
 
         if (doWithdrawEthFromFuel) {
@@ -148,10 +146,6 @@ const main = async () => {
             let data = [];
             data = data.concat(FvmWithdrawSigBytes)
             console.log(`data: ${Buffer.from(data).toString('hex')}`)
-            // TODO encode FvmWithdrawInput using abi
-            // data = data.concat(...fuelWalletOfficial.address.toBytes())
-            // console.log(`data: ${Buffer.from(data).toString('hex')}`)
-            // process.exit(0)
 
             let rawTransaction = {
                 from: account.address,
