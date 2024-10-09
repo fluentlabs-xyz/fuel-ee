@@ -88,13 +88,13 @@ impl<SDK: SharedAPI> FvmLoader<SDK> {
     pub fn withdraw(sdk: &mut SDK, msg: &[u8], asset_id: &AssetId) -> ExitCode {
         let contract_ctx = sdk.contract_context();
         let caller = contract_ctx.caller;
-        let utxo_ids: FvmWithdrawInput =
+        let fvm_withdraw_input: FvmWithdrawInput =
             <FvmWithdrawInput as SolType>::abi_decode(msg, true)
                 .expect("failed to decode FvmWithdrawInput");
         let FvmWithdrawInput {
             utxos,
             withdraw_amount,
-        } = utxo_ids;
+        } = fvm_withdraw_input;
         let mut utxos_total_balance = 0;
         let utxos_to_spend: Vec<UtxoId> = utxos
             .iter()
@@ -195,12 +195,12 @@ impl<SDK: SharedAPI> FvmLoader<SDK> {
         let result = _exec_fuel_tx(sdk, u64::MAX, false, raw_tx_bytes);
         result.exit_code.into()
     }
+
     pub fn exec(sdk: &mut SDK, msg: &[u8]) -> ExitCode {
         let raw_tx_bytes: Bytes = msg.to_vec().into();
         let result = _exec_fuel_tx(sdk, u64::MAX, true, raw_tx_bytes);
         ExitCode::from(result.exit_code)
     }
-
 
     pub fn main_inner(&mut self) -> ExitCode {
         let asset_id: AssetId = AssetId::from_str(FUEL_TESTNET_BASE_ASSET_ID).unwrap();
