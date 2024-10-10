@@ -409,13 +409,15 @@ fn test_fvm_deposit_and_transfer_between_accounts_tx() {
     );
     let tx1: fuel_tx::Transaction = fuel_tx::Transaction::Script(script_tx1.clone());
     let fuel_tx_bytes = Bytes::from(tx1.to_bytes());
+    let mut input = FVM_EXEC_SIG_BYTES.to_vec();
+    input.extend_from_slice(fuel_tx_bytes.as_ref());
 
     println!("\n\n\n");
     let result = call_evm_tx(
         &mut ctx,
         secret2_address_as_evm.clone(),
         PRECOMPILE_FVM,
-        fuel_tx_bytes.into(),
+        input.into(),
         Some(1_000_000_000),
         None,
     );

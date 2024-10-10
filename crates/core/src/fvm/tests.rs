@@ -1,3 +1,4 @@
+use alloy_sol_types::SolValue;
 use crate::fvm::types::{FvmWithdrawInput, UtxoIdSol};
 
 #[cfg(test)]
