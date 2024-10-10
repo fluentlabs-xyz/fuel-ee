@@ -322,7 +322,6 @@ fn test_check_signatures_for_collisions() {
 fn test_fvm_deposit_and_transfer_between_accounts_tx() {
     let base_asset_id = AssetId::from_str(FUEL_TESTNET_BASE_ASSET_ID).unwrap();
     let chain_id = DEVNET_CHAIN_ID;
-    // let chain_id = 1337;
 
     let secret1 = "0x99e87b0e9158531eeeb503ff15266e2b23c2a2507b138c9d1b1f2ab458df2d61";
     let secret1_vec = revm::primitives::hex::decode(secret1).unwrap();
@@ -364,7 +363,6 @@ fn test_fvm_deposit_and_transfer_between_accounts_tx() {
         fvm_deposit_call.encode().into(),
         Some(100_000_000),
         Some(U256::from(initial_balance * 1_000_000_000)));
-    let output = result.output().unwrap_or_default();
     assert!(result.is_success());
 
     let tx_in_id: TxId =
@@ -407,7 +405,6 @@ fn test_fvm_deposit_and_transfer_between_accounts_tx() {
         Some(1_000_000_000),
         None,
     );
-    let output = result.output().unwrap_or_default();
     assert!(result.is_success());
 
     // try to use the same coins as input - must report error
