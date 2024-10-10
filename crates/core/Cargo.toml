@@ -10,7 +10,7 @@ keywords.workspace = true
 categories.workspace = true
 
 [dependencies]
-fluentbase-sdk = { workspace = true, default-features = false }
+fluentbase-sdk = { workspace = true, default-features = false, optional = true }
 rwasm = { workspace = true, default-features = false }
 
 byteorder = { workspace = true, default-features = false }

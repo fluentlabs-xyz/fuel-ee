@@ -15,9 +15,6 @@ categories = ["no-std"]
 name = "fuel-ee-contracts-abi-rs-gen"
 path = "src/main.rs"
 
-#[lib]
-#crate-type = ["cdylib", "rlib"]
-
 [dependencies]
 eyre = "0.6.12"
 ethers = "2.0.14"
