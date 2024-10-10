@@ -1,5 +1,5 @@
-use alloy_sol_types::SolValue;
 use crate::fvm::types::{FvmWithdrawInput, UtxoIdSol};
+use alloy_sol_types::SolValue;
 
 #[cfg(test)]
 mod tests {
@@ -8,25 +8,24 @@ mod tests {
         helpers_fvm::{fvm_transact, fvm_transact_commit},
     };
     use alloc::{vec, vec::Vec};
-    use core::str::FromStr;
     use fluentbase_sdk::{
         journal::{JournalState, JournalStateBuilder},
-        runtime::TestingContext,
-        Bytes34, ContractContext, U256,
+        runtime::TestingContext
+        , ContractContext, U256,
     };
     use fuel_core::{
         database::{database_description::on_chain::OnChain, Database, RegularStage},
-        executor::test_helpers::{create_contract, setup_executable_script},
-        txpool::types::TxId,
+        executor::test_helpers::{create_contract, setup_executable_script}
+        ,
     };
-    use fuel_core_executor::{executor::ExecutionData, refs::ContractRef};
     use fuel_core_executor::executor::{BlockExecutor, ExecutionOptions};
+    use fuel_core_executor::{executor::ExecutionData, refs::ContractRef};
     use fuel_core_storage::{
         rand::rngs::StdRng,
         structured_storage::StructuredStorage,
         tables::Coins,
-        transactional::{Modifiable, WriteTransaction},
-        Mappable, StorageAsMut, StorageInspect, StorageMutate,
+        transactional::{Modifiable, WriteTransaction}
+        , StorageAsMut, StorageInspect, StorageMutate,
     };
     use fuel_core_types::{
         blockchain::{
