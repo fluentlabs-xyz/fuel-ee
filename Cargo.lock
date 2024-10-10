@@ -2938,7 +2938,6 @@ dependencies = [
  "alloy-sol-types",
  "anyhow",
  "byteorder",
- "fluentbase-runtime",
  "fluentbase-sdk 0.1.0 (git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm)",
  "fuel-core",
  "fuel-core-executor",
