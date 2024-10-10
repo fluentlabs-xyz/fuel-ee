@@ -66,32 +66,9 @@ const main = async () => {
 
     if (doSendFuelTx) {
         const LOCAL_FUEL_NETWORK_PROXY = 'http://127.0.0.1:8080/v1/graphql'; // proxy
-        const LOCAL_FUEL_NETWORK = 'http://127.0.0.1:4000/v1/graphql';
+        // const LOCAL_FUEL_NETWORK = 'http://127.0.0.1:4000/v1/graphql';
         // const fuelProviderOriginal = await Provider.create(LOCAL_FUEL_NETWORK);
         const fuelProviderProxy = await Provider.create(LOCAL_FUEL_NETWORK_PROXY);
-        // let fuelBaseAssetId = "0xf8f8b6283d7fa5b672b530cbb84fcccb4ff8dc40f8176ef4544ddb1f1952ad07";
-
-        // let baseAssetIdOriginal = fuelProviderOriginal.getBaseAssetId();
-        // let baseAssetIdProxy = fuelProviderOriginal.getBaseAssetId();
-        // let chainIdOriginal = fuelProviderOriginal.getChainId();
-        // let chainIdProxy = fuelProviderOriginal.getChainId();
-        // console.log(`baseAssetIdOriginal ${baseAssetIdOriginal}`)
-        // console.log(`baseAssetIdProxy ${baseAssetIdProxy}`)
-        // console.log(`chainIdOriginal ${chainIdOriginal}`)
-        // console.log(`chainIdProxy ${chainIdProxy}`)
-
-        // let fuelTestWallet = await generateTestWallet(fuelProvider, [
-        //     [42, baseAssetId],
-        // ]);
-        // let fuelTestWalletCoins = await fuelProvider.getCoins(fuelTestWallet.address);
-        // console.log(`fuelTestWalletCoins`, fuelTestWalletCoins);
-        // let fuelTestWalletBalance = await fuelTestWallet.getBalance();
-        // console.log(`fuelWalletOfficialBalance ${fuelTestWalletBalance}`);
-
-        // let fuelSecretOfficial = "a1447cd75accc6b71a976fd3401a1f6ce318d27ba660b0315ee6ac347bf39568";
-        // let fuelWalletOfficial = Wallet.fromPrivateKey(fuelSecretOfficial, fuelProvider);
-
-        // let fuelProvider = await Provider.create(LOCAL_FUEL_NETWORK);
         let fuelProvider = fuelProviderProxy;
 
         let ethChainId = await web3.eth.getChainId();

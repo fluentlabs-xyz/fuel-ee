@@ -17,4 +17,4 @@ clean:
 .PHONE: send_wrapped_fuel_tx
 send_wrapped_fuel_tx:
 	clear
-	node ./send-wrapped-fuel-tx.js --local
+	node ./send-fuel-tx.js --local
