@@ -11,13 +11,21 @@ build:
 run_proxy:
 	cd fuel-proxy && go run main.go
 
-.PHONY: build_contracts_and_update_local_genesis
-build_contracts_and_update_local_genesis:
+.PHONY: update_local_genesis
+update_local_genesis:
+	cd ../fluentbase/crates/genesis && make
+
+.PHONY: build_contracts
+build_contracts:
 	cd crates/contracts && make
 	cp crates/contracts/assets/*.wasm ../fluentbase/crates/contracts/assets/
 	cp crates/contracts/assets/*.rwasm ../fluentbase/crates/contracts/assets/
 	cp crates/contracts/assets/*.wat ../fluentbase/crates/contracts/assets/
-	cd ../fluentbase/crates/genesis && make
+
+.PHONY: build_contracts_and_update_local_genesis
+build_contracts_and_update_local_genesis:
+	$(MAKE) build_contracts
+	$(MAKE) update_local_genesis
 
 .PHONY: run_fluent_node
 run_fluent_node:

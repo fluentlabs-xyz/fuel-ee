@@ -1,5 +1,6 @@
 PRECOMPILES=fvm
-CUR_DIR="$(shell pwd)"
+CUR_DIR=$(shell pwd)
+CUR_DIR_TOP2=$(shell realpath $(CUR_DIR)/../..)
 OUT_DIR="${CUR_DIR}/assets"
 RUSTFLAGS='-C link-arg=-zstack-size=131072 -C target-feature=+bulk-memory'
 

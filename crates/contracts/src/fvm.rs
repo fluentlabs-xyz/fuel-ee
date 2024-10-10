@@ -265,5 +265,5 @@ impl<SDK: SharedAPI> FvmLoaderEntrypoint<SDK> {
     }
 }
 
-// basic_entrypoint!(FvmLoader);
-basic_entrypoint!(FvmLoaderEntrypoint);
+basic_entrypoint!(FvmLoader);
+// basic_entrypoint!(FvmLoaderEntrypoint);

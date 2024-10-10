@@ -12,7 +12,7 @@ pub use i_fuel_ee::*;
 pub mod i_fuel_ee {
     const _: () = {
         ::core::include_bytes!(
-            "/home/bfday/github/fluentlabs-xyz/fuel-ee/crates/contracts/assets/solidity/generated/IFuelEE.abi",
+            "../../../crates/contracts/assets/solidity/generated/IFuelEE.abi",
         );
     };
     #[allow(deprecated)]
