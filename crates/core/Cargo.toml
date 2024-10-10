@@ -11,7 +11,6 @@ categories.workspace = true
 
 [dependencies]
 fluentbase-sdk = { workspace = true, default-features = false }
-fluentbase-runtime = { workspace = true, default-features = false, optional = true }
 rwasm = { workspace = true, default-features = false }
 #revm-interpreter = { workspace = true, default-features = false, features = ["rwasm"] }
 #revm-primitives = { workspace = true, default-features = false }
@@ -34,8 +33,7 @@ fuel-core-storage = { workspace = true, default-features = false, features = ["a
 fuel-core-executor = { workspace = true, default-features = false, features = ["alloc"] }
 
 [dev-dependencies]
-#fluentbase-runtime = { workspace = true, default-features = false }
-#fluentbase-sdk = { workspace = true, default-features = false }
+fluentbase-runtime = { workspace = true, default-features = false }
 hex = { workspace = true }
 hex-literal = { workspace = true }
 fuel-core = { workspace = true, features = ["test-helpers"] }
@@ -50,8 +48,6 @@ crate-type = ["cdylib", "rlib"]
 default = ["std"]
 std = [
     "fluentbase-sdk/std",
-    #    "revm-interpreter/std",
-    "dep:fluentbase-runtime",
     "fluentbase-runtime/std",
 ]
 debug-print = []
