@@ -21,10 +21,10 @@ pub mod i_fuel_ee {
             constructor: ::core::option::Option::None,
             functions: ::core::convert::From::from([
                 (
-                    ::std::borrow::ToOwned::to_owned("fvmDeposit"),
+                    ::std::borrow::ToOwned::to_owned("fvm_deposit"),
                     ::std::vec![
                         ::ethers::core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("fvmDeposit"),
+                            name: ::std::borrow::ToOwned::to_owned("fvm_deposit"),
                             inputs: ::std::vec![
                                 ::ethers::core::abi::ethabi::Param {
                                     name: ::std::borrow::ToOwned::to_owned("address32"),
@@ -46,16 +46,20 @@ pub mod i_fuel_ee {
                     ],
                 ),
                 (
-                    ::std::borrow::ToOwned::to_owned("fvmDryRun"),
+                    ::std::borrow::ToOwned::to_owned("fvm_dry_run"),
                     ::std::vec![
                         ::ethers::core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("fvmDryRun"),
+                            name: ::std::borrow::ToOwned::to_owned("fvm_dry_run"),
                             inputs: ::std::vec![
                                 ::ethers::core::abi::ethabi::Param {
                                     name: ::std::borrow::ToOwned::to_owned("data"),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Bytes,
+                                    kind: ::ethers::core::abi::ethabi::ParamType::Array(
+                                        ::std::boxed::Box::new(
+                                            ::ethers::core::abi::ethabi::ParamType::Uint(8usize),
+                                        ),
+                                    ),
                                     internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("bytes"),
+                                        ::std::borrow::ToOwned::to_owned("uint8[]"),
                                     ),
                                 },
                             ],
@@ -66,16 +70,20 @@ pub mod i_fuel_ee {
                     ],
                 ),
                 (
-                    ::std::borrow::ToOwned::to_owned("fvmExec"),
+                    ::std::borrow::ToOwned::to_owned("fvm_exec"),
                     ::std::vec![
                         ::ethers::core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("fvmExec"),
+                            name: ::std::borrow::ToOwned::to_owned("fvm_exec"),
                             inputs: ::std::vec![
                                 ::ethers::core::abi::ethabi::Param {
                                     name: ::std::borrow::ToOwned::to_owned("data"),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Bytes,
+                                    kind: ::ethers::core::abi::ethabi::ParamType::Array(
+                                        ::std::boxed::Box::new(
+                                            ::ethers::core::abi::ethabi::ParamType::Uint(8usize),
+                                        ),
+                                    ),
                                     internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("bytes"),
+                                        ::std::borrow::ToOwned::to_owned("uint8[]"),
                                     ),
                                 },
                             ],
@@ -86,16 +94,37 @@ pub mod i_fuel_ee {
                     ],
                 ),
                 (
-                    ::std::borrow::ToOwned::to_owned("fvmWithdraw"),
+                    ::std::borrow::ToOwned::to_owned("fvm_withdraw"),
                     ::std::vec![
                         ::ethers::core::abi::ethabi::Function {
-                            name: ::std::borrow::ToOwned::to_owned("fvmWithdraw"),
+                            name: ::std::borrow::ToOwned::to_owned("fvm_withdraw"),
                             inputs: ::std::vec![
                                 ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("data"),
-                                    kind: ::ethers::core::abi::ethabi::ParamType::Bytes,
+                                    name: ::std::borrow::ToOwned::to_owned("withdraw_amount"),
+                                    kind: ::ethers::core::abi::ethabi::ParamType::Uint(64usize),
                                     internal_type: ::core::option::Option::Some(
-                                        ::std::borrow::ToOwned::to_owned("bytes"),
+                                        ::std::borrow::ToOwned::to_owned("uint64"),
+                                    ),
+                                },
+                                ::ethers::core::abi::ethabi::Param {
+                                    name: ::std::borrow::ToOwned::to_owned("utxos"),
+                                    kind: ::ethers::core::abi::ethabi::ParamType::Array(
+                                        ::std::boxed::Box::new(
+                                            ::ethers::core::abi::ethabi::ParamType::Tuple(
+                                                ::std::vec![
+                                                    ::ethers::core::abi::ethabi::ParamType::FixedArray(
+                                                        ::std::boxed::Box::new(
+                                                            ::ethers::core::abi::ethabi::ParamType::Uint(8usize),
+                                                        ),
+                                                        32usize,
+                                                    ),
+                                                    ::ethers::core::abi::ethabi::ParamType::Uint(16usize),
+                                                ],
+                                            ),
+                                        ),
+                                    ),
+                                    internal_type: ::core::option::Option::Some(
+                                        ::std::borrow::ToOwned::to_owned("struct UtxoIdSol[]"),
                                     ),
                                 },
                             ],
@@ -153,40 +182,41 @@ pub mod i_fuel_ee {
                 ),
             )
         }
-        ///Calls the contract's `fvmDeposit` (0xfcf623ca) function
+        ///Calls the contract's `fvm_deposit` (0xbb861dbe) function
         pub fn fvm_deposit(
             &self,
             address_32: [u8; 32],
         ) -> ::ethers::contract::builders::ContractCall<M, ()> {
             self.0
-                .method_hash([252, 246, 35, 202], address_32)
+                .method_hash([187, 134, 29, 190], address_32)
                 .expect("method not found (this should never happen)")
         }
-        ///Calls the contract's `fvmDryRun` (0xb8225987) function
+        ///Calls the contract's `fvm_dry_run` (0xf857b299) function
         pub fn fvm_dry_run(
             &self,
-            data: ::ethers::core::types::Bytes,
+            data: ::std::vec::Vec<u8>,
         ) -> ::ethers::contract::builders::ContractCall<M, ()> {
             self.0
-                .method_hash([184, 34, 89, 135], data)
+                .method_hash([248, 87, 178, 153], data)
                 .expect("method not found (this should never happen)")
         }
-        ///Calls the contract's `fvmExec` (0x2ee9d397) function
+        ///Calls the contract's `fvm_exec` (0x1da1c731) function
         pub fn fvm_exec(
             &self,
-            data: ::ethers::core::types::Bytes,
+            data: ::std::vec::Vec<u8>,
         ) -> ::ethers::contract::builders::ContractCall<M, ()> {
             self.0
-                .method_hash([46, 233, 211, 151], data)
+                .method_hash([29, 161, 199, 49], data)
                 .expect("method not found (this should never happen)")
         }
-        ///Calls the contract's `fvmWithdraw` (0x9429ef5d) function
+        ///Calls the contract's `fvm_withdraw` (0x2c52fba8) function
         pub fn fvm_withdraw(
             &self,
-            data: ::ethers::core::types::Bytes,
+            withdraw_amount: u64,
+            utxos: ::std::vec::Vec<UtxoIdSol>,
         ) -> ::ethers::contract::builders::ContractCall<M, ()> {
             self.0
-                .method_hash([148, 41, 239, 93], data)
+                .method_hash([44, 82, 251, 168], (withdraw_amount, utxos))
                 .expect("method not found (this should never happen)")
         }
     }
@@ -196,7 +226,7 @@ pub mod i_fuel_ee {
             Self::new(contract.address(), contract.client())
         }
     }
-    ///Container type for all input parameters for the `fvmDeposit` function with signature `fvmDeposit(uint8[32])` and selector `0xfcf623ca`
+    ///Container type for all input parameters for the `fvm_deposit` function with signature `fvm_deposit(uint8[32])` and selector `0xbb861dbe`
     #[derive(
         Clone,
         ::ethers::contract::EthCall,
@@ -207,11 +237,11 @@ pub mod i_fuel_ee {
         Eq,
         Hash
     )]
-    #[ethcall(name = "fvmDeposit", abi = "fvmDeposit(uint8[32])")]
+    #[ethcall(name = "fvm_deposit", abi = "fvm_deposit(uint8[32])")]
     pub struct FvmDepositCall {
         pub address_32: [u8; 32],
     }
-    ///Container type for all input parameters for the `fvmDryRun` function with signature `fvmDryRun(bytes)` and selector `0xb8225987`
+    ///Container type for all input parameters for the `fvm_dry_run` function with signature `fvm_dry_run(uint8[])` and selector `0xf857b299`
     #[derive(
         Clone,
         ::ethers::contract::EthCall,
@@ -222,11 +252,11 @@ pub mod i_fuel_ee {
         Eq,
         Hash
     )]
-    #[ethcall(name = "fvmDryRun", abi = "fvmDryRun(bytes)")]
+    #[ethcall(name = "fvm_dry_run", abi = "fvm_dry_run(uint8[])")]
     pub struct FvmDryRunCall {
-        pub data: ::ethers::core::types::Bytes,
+        pub data: ::std::vec::Vec<u8>,
     }
-    ///Container type for all input parameters for the `fvmExec` function with signature `fvmExec(bytes)` and selector `0x2ee9d397`
+    ///Container type for all input parameters for the `fvm_exec` function with signature `fvm_exec(uint8[])` and selector `0x1da1c731`
     #[derive(
         Clone,
         ::ethers::contract::EthCall,
@@ -237,11 +267,11 @@ pub mod i_fuel_ee {
         Eq,
         Hash
     )]
-    #[ethcall(name = "fvmExec", abi = "fvmExec(bytes)")]
+    #[ethcall(name = "fvm_exec", abi = "fvm_exec(uint8[])")]
     pub struct FvmExecCall {
-        pub data: ::ethers::core::types::Bytes,
+        pub data: ::std::vec::Vec<u8>,
     }
-    ///Container type for all input parameters for the `fvmWithdraw` function with signature `fvmWithdraw(bytes)` and selector `0x9429ef5d`
+    ///Container type for all input parameters for the `fvm_withdraw` function with signature `fvm_withdraw(uint64,(uint8[32],uint16)[])` and selector `0x2c52fba8`
     #[derive(
         Clone,
         ::ethers::contract::EthCall,
@@ -252,9 +282,10 @@ pub mod i_fuel_ee {
         Eq,
         Hash
     )]
-    #[ethcall(name = "fvmWithdraw", abi = "fvmWithdraw(bytes)")]
+    #[ethcall(name = "fvm_withdraw", abi = "fvm_withdraw(uint64,(uint8[32],uint16)[])")]
     pub struct FvmWithdrawCall {
-        pub data: ::ethers::core::types::Bytes,
+        pub withdraw_amount: u64,
+        pub utxos: ::std::vec::Vec<UtxoIdSol>,
     }
     ///Container type for all of the contract's call
     #[derive(Clone, ::ethers::contract::EthAbiType, Debug, PartialEq, Eq, Hash)]
@@ -337,5 +368,20 @@ pub mod i_fuel_ee {
         fn from(value: FvmWithdrawCall) -> Self {
             Self::FvmWithdraw(value)
         }
+    }
+    ///`UtxoIdSol(uint8[32],uint16)`
+    #[derive(
+        Clone,
+        ::ethers::contract::EthAbiType,
+        ::ethers::contract::EthAbiCodec,
+        Default,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash
+    )]
+    pub struct UtxoIdSol {
+        pub tx_id: [::ethers::core::types::Uint8; 32],
+        pub output_index: u16,
     }
 }

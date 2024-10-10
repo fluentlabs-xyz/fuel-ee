@@ -3,7 +3,7 @@ const {Wallet, Provider, Signer} = require('fuels');
 const { BN } = require('@fuel-ts/math');
 
 const DEPLOYER_PRIVATE_KEY = 'ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
-const PRECOMPILE_FVM_ADDRESS = '0x0000000000000000000000000000000000005250';
+const FVM_PRECOMPILE_ADDRESS = '0x0000000000000000000000000000000000005250';
 
 function dec2hex(n) {
     let res = n ? [n % 256].concat(dec2hex(~~(n / 256))) : [];
@@ -53,9 +53,7 @@ const main = async () => {
     let doDepositEthToFuel = 1;
     let doWithdrawEthFromFuel = 0;
     let doSendFuelTx = 1;
-
-    let fvmPrecompileAddress = "0x0000000000000000000000000000000000005250";
-
+    
     // let fuelTxOwnerAddress = "0x369f74918912b80c9947d6A174c0C6e2c95fAe1D";
     // let fuelTxOwnerAddressBalance = await web3.eth.getBalance(fuelTxOwnerAddress);
     // console.log(`for fuelTxOwnerAddress ${fuelTxOwnerAddress} balance ${fuelTxOwnerAddressBalance}`);
@@ -99,7 +97,7 @@ const main = async () => {
                 from: account.address,
                 gasPrice: gasPrice,
                 gas: 300_000_000,
-                to: fvmPrecompileAddress,
+                to: FVM_PRECOMPILE_ADDRESS,
                 value: ethAmountToSend,
                 data: Buffer.from(data),
             };
@@ -128,7 +126,7 @@ const main = async () => {
                 from: account.address,
                 gasPrice: gasPrice,
                 gas: 300_000_000,
-                to: fvmPrecompileAddress,
+                to: FVM_PRECOMPILE_ADDRESS,
                 value: ethAmountToSend,
                 data: Buffer.from(data),
                 // "chainId": 1337 // Remember to change this

@@ -1,18 +1,21 @@
+use crate::generated::i_fuel_ee::FvmDepositCall;
+use alloy_sol_types::private::keccak256;
 use alloy_sol_types::SolValue;
 use core::{
     mem::take,
     str::{from_utf8, FromStr},
 };
-use alloy_sol_types::private::keccak256;
 use ethers::abi::AbiEncode;
+use fluentbase_genesis::devnet::GENESIS_KECCAK_HASH_SLOT;
 use fluentbase_genesis::{
     devnet::{devnet_genesis_from_file, GENESIS_POSEIDON_HASH_SLOT},
     Genesis
+
+
     ,
 };
-use fluentbase_genesis::devnet::GENESIS_KECCAK_HASH_SLOT;
 use fluentbase_poseidon::poseidon_hash;
-use fluentbase_runtime::{RuntimeContext};
+use fluentbase_runtime::RuntimeContext;
 use fluentbase_sdk::runtime::TestingContext;
 use fluentbase_types::{calc_create_address, Account, Address, Bytes, NativeAPI, SharedAPI, DEVNET_CHAIN_ID, KECCAK_EMPTY, POSEIDON_EMPTY, PRECOMPILE_FVM, U256};
 use fuel_core_types::{
@@ -23,16 +26,15 @@ use fuel_core_types::{
     },
     fuel_types::{canonical::Serialize, AssetId, BlockHeight, ChainId},
 };
-use fuel_ee_core::fvm::types::{FvmWithdrawInput, UtxoIdSol, FVM_DRY_RUN_SIG, FVM_DRY_RUN_SIG_BYTES, FVM_EXEC_SIG, FVM_EXEC_SIG_BYTES};
+use fuel_ee_core::fvm::types::{FvmWithdrawInput, UtxoIdSol, FVM_DRY_RUN_SIG_BYTES, FVM_EXEC_SIG_BYTES};
 use fuel_ee_core::fvm::{
     helpers::FUEL_TESTNET_BASE_ASSET_ID,
-    types::{FVM_DEPOSIT_SIG, FVM_DEPOSIT_SIG_BYTES, FVM_WITHDRAW_SIG, FVM_WITHDRAW_SIG_BYTES},
+    types::{FVM_DEPOSIT_SIG_BYTES, FVM_WITHDRAW_SIG_BYTES},
 };
 use fuel_tx::field::Witnesses;
 use fuel_tx::{ConsensusParameters, Input, TransactionBuilder, TransactionRepr, TxId, TxPointer, UtxoId};
 use fuel_vm::{fuel_asm::RegId, storage::MemoryStorage};
 use hashbrown::HashMap;
-use hex::FromHex;
 use revm::{
     primitives::{AccountInfo, Bytecode, Env, ExecutionResult, TransactTo},
     rwasm::RwasmDbWrapper,
@@ -41,7 +43,6 @@ use revm::{
     InMemoryDB,
 };
 use rwasm::rwasm::{BinaryFormat, RwasmModule};
-use crate::generated::i_fuel_ee::FvmDepositCall;
 
 #[allow(dead_code)]
 struct EvmTestingContext {
@@ -327,14 +328,12 @@ fn test_fvm_deposit_and_transfer_between_accounts_tx() {
     let secret1_vec = revm::primitives::hex::decode(secret1).unwrap();
     let secret1_secret_key = SecretKey::try_from(secret1_vec.as_slice()).unwrap();
     let secret1_address = Input::owner(&secret1_secret_key.public_key());
-    println!("secret1_address: {}", secret1_address);
     let secret1_address_as_evm = Address::from_slice(&secret1_address.as_slice()[12..]);
 
     let secret2 = "0xde97d8624a438121b86a1956544bd72ed68cd69f2c99555b08b1e8c51ffd511c";
     let secret2_vec = revm::primitives::hex::decode(secret2).unwrap();
     let secret2_secret_key = SecretKey::try_from(secret2_vec.as_slice()).unwrap();
     let secret2_address = Input::owner(&secret2_secret_key.public_key());
-    println!("secret2_address: {}", secret2_address);
     let secret2_address_as_evm = Address::from_slice(&secret2_address.as_slice()[12..]);
 
     let initial_balance = 1000;
@@ -357,19 +356,15 @@ fn test_fvm_deposit_and_transfer_between_accounts_tx() {
     let mut ctx = EvmTestingContext::default();
 
     // deposit to FVM
-    let mut input = Vec::<u8>::new();
-    input.extend_from_slice(FVM_DEPOSIT_SIG_BYTES.as_slice());
-    input.extend_from_slice(secret2_address.as_slice());
+    let fvm_deposit_call = FvmDepositCall { address_32: secret2_address.0 };
     let result = call_evm_tx(
         &mut ctx,
         secret1_address_as_evm.clone(),
         PRECOMPILE_FVM,
-        input.into(),
+        fvm_deposit_call.encode().into(),
         Some(100_000_000),
         Some(U256::from(initial_balance * 1_000_000_000)));
-    println!("move coins evm->fvm: {:?}", result);
     let output = result.output().unwrap_or_default();
-    println!("output: {}", from_utf8(output).unwrap_or_default());
     assert!(result.is_success());
 
     let tx_in_id: TxId =
@@ -399,20 +394,11 @@ fn test_fvm_deposit_and_transfer_between_accounts_tx() {
             base_asset_id,
         ));
     let mut script_tx1 = test_builder.build().transaction().clone();
-    println!(
-        "tx1: {:?}",
-        &script_tx1
-    );
-    println!(
-        "tx1.witnesses()[0].as_vec(): {:x?}",
-        script_tx1.witnesses()[0].as_vec()
-    );
     let tx1: fuel_tx::Transaction = fuel_tx::Transaction::Script(script_tx1.clone());
     let fuel_tx_bytes = Bytes::from(tx1.to_bytes());
     let mut input = FVM_EXEC_SIG_BYTES.to_vec();
     input.extend_from_slice(fuel_tx_bytes.as_ref());
 
-    println!("\n\n\n");
     let result = call_evm_tx(
         &mut ctx,
         secret2_address_as_evm.clone(),
@@ -421,9 +407,7 @@ fn test_fvm_deposit_and_transfer_between_accounts_tx() {
         Some(1_000_000_000),
         None,
     );
-    println!("call_evm_tx result: {:?}", result);
     let output = result.output().unwrap_or_default();
-    println!("output: {}", from_utf8(output).unwrap_or_default());
     assert!(result.is_success());
 
     // try to use the same coins as input - must report error
@@ -431,7 +415,6 @@ fn test_fvm_deposit_and_transfer_between_accounts_tx() {
     let tx1: fuel_tx::Transaction = fuel_tx::Transaction::Script(script_tx1.clone());
     let fuel_tx_bytes = Bytes::from(tx1.to_bytes());
 
-    println!("\n\n\n");
     let result = call_evm_tx(
         &mut ctx,
         secret2_address_as_evm.clone(),
@@ -440,9 +423,7 @@ fn test_fvm_deposit_and_transfer_between_accounts_tx() {
         Some(1_000_000_000),
         None,
     );
-    println!("call_evm_tx result: {:?}", result);
     let output = result.output().unwrap_or_default();
-    println!("output: {}", from_utf8(output).unwrap_or_default());
     assert!(!result.is_success());
 }
 
@@ -450,21 +431,18 @@ fn test_fvm_deposit_and_transfer_between_accounts_tx() {
 fn test_fvm_deposit_then_withdraw() {
     let base_asset_id = AssetId::from_str(FUEL_TESTNET_BASE_ASSET_ID).unwrap();
     let chain_id = DEVNET_CHAIN_ID;
-    let chain_id = 0x1;
+    // let chain_id = 0x1;
 
     let secret1 = "0x99e87b0e9158531eeeb503ff15266e2b23c2a2507b138c9d1b1f2ab458df2d61";
     let secret1_vec = revm::primitives::hex::decode(secret1).unwrap();
     let secret1_secret_key = SecretKey::try_from(secret1_vec.as_slice()).unwrap();
     let secret1_address = Input::owner(&secret1_secret_key.public_key());
-    println!("secret1_address: {}", secret1_address);
     let secret1_address_as_evm = Address::from_slice(&secret1_address.as_slice()[12..]);
 
     let secret2 = "0xde97d8624a438121b86a1956544bd72ed68cd69f2c99555b08b1e8c51ffd511c";
     let secret2_vec = revm::primitives::hex::decode(secret2).unwrap();
     let secret2_secret_key = SecretKey::try_from(secret2_vec.as_slice()).unwrap();
     let secret2_address = Input::owner(&secret2_secret_key.public_key());
-    println!("secret2_address: {}", secret2_address);
-    // let secret2_address_as_evm = Address::from_slice(&secret2_address.as_slice()[12..]);
 
     let coins_sent = 0x500;
 
@@ -479,7 +457,7 @@ fn test_fvm_deposit_then_withdraw() {
     assert_eq!(balance_before_deposit_to_fvm, U256::from(1e18));
 
     // FVM deposit
-    let fvm_deposit_call = FvmDepositCall{ address_32: secret2_address.0 };
+    let fvm_deposit_call = FvmDepositCall { address_32: secret2_address.0 };
     let input = fvm_deposit_call.encode();
     let result = call_evm_tx_simple(
         &mut ctx,
@@ -487,10 +465,9 @@ fn test_fvm_deposit_then_withdraw() {
         PRECOMPILE_FVM,
         input.into(),
         Some(100_000_000),
-        Some(U256::from(coins_sent * 1e9 as u64)));
-    println!("move coins evm->fvm result: {:?}", result);
+        Some(U256::from(coins_sent * 1e9 as u64)),
+    );
     let output = result.output().unwrap_or_default();
-    println!("output: {}", from_utf8(output).unwrap_or_default());
     assert!(result.is_success());
 
     let balance_after_deposit_to_fvm = ctx.get_balance(secret1_address_as_evm);
@@ -517,9 +494,7 @@ fn test_fvm_deposit_then_withdraw() {
         input.into(),
         Some(3_000_000_000),
         None);
-    println!("move coins fvm->evm result: {:?}", result);
     let output = result.output().unwrap_or_default();
-    println!("output: {}", from_utf8(output).unwrap_or_default());
     assert!(result.is_success());
 
     let balance_after_withdraw_from_fvm = ctx.get_balance(secret1_address_as_evm);

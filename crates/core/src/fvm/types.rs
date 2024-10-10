@@ -22,10 +22,10 @@ use fuel_core_types::{
     services::relayer::Event,
 };
 
-pub const FVM_DEPOSIT_SIG: u32 = derive_keccak256_id!("fvmDeposit(uint8[32])");
-pub const FVM_WITHDRAW_SIG: u32 = derive_keccak256_id!("fvmWithdraw(bytes)");
-pub const FVM_DRY_RUN_SIG: u32 = derive_keccak256_id!("fvmDryRun(bytes)");
-pub const FVM_EXEC_SIG: u32 = derive_keccak256_id!("fvmExec(bytes)");
+pub const FVM_DEPOSIT_SIG: u32 = derive_keccak256_id!("fvm_deposit(uint8[32])");
+pub const FVM_WITHDRAW_SIG: u32 = derive_keccak256_id!("fvm_withdraw(uint8[])");
+pub const FVM_DRY_RUN_SIG: u32 = derive_keccak256_id!("fvm_dry_run(uint8[])");
+pub const FVM_EXEC_SIG: u32 = derive_keccak256_id!("fvm_exec(uint8[])");
 
 pub const FVM_DEPOSIT_SIG_BYTES: [u8; 4] = FVM_DEPOSIT_SIG.to_be_bytes();
 pub const FVM_WITHDRAW_SIG_BYTES: [u8; 4] = FVM_WITHDRAW_SIG.to_be_bytes();
@@ -41,7 +41,7 @@ sol! {
 sol! {
     #[derive(PartialEq, Eq, Debug)]
     struct UtxoIdSol {
-        bytes32 tx_id;
+        uint8[32] tx_id;
         uint16 output_index;
     }
 }
