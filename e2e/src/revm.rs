@@ -431,7 +431,6 @@ fn test_fvm_deposit_and_transfer_between_accounts_tx() {
 fn test_fvm_deposit_then_withdraw() {
     let base_asset_id = AssetId::from_str(FUEL_TESTNET_BASE_ASSET_ID).unwrap();
     let chain_id = DEVNET_CHAIN_ID;
-    // let chain_id = 0x1;
 
     let secret1 = "0x99e87b0e9158531eeeb503ff15266e2b23c2a2507b138c9d1b1f2ab458df2d61";
     let secret1_vec = revm::primitives::hex::decode(secret1).unwrap();
@@ -467,7 +466,6 @@ fn test_fvm_deposit_then_withdraw() {
         Some(100_000_000),
         Some(U256::from(coins_sent * 1e9 as u64)),
     );
-    let output = result.output().unwrap_or_default();
     assert!(result.is_success());
 
     let balance_after_deposit_to_fvm = ctx.get_balance(secret1_address_as_evm);
@@ -494,7 +492,6 @@ fn test_fvm_deposit_then_withdraw() {
         input.into(),
         Some(3_000_000_000),
         None);
-    let output = result.output().unwrap_or_default();
     assert!(result.is_success());
 
     let balance_after_withdraw_from_fvm = ctx.get_balance(secret1_address_as_evm);
