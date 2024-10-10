@@ -12,7 +12,7 @@ pub use i_fuel_ee::*;
 pub mod i_fuel_ee {
     const _: () = {
         ::core::include_bytes!(
-            "/home/bfday/github/fluentlabs-xyz/fuel-ee/crates/contracts/assets/solidity/generated/IFuelEE.abi",
+            "../../../crates/contracts/assets/solidity/generated/IFuelEE.abi",
         );
     };
     #[allow(deprecated)]
@@ -52,7 +52,7 @@ pub mod i_fuel_ee {
                             name: ::std::borrow::ToOwned::to_owned("fvmDryRun"),
                             inputs: ::std::vec![
                                 ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("msg"),
+                                    name: ::std::borrow::ToOwned::to_owned("data"),
                                     kind: ::ethers::core::abi::ethabi::ParamType::Bytes,
                                     internal_type: ::core::option::Option::Some(
                                         ::std::borrow::ToOwned::to_owned("bytes"),
@@ -72,7 +72,7 @@ pub mod i_fuel_ee {
                             name: ::std::borrow::ToOwned::to_owned("fvmExec"),
                             inputs: ::std::vec![
                                 ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("msg"),
+                                    name: ::std::borrow::ToOwned::to_owned("data"),
                                     kind: ::ethers::core::abi::ethabi::ParamType::Bytes,
                                     internal_type: ::core::option::Option::Some(
                                         ::std::borrow::ToOwned::to_owned("bytes"),
@@ -92,7 +92,7 @@ pub mod i_fuel_ee {
                             name: ::std::borrow::ToOwned::to_owned("fvmWithdraw"),
                             inputs: ::std::vec![
                                 ::ethers::core::abi::ethabi::Param {
-                                    name: ::std::borrow::ToOwned::to_owned("msg"),
+                                    name: ::std::borrow::ToOwned::to_owned("data"),
                                     kind: ::ethers::core::abi::ethabi::ParamType::Bytes,
                                     internal_type: ::core::option::Option::Some(
                                         ::std::borrow::ToOwned::to_owned("bytes"),
@@ -165,28 +165,28 @@ pub mod i_fuel_ee {
         ///Calls the contract's `fvmDryRun` (0xb8225987) function
         pub fn fvm_dry_run(
             &self,
-            msg: ::ethers::core::types::Bytes,
+            data: ::ethers::core::types::Bytes,
         ) -> ::ethers::contract::builders::ContractCall<M, ()> {
             self.0
-                .method_hash([184, 34, 89, 135], msg)
+                .method_hash([184, 34, 89, 135], data)
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `fvmExec` (0x2ee9d397) function
         pub fn fvm_exec(
             &self,
-            msg: ::ethers::core::types::Bytes,
+            data: ::ethers::core::types::Bytes,
         ) -> ::ethers::contract::builders::ContractCall<M, ()> {
             self.0
-                .method_hash([46, 233, 211, 151], msg)
+                .method_hash([46, 233, 211, 151], data)
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `fvmWithdraw` (0x9429ef5d) function
         pub fn fvm_withdraw(
             &self,
-            msg: ::ethers::core::types::Bytes,
+            data: ::ethers::core::types::Bytes,
         ) -> ::ethers::contract::builders::ContractCall<M, ()> {
             self.0
-                .method_hash([148, 41, 239, 93], msg)
+                .method_hash([148, 41, 239, 93], data)
                 .expect("method not found (this should never happen)")
         }
     }
@@ -224,7 +224,7 @@ pub mod i_fuel_ee {
     )]
     #[ethcall(name = "fvmDryRun", abi = "fvmDryRun(bytes)")]
     pub struct FvmDryRunCall {
-        pub msg: ::ethers::core::types::Bytes,
+        pub data: ::ethers::core::types::Bytes,
     }
     ///Container type for all input parameters for the `fvmExec` function with signature `fvmExec(bytes)` and selector `0x2ee9d397`
     #[derive(
@@ -239,7 +239,7 @@ pub mod i_fuel_ee {
     )]
     #[ethcall(name = "fvmExec", abi = "fvmExec(bytes)")]
     pub struct FvmExecCall {
-        pub msg: ::ethers::core::types::Bytes,
+        pub data: ::ethers::core::types::Bytes,
     }
     ///Container type for all input parameters for the `fvmWithdraw` function with signature `fvmWithdraw(bytes)` and selector `0x9429ef5d`
     #[derive(
@@ -254,7 +254,7 @@ pub mod i_fuel_ee {
     )]
     #[ethcall(name = "fvmWithdraw", abi = "fvmWithdraw(bytes)")]
     pub struct FvmWithdrawCall {
-        pub msg: ::ethers::core::types::Bytes,
+        pub data: ::ethers::core::types::Bytes,
     }
     ///Container type for all of the contract's call
     #[derive(Clone, ::ethers::contract::EthAbiType, Debug, PartialEq, Eq, Hash)]

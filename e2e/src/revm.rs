@@ -477,10 +477,8 @@ fn test_fvm_deposit_then_withdraw() {
     assert_eq!(balance_before_deposit_to_fvm, U256::from(1e18));
 
     // FVM deposit
-    let mut input = Vec::<u8>::new();
-    // input.extend_from_slice(FVM_DEPOSIT_SIG_BYTES.as_slice());
     let fvm_deposit_call = FvmDepositCall{ address_32: secret2_address.0 };
-    input.extend_from_slice(fvm_deposit_call.encode().as_slice());
+    let input = fvm_deposit_call.encode();
     let result = call_evm_tx_simple(
         &mut ctx,
         secret1_address_as_evm.clone(),

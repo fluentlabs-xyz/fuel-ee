@@ -1,11 +1,6 @@
-use std::path::PathBuf;
-use ethers::{
-    prelude::{abigen, Abigen},
-    providers::{Http, Provider},
-    types::Address,
-};
+use ethers::prelude::Abigen;
 use eyre::Result;
-use std::sync::Arc;
+use std::path::PathBuf;
 use std::str::FromStr;
 
 fn main() -> Result<()> {
@@ -19,7 +14,8 @@ fn rust_file_generation() -> Result<()> {
     if out_file.exists() {
         std::fs::remove_file(&out_file)?;
     }
-    Abigen::new("IFuelEE", abi_source)?.generate()?.write_to_file(out_file)?;
+    let mut abi_gen = Abigen::new("IFuelEE", abi_source)?;
+    abi_gen.generate()?.write_to_file(out_file)?;
 
     Ok(())
 }

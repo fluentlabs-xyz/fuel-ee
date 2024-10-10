@@ -2,9 +2,9 @@ pragma solidity ^0.8.26;
 
 interface IFuelEE {
     function fvmDeposit(uint8[32] calldata address32) external payable;
-    function fvmWithdraw(bytes calldata msg) external;
-    function fvmDryRun(bytes calldata msg) external;
-    function fvmExec(bytes calldata msg) external;
+    function fvmWithdraw(bytes calldata data) external;
+    function fvmDryRun(bytes calldata data) external;
+    function fvmExec(bytes calldata data) external;
 }
 
 contract FuelEE {

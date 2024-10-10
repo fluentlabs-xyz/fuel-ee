@@ -214,7 +214,7 @@ impl<SDK: SharedAPI> FvmLoader<SDK> {
         } else if input.as_ref().starts_with(FVM_EXEC_SIG_BYTES.as_slice()) {
             return FvmLoader::exec(&mut self.sdk, input.slice(FVM_EXEC_SIG_BYTES.len()..).as_ref());
         }
-        panic!("couldn't detect function selector signature")
+        panic!("couldn't match with any function selector")
     }
 }
 
@@ -265,5 +265,5 @@ impl<SDK: SharedAPI> FvmLoaderEntrypoint<SDK> {
     }
 }
 
-// basic_entrypoint!(FvmLoader);
-basic_entrypoint!(FvmLoaderEntrypoint);
+basic_entrypoint!(FvmLoader);
+// basic_entrypoint!(FvmLoaderEntrypoint);

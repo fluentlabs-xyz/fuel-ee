@@ -13,7 +13,7 @@ run_proxy:
 
 .PHONY: build_contracts_and_update_local_genesis
 build_contracts_and_update_local_genesis:
-	cd crates/contracts && make fvm
+	cd crates/contracts && make
 	cp crates/contracts/assets/*.wasm ../fluentbase/crates/contracts/assets/
 	cp crates/contracts/assets/*.rwasm ../fluentbase/crates/contracts/assets/
 	cp crates/contracts/assets/*.wat ../fluentbase/crates/contracts/assets/
