@@ -61,10 +61,9 @@ paste = { version = "1.0", default-features = false }
 revm-interpreter = { path = "../fluentbase/revm/crates/interpreter", default-features = false, features = ["rwasm"] }
 revm-primitives = { path = "../fluentbase/revm/crates/primitives", default-features = false, features = ["rwasm"] }
 revm-precompile = { path = "../fluentbase/revm/crates/precompile", default-features = false, features = ["rwasm"] }
-revm = { package = "revm-fluent", path = "../fluentbase/revm/crates/revm_fluent", default-features = false, features = [
+revm = { package = "revm", path = "../fluentbase/revm/crates/revm", default-features = false, features = [
     "hashbrown",
     "blst",
-    "rwasm",
 ] }
 zeth-primitives = { git = "https://github.com/fluentlabs-xyz/zeth-rwasm.git", branch = "rwasm", default-features = false }
 #revm-interpreter = { package = "revm-interpreter-fluent", path = "../revm-rwasm/crates/interpreter_fluent", default-features = false, features = ["rwasm"] }

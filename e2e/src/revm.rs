@@ -3,12 +3,14 @@ use core::{
     mem::take,
     str::{from_utf8, FromStr},
 };
+use alloy_sol_types::private::keccak256;
 use ethers::abi::AbiEncode;
 use fluentbase_genesis::{
     devnet::{devnet_genesis_from_file, GENESIS_POSEIDON_HASH_SLOT},
     Genesis
     ,
 };
+use fluentbase_genesis::devnet::GENESIS_KECCAK_HASH_SLOT;
 use fluentbase_poseidon::poseidon_hash;
 use fluentbase_runtime::{RuntimeContext};
 use fluentbase_sdk::runtime::TestingContext;
@@ -71,40 +73,34 @@ impl EvmTestingContext {
                         .map(|v| poseidon_hash(&v).into())
                         .unwrap_or(POSEIDON_EMPTY)
                 });
-            // let keccak_hash = v
-            //     .storage
-            //     .as_ref()
-            //     .and_then(|v| v.get(&GENESIS_KECCAK_HASH_SLOT).cloned())
-            //     .unwrap_or_else(|| {
-            //         v.code
-            //             .as_ref()
-            //             .map(|v| keccak256(&v))
-            //             .unwrap_or(KECCAK_EMPTY)
-            //     });
+            let _keccak_hash = v
+                .storage
+                .as_ref()
+                .and_then(|v| v.get(&GENESIS_KECCAK_HASH_SLOT).cloned())
+                .unwrap_or_else(|| {
+                    v.code
+                        .as_ref()
+                        .map(|v| keccak256(&v))
+                        .unwrap_or(KECCAK_EMPTY)
+                });
             let account = Account {
                 address: *k,
                 balance: v.balance,
                 nonce: v.nonce.unwrap_or_default(),
                 // it makes not much sense to fill these fields, but it reduces hash calculation
                 // time a bit
-                // source_code_size: v.code.as_ref().map(|v| v.len() as u64).unwrap_or_default(),
-                // source_code_hash: keccak_hash,
-                rwasm_code_size: v.code.as_ref().map(|v| v.len() as u64).unwrap_or_default(),
-                rwasm_code_hash: poseidon_hash,
-                ..Default::default()
+                code_size: v.code.as_ref().map(|v| v.len() as u64).unwrap_or_default(),
+                code_hash: poseidon_hash,
             };
             let mut info: AccountInfo = account.into();
             info.code = v.code.clone().map(Bytecode::new_raw);
-            info.rwasm_code = v.code.clone().map(Bytecode::new_raw);
             db.insert_account_info(*k, info);
         }
-        let mut testing_ctx = TestingContext::new(RuntimeContext::default());
-        let mut res = Self {
-            sdk: testing_ctx,
+        Self {
+            sdk: TestingContext::new(RuntimeContext::default()),
             genesis,
             db,
-        };
-        res
+        }
     }
 
     pub(crate) fn add_wasm_contract<I: Into<RwasmModule>>(
@@ -123,15 +119,12 @@ impl EvmTestingContext {
             balance: U256::ZERO,
             nonce: 0,
             // it makes not much sense to fill these fields, but it optimizes hash calculation a bit
-            source_code_size: 0,
-            source_code_hash: KECCAK_EMPTY,
-            rwasm_code_size: rwasm_binary.len() as u64,
-            rwasm_code_hash: poseidon_hash(&rwasm_binary).into(),
+            code_size: rwasm_binary.len() as u64,
+            code_hash: poseidon_hash(&rwasm_binary).into(),
         };
         let mut info: AccountInfo = account.into();
-        info.code = None;
         if !rwasm_binary.is_empty() {
-            info.rwasm_code = Some(Bytecode::new_raw(rwasm_binary.into()));
+            info.code = Some(Bytecode::new_raw(rwasm_binary.into()));
         }
         self.db.insert_account_info(address, info.clone());
         info
@@ -156,9 +149,8 @@ impl EvmTestingContext {
             RwasmDbWrapper<'_, fluentbase_sdk::runtime::RuntimeContextWrapper, &mut InMemoryDB>,
         ) -> (),
     {
-        let mut evm = Evm::builder().with_db(&mut self.db).build();
-        let runtime_context = RuntimeContext::default()
-            .with_depth(0u32);
+        let mut evm = Evm::builder().with_db(&mut self.db).build_revm();
+        let runtime_context = RuntimeContext::default().with_depth(0u32);
         let native_sdk = fluentbase_sdk::runtime::RuntimeContextWrapper::new(runtime_context);
         f(RwasmDbWrapper::new(&mut evm.context.evm, native_sdk))
     }
@@ -230,7 +222,7 @@ impl<'a> TxBuilder<'a> {
         let mut evm = Evm::builder()
             .with_env(Box::new(take(&mut self.env)))
             .with_ref_db(&mut self.ctx.db)
-            .build();
+            .build_rwasm();
         evm.transact_commit().unwrap()
     }
 }

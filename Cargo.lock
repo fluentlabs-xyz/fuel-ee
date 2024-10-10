@@ -2376,15 +2376,10 @@ name = "fluentbase-core"
 version = "0.1.0"
 dependencies = [
  "alloy-rlp",
- "alloy-sol-types",
  "anyhow",
  "byteorder",
  "fluentbase-runtime",
  "fluentbase-sdk 0.1.0",
- "fuel-core-executor",
- "fuel-core-storage",
- "fuel-core-types",
- "hashbrown 0.14.5",
  "hex",
  "keccak-hash 0.11.0",
  "paste",
@@ -2408,6 +2403,7 @@ dependencies = [
  "hashbrown 0.14.5",
  "hex",
  "revm-primitives 4.0.0",
+ "rwasm",
  "serde",
  "serde_json",
 ]
@@ -2951,7 +2947,7 @@ dependencies = [
  "hex-literal",
  "keccak-hash 0.11.0",
  "paste",
- "revm-fluent",
+ "revm",
  "revm-interpreter",
  "rwasm",
  "serde_json",
@@ -5947,22 +5943,17 @@ dependencies = [
 ]
 
 [[package]]
-name = "revm-fluent"
+name = "revm"
 version = "9.0.0"
 dependencies = [
  "auto_impl",
  "cfg-if",
  "dyn-clone",
  "fluentbase-core",
- "fluentbase-genesis",
  "fluentbase-runtime",
  "fluentbase-sdk 0.1.0",
- "fluentbase-types 0.1.0",
- "fuel-ee-core",
- "lazy_static",
  "revm-interpreter",
  "revm-precompile",
- "rwasm",
  "serde",
  "serde_json",
 ]
