@@ -23,7 +23,7 @@ use fuel_core_types::{
 };
 
 pub const FVM_DEPOSIT_SIG: u32 = derive_keccak256_id!("fvm_deposit(uint8[32])");
-pub const FVM_WITHDRAW_SIG: u32 = derive_keccak256_id!("fvm_withdraw(uint8[])");
+pub const FVM_WITHDRAW_SIG: u32 = derive_keccak256_id!("fvm_withdraw(bytes)");
 pub const FVM_DRY_RUN_SIG: u32 = derive_keccak256_id!("fvm_dry_run(uint8[])");
 pub const FVM_EXEC_SIG: u32 = derive_keccak256_id!("fvm_exec(uint8[])");
 
@@ -35,7 +35,7 @@ pub const FVM_EXEC_SIG_BYTES: [u8; 4] = FVM_EXEC_SIG.to_be_bytes();
 sol! {
     #[derive(PartialEq, Eq, Debug)]
     struct FvmDepositInput {
-        bytes32 address;
+        bytes32 addr;
     }
 }
 sol! {
@@ -48,8 +48,9 @@ sol! {
 sol! {
     #[derive(PartialEq, Eq, Debug)]
     struct FvmWithdrawInput {
-        UtxoIdSol[] utxos;
+        // UtxoIdSol[] utxos;
         uint64 withdraw_amount;
+        bytes[] utxo_ids; // must be 34 bytes each
     }
 }
 

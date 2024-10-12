@@ -99,7 +99,7 @@ func ConsensusParameters(
 		"baseAssetId": &graphql.Field{
 			Type: graphql_scalars.Bytes32Type,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return graphql_scalars.NewBytes32TryFromStringOrPanic("0xf8f8b6283d7fa5b672b530cbb84fcccb4ff8dc40f8176ef4544ddb1f1952ad07"), nil
+				return graphql_scalars.NewBytes32TryFromStringOrPanic(config.Blockchain.FuelBaseAssetId), nil
 			},
 		},
 	}}

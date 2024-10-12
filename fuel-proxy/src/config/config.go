@@ -31,26 +31,37 @@ type BlockchainConfig struct {
 	FvmExecSig            uint32
 	FvmExecSigBytes       []byte
 	FvmExecSigBytes32     []byte
+
+	EthGenesisAccount1Address string
+
+	FuelContractAddress string
+	FuelBaseAssetId     string
+	FuelRelayerAddress  string
 }
 
 func (c *BlockchainConfig) parse() {
-	c.ChainId = viperGetOrDefaultInt("app.chain-id", 1337)
+	c.ChainId = viperGetOrDefaultInt("blockchain.chain-id", 1337)
 
-	c.FvmDepositSig = viperGetOrDefaultUint32("app.fvm-deposit-sig", 4243989450)
+	c.FvmDepositSig = viperGetOrDefaultUint32("blockchain.fvm-deposit-sig", 3146128830)
 	c.FvmDepositSigBytes = helpers.Uint32ToBytesBEMust(c.FvmDepositSig, 4)
 	c.FvmDepositSigBytes32 = helpers.Uint32ToBytesBEMust(c.FvmDepositSig, 32)
 
-	c.FvmWithdrawSig = viperGetOrDefaultUint32("app.fvm-withdraw-sig", 2485776221)
+	c.FvmWithdrawSig = viperGetOrDefaultUint32("blockchain.fvm-withdraw-sig", 798505135)
 	c.FvmWithdrawSigBytes = helpers.Uint32ToBytesBEMust(c.FvmWithdrawSig, 4)
 	c.FvmWithdrawSigBytes32 = helpers.Uint32ToBytesBEMust(c.FvmWithdrawSig, 32)
 
-	c.FvmDryRunSig = viperGetOrDefaultUint32("app.fvm-dry-run-sig", 3089258887)
+	c.FvmDryRunSig = viperGetOrDefaultUint32("blockchain.fvm-dry-run-sig", 4166496921)
 	c.FvmDryRunSigBytes = helpers.Uint32ToBytesBEMust(c.FvmDryRunSig, 4)
 	c.FvmDryRunSigBytes32 = helpers.Uint32ToBytesBEMust(c.FvmDryRunSig, 32)
 
-	c.FvmExecSig = viperGetOrDefaultUint32("app.fvm-exec-sig", 787075991)
+	c.FvmExecSig = viperGetOrDefaultUint32("blockchain.fvm-exec-sig", 497141553)
 	c.FvmExecSigBytes = helpers.Uint32ToBytesBEMust(c.FvmExecSig, 4)
 	c.FvmExecSigBytes32 = helpers.Uint32ToBytesBEMust(c.FvmExecSig, 32)
+
+	c.EthGenesisAccount1Address = viperGetOrDefaultString("blockchain.eth-genesis-account1-address", "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266")
+	c.FuelContractAddress = viperGetOrDefaultString("blockchain.fuel-contract-address", "0x0000000000000000000000000000000000005250")
+	c.FuelBaseAssetId = viperGetOrDefaultString("blockchain.fuel-base-asset-id", "0xf8f8b6283d7fa5b672b530cbb84fcccb4ff8dc40f8176ef4544ddb1f1952ad07")
+	c.FuelRelayerAddress = viperGetOrDefaultString("blockchain.fuel-account-address", "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266")
 }
 
 type RedisConfig struct {

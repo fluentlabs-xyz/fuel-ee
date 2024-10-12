@@ -33,7 +33,12 @@ pub mod i_fuel_ee {
                                             ::ethers::core::abi::ethabi::ParamType::Uint(64usize),
                                             ::ethers::core::abi::ethabi::ParamType::Array(
                                                 ::std::boxed::Box::new(
-                                                    ::ethers::core::abi::ethabi::ParamType::Bytes,
+                                                    ::ethers::core::abi::ethabi::ParamType::FixedArray(
+                                                        ::std::boxed::Box::new(
+                                                            ::ethers::core::abi::ethabi::ParamType::Uint(8usize),
+                                                        ),
+                                                        34usize,
+                                                    ),
                                                 ),
                                             ),
                                         ],
@@ -190,13 +195,13 @@ pub mod i_fuel_ee {
                 ),
             )
         }
-        ///Calls the contract's `_stub_1` (0x6c0ec361) function
+        ///Calls the contract's `_stub_1` (0x90022173) function
         pub fn stub_1(
             &self,
             data: FvmWithdrawSol,
         ) -> ::ethers::contract::builders::ContractCall<M, ()> {
             self.0
-                .method_hash([108, 14, 195, 97], (data,))
+                .method_hash([144, 2, 33, 115], (data,))
                 .expect("method not found (this should never happen)")
         }
         ///Calls the contract's `fvm_deposit` (0xbb861dbe) function
@@ -242,18 +247,17 @@ pub mod i_fuel_ee {
             Self::new(contract.address(), contract.client())
         }
     }
-    ///Container type for all input parameters for the `_stub_1` function with signature `_stub_1((uint64,bytes[]))` and selector `0x6c0ec361`
+    ///Container type for all input parameters for the `_stub_1` function with signature `_stub_1((uint64,uint8[34][]))` and selector `0x90022173`
     #[derive(
         Clone,
         ::ethers::contract::EthCall,
         ::ethers::contract::EthDisplay,
-        Default,
         Debug,
         PartialEq,
         Eq,
         Hash
     )]
-    #[ethcall(name = "_stub_1", abi = "_stub_1((uint64,bytes[]))")]
+    #[ethcall(name = "_stub_1", abi = "_stub_1((uint64,uint8[34][]))")]
     pub struct Stub1Call {
         pub data: FvmWithdrawSol,
     }
@@ -412,12 +416,11 @@ pub mod i_fuel_ee {
             Self::FvmWithdraw(value)
         }
     }
-    ///`FvmWithdrawSol(uint64,bytes[])`
+    ///`FvmWithdrawSol(uint64,uint8[34][])`
     #[derive(
         Clone,
         ::ethers::contract::EthAbiType,
         ::ethers::contract::EthAbiCodec,
-        Default,
         Debug,
         PartialEq,
         Eq,
@@ -425,6 +428,6 @@ pub mod i_fuel_ee {
     )]
     pub struct FvmWithdrawSol {
         pub withdraw_amount: u64,
-        pub utxo_ids: ::std::vec::Vec<::ethers::core::types::Bytes>,
+        pub utxo_ids: ::std::vec::Vec<[::ethers::core::types::Uint8; 34]>,
     }
 }

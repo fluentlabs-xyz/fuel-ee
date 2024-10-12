@@ -27,7 +27,10 @@ func MakeEstimateGasPriceEntry(gasPriceType *graphql_object.GasPriceType) (*Esti
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				//blockHorizon := p.Args[blockHorizon]
-				return graphql_object.GasPriceStruct{
+				if entity, ok := p.Source.(*graphql_object.GasPriceStruct); ok {
+					return entity, nil
+				}
+				return &graphql_object.GasPriceStruct{
 					GasPrice: 0,
 				}, nil
 			},

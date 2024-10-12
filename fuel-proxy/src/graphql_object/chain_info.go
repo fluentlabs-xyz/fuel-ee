@@ -32,8 +32,8 @@ func MakeChainInfoType(blockType *BlockType, consensusParametersType *ConsensusP
 		"latestBlock": &graphql.Field{
 			Type: blockType.SchemaFields.Object,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return BlockStruct{
-					Id:     [32]byte{1, 2, 3},
+				return &BlockStruct{
+					Id:     [32]byte{0},
 					Height: 0,
 				}, nil
 			},

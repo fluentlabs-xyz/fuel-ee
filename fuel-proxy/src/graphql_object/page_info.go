@@ -51,7 +51,7 @@ func MakePageInfoType() (*PageInfoType, error) {
 				if ok {
 					return v, nil
 				}
-				return graphql_scalars.NewBytes34TryFromStringOrPanic("0x00000000000000000000000000000000000000000000000000000000000000000000"), nil
+				return graphql_scalars.NewBytes34Zero(), nil
 			},
 		},
 		"endCursor": &graphql.Field{
@@ -61,7 +61,7 @@ func MakePageInfoType() (*PageInfoType, error) {
 				if ok {
 					return v, nil
 				}
-				return graphql_scalars.NewBytes34TryFromStringOrPanic("0x00000000000000000000000000000000000000000000000000000000000000000000"), nil
+				return graphql_scalars.NewBytes34Zero(), nil
 			},
 		},
 	}}

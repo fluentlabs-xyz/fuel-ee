@@ -2324,26 +2324,11 @@ dependencies = [
 [[package]]
 name = "fluentbase-codec"
 version = "0.1.0"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel#4bca9a05941b2912ea66014965665423d6e26a1f"
 dependencies = [
  "alloy-primitives",
  "byteorder",
  "casey",
- "fluentbase-codec-derive 0.1.0 (git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel)",
- "hashbrown 0.14.5",
- "paste",
- "serde",
-]
-
-[[package]]
-name = "fluentbase-codec"
-version = "0.1.0"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm#0c28b2824100d027a1c699fdf33446c98c84c188"
-dependencies = [
- "alloy-primitives",
- "byteorder",
- "casey",
- "fluentbase-codec-derive 0.1.0 (git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm)",
+ "fluentbase-codec-derive",
  "hashbrown 0.14.5",
  "paste",
  "serde",
@@ -2352,19 +2337,6 @@ dependencies = [
 [[package]]
 name = "fluentbase-codec-derive"
 version = "0.1.0"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel#4bca9a05941b2912ea66014965665423d6e26a1f"
-dependencies = [
- "convert_case 0.6.0",
- "crypto-hashes",
- "quote",
- "serde",
- "syn 2.0.79",
-]
-
-[[package]]
-name = "fluentbase-codec-derive"
-version = "0.1.0"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm#0c28b2824100d027a1c699fdf33446c98c84c188"
 dependencies = [
  "convert_case 0.6.0",
  "crypto-hashes",
@@ -2376,37 +2348,35 @@ dependencies = [
 [[package]]
 name = "fluentbase-core"
 version = "0.1.0"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm#0c28b2824100d027a1c699fdf33446c98c84c188"
 dependencies = [
  "alloy-rlp",
  "anyhow",
  "byteorder",
  "fluentbase-runtime",
- "fluentbase-sdk 0.1.0 (git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm)",
+ "fluentbase-sdk",
  "hex",
  "keccak-hash 0.11.0",
  "paste",
  "phantom-type",
  "postcard",
  "revm-interpreter",
- "revm-primitives 4.0.0 (git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm)",
+ "revm-primitives",
  "rwasm",
 ]
 
 [[package]]
 name = "fluentbase-genesis"
 version = "0.1.0"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm#0c28b2824100d027a1c699fdf33446c98c84c188"
 dependencies = [
  "alloy-genesis",
  "byteorder",
  "bytes",
  "clap",
  "fluentbase-poseidon",
- "fluentbase-types 0.1.0 (git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm)",
+ "fluentbase-types",
  "hashbrown 0.14.5",
  "hex",
- "revm-primitives 4.0.0 (git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm)",
+ "revm-primitives",
  "rwasm",
  "serde",
  "serde_json",
@@ -2415,23 +2385,21 @@ dependencies = [
 [[package]]
 name = "fluentbase-poseidon"
 version = "0.1.0"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm#0c28b2824100d027a1c699fdf33446c98c84c188"
 dependencies = [
  "bitvec",
  "halo2curves 0.6.1 (git+https://github.com/privacy-scaling-explorations/halo2curves?tag=v0.6.1)",
  "lazy_static",
  "poseidon",
- "revm-primitives 4.0.0 (git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm)",
+ "revm-primitives",
 ]
 
 [[package]]
 name = "fluentbase-runtime"
 version = "0.1.0"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm#0c28b2824100d027a1c699fdf33446c98c84c188"
 dependencies = [
  "eth_trie",
  "fluentbase-poseidon",
- "fluentbase-types 0.1.0 (git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm)",
+ "fluentbase-types",
  "halo2curves 0.6.1 (git+https://github.com/privacy-scaling-explorations/halo2curves?tag=v0.6.1)",
  "hashbrown 0.14.5",
  "k256",
@@ -2442,48 +2410,18 @@ dependencies = [
 [[package]]
 name = "fluentbase-sdk"
 version = "0.1.0"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel#4bca9a05941b2912ea66014965665423d6e26a1f"
 dependencies = [
- "fluentbase-codec 0.1.0 (git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel)",
- "fluentbase-sdk-derive 0.1.0 (git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel)",
- "fluentbase-types 0.1.0 (git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel)",
- "hashbrown 0.14.5",
-]
-
-[[package]]
-name = "fluentbase-sdk"
-version = "0.1.0"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm#0c28b2824100d027a1c699fdf33446c98c84c188"
-dependencies = [
- "fluentbase-codec 0.1.0 (git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm)",
+ "fluentbase-codec",
  "fluentbase-genesis",
  "fluentbase-runtime",
- "fluentbase-sdk-derive 0.1.0 (git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm)",
- "fluentbase-types 0.1.0 (git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm)",
+ "fluentbase-sdk-derive",
+ "fluentbase-types",
  "hashbrown 0.14.5",
 ]
 
 [[package]]
 name = "fluentbase-sdk-derive"
 version = "0.1.0"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel#4bca9a05941b2912ea66014965665423d6e26a1f"
-dependencies = [
- "convert_case 0.6.0",
- "crypto-hashes",
- "hex",
- "proc-macro-error",
- "proc-macro2",
- "quote",
- "regex",
- "serde",
- "syn 2.0.79",
- "syn-solidity",
-]
-
-[[package]]
-name = "fluentbase-sdk-derive"
-version = "0.1.0"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm#0c28b2824100d027a1c699fdf33446c98c84c188"
 dependencies = [
  "convert_case 0.6.0",
  "crypto-hashes",
@@ -2500,29 +2438,13 @@ dependencies = [
 [[package]]
 name = "fluentbase-types"
 version = "0.1.0"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel#4bca9a05941b2912ea66014965665423d6e26a1f"
 dependencies = [
  "alloy-primitives",
  "alloy-rlp",
  "byteorder",
- "fluentbase-codec 0.1.0 (git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel)",
+ "fluentbase-codec",
  "hashbrown 0.14.5",
- "revm-primitives 4.0.0 (git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel)",
- "rwasm",
- "strum_macros 0.26.4",
-]
-
-[[package]]
-name = "fluentbase-types"
-version = "0.1.0"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm#0c28b2824100d027a1c699fdf33446c98c84c188"
-dependencies = [
- "alloy-primitives",
- "alloy-rlp",
- "byteorder",
- "fluentbase-codec 0.1.0 (git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm)",
- "hashbrown 0.14.5",
- "revm-primitives 4.0.0 (git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm)",
+ "revm-primitives",
  "rwasm",
  "strum_macros 0.26.4",
 ]
@@ -2567,7 +2489,6 @@ dependencies = [
 [[package]]
 name = "fuel-asm"
 version = "0.55.0"
-source = "git+https://github.com/fluentlabs-xyz/fuel-vm?branch=feat/fuel-vm#ea47cf55463749d11f3b8e26f6052fa1d1eb64ad"
 dependencies = [
  "bitflags 2.6.0",
  "fuel-types",
@@ -2578,7 +2499,6 @@ dependencies = [
 [[package]]
 name = "fuel-core"
 version = "0.31.0"
-source = "git+https://github.com/fluentlabs-xyz/fuel-core?branch=feat/fuel-vm#bbd9d38f82fc7448bc85e3cc0f573fef27e94d31"
 dependencies = [
  "anyhow",
  "async-graphql",
@@ -2628,7 +2548,6 @@ dependencies = [
 [[package]]
 name = "fuel-core-chain-config"
 version = "0.31.0"
-source = "git+https://github.com/fluentlabs-xyz/fuel-core?branch=feat/fuel-vm#bbd9d38f82fc7448bc85e3cc0f573fef27e94d31"
 dependencies = [
  "anyhow",
  "bech32",
@@ -2647,7 +2566,6 @@ dependencies = [
 [[package]]
 name = "fuel-core-consensus-module"
 version = "0.31.0"
-source = "git+https://github.com/fluentlabs-xyz/fuel-core?branch=feat/fuel-vm#bbd9d38f82fc7448bc85e3cc0f573fef27e94d31"
 dependencies = [
  "anyhow",
  "fuel-core-chain-config",
@@ -2659,7 +2577,6 @@ dependencies = [
 [[package]]
 name = "fuel-core-database"
 version = "0.31.0"
-source = "git+https://github.com/fluentlabs-xyz/fuel-core?branch=feat/fuel-vm#bbd9d38f82fc7448bc85e3cc0f573fef27e94d31"
 dependencies = [
  "anyhow",
  "derive_more",
@@ -2670,7 +2587,6 @@ dependencies = [
 [[package]]
 name = "fuel-core-executor"
 version = "0.31.0"
-source = "git+https://github.com/fluentlabs-xyz/fuel-core?branch=feat/fuel-vm#bbd9d38f82fc7448bc85e3cc0f573fef27e94d31"
 dependencies = [
  "anyhow",
  "fuel-core-storage",
@@ -2684,7 +2600,6 @@ dependencies = [
 [[package]]
 name = "fuel-core-gas-price-service"
 version = "0.31.0"
-source = "git+https://github.com/fluentlabs-xyz/fuel-core?branch=feat/fuel-vm#bbd9d38f82fc7448bc85e3cc0f573fef27e94d31"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2707,7 +2622,6 @@ dependencies = [
 [[package]]
 name = "fuel-core-importer"
 version = "0.31.0"
-source = "git+https://github.com/fluentlabs-xyz/fuel-core?branch=feat/fuel-vm#bbd9d38f82fc7448bc85e3cc0f573fef27e94d31"
 dependencies = [
  "anyhow",
  "derive_more",
@@ -2723,7 +2637,6 @@ dependencies = [
 [[package]]
 name = "fuel-core-metrics"
 version = "0.31.0"
-source = "git+https://github.com/fluentlabs-xyz/fuel-core?branch=feat/fuel-vm#bbd9d38f82fc7448bc85e3cc0f573fef27e94d31"
 dependencies = [
  "parking_lot",
  "pin-project-lite",
@@ -2735,7 +2648,6 @@ dependencies = [
 [[package]]
 name = "fuel-core-p2p"
 version = "0.31.0"
-source = "git+https://github.com/fluentlabs-xyz/fuel-core?branch=feat/fuel-vm#bbd9d38f82fc7448bc85e3cc0f573fef27e94d31"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2767,7 +2679,6 @@ dependencies = [
 [[package]]
 name = "fuel-core-poa"
 version = "0.31.0"
-source = "git+https://github.com/fluentlabs-xyz/fuel-core?branch=feat/fuel-vm#bbd9d38f82fc7448bc85e3cc0f573fef27e94d31"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2783,7 +2694,6 @@ dependencies = [
 [[package]]
 name = "fuel-core-producer"
 version = "0.31.0"
-source = "git+https://github.com/fluentlabs-xyz/fuel-core?branch=feat/fuel-vm#bbd9d38f82fc7448bc85e3cc0f573fef27e94d31"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2798,7 +2708,6 @@ dependencies = [
 [[package]]
 name = "fuel-core-services"
 version = "0.31.0"
-source = "git+https://github.com/fluentlabs-xyz/fuel-core?branch=feat/fuel-vm#bbd9d38f82fc7448bc85e3cc0f573fef27e94d31"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2812,7 +2721,6 @@ dependencies = [
 [[package]]
 name = "fuel-core-storage"
 version = "0.31.0"
-source = "git+https://github.com/fluentlabs-xyz/fuel-core?branch=feat/fuel-vm#bbd9d38f82fc7448bc85e3cc0f573fef27e94d31"
 dependencies = [
  "anyhow",
  "derive_more",
@@ -2835,7 +2743,6 @@ dependencies = [
 [[package]]
 name = "fuel-core-txpool"
 version = "0.31.0"
-source = "git+https://github.com/fluentlabs-xyz/fuel-core?branch=feat/fuel-vm#bbd9d38f82fc7448bc85e3cc0f573fef27e94d31"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2855,7 +2762,6 @@ dependencies = [
 [[package]]
 name = "fuel-core-types"
 version = "0.31.0"
-source = "git+https://github.com/fluentlabs-xyz/fuel-core?branch=feat/fuel-vm#bbd9d38f82fc7448bc85e3cc0f573fef27e94d31"
 dependencies = [
  "anyhow",
  "bs58",
@@ -2874,7 +2780,6 @@ dependencies = [
 [[package]]
 name = "fuel-core-upgradable-executor"
 version = "0.31.0"
-source = "git+https://github.com/fluentlabs-xyz/fuel-core?branch=feat/fuel-vm#bbd9d38f82fc7448bc85e3cc0f573fef27e94d31"
 dependencies = [
  "fuel-core-executor",
  "fuel-core-storage",
@@ -2884,7 +2789,6 @@ dependencies = [
 [[package]]
 name = "fuel-crypto"
 version = "0.55.0"
-source = "git+https://github.com/fluentlabs-xyz/fuel-vm?branch=feat/fuel-vm#ea47cf55463749d11f3b8e26f6052fa1d1eb64ad"
 dependencies = [
  "coins-bip32",
  "coins-bip39",
@@ -2904,7 +2808,6 @@ dependencies = [
 [[package]]
 name = "fuel-derive"
 version = "0.55.0"
-source = "git+https://github.com/fluentlabs-xyz/fuel-vm?branch=feat/fuel-vm#ea47cf55463749d11f3b8e26f6052fa1d1eb64ad"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2919,12 +2822,11 @@ dependencies = [
  "alloy-rlp",
  "alloy-sol-types",
  "fluentbase-core",
- "fluentbase-sdk 0.1.0 (git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm)",
+ "fluentbase-sdk",
  "fuel-core-storage",
  "fuel-core-types",
  "fuel-ee-core",
  "fuel-tx",
- "zeth-primitives",
 ]
 
 [[package]]
@@ -2936,7 +2838,7 @@ dependencies = [
  "alloy-sol-types",
  "anyhow",
  "byteorder",
- "fluentbase-sdk 0.1.0 (git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm)",
+ "fluentbase-sdk",
  "fuel-core",
  "fuel-core-executor",
  "fuel-core-storage",
@@ -2962,8 +2864,8 @@ dependencies = [
  "fluentbase-genesis",
  "fluentbase-poseidon",
  "fluentbase-runtime",
- "fluentbase-sdk 0.1.0 (git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm)",
- "fluentbase-types 0.1.0 (git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm)",
+ "fluentbase-sdk",
+ "fluentbase-types",
  "fuel-core-types",
  "fuel-ee-core",
  "fuel-tx",
@@ -2983,7 +2885,6 @@ dependencies = [
 [[package]]
 name = "fuel-gas-price-algorithm"
 version = "0.31.0"
-source = "git+https://github.com/fluentlabs-xyz/fuel-core?branch=feat/fuel-vm#bbd9d38f82fc7448bc85e3cc0f573fef27e94d31"
 dependencies = [
  "proptest",
  "serde",
@@ -2993,7 +2894,6 @@ dependencies = [
 [[package]]
 name = "fuel-merkle"
 version = "0.55.0"
-source = "git+https://github.com/fluentlabs-xyz/fuel-vm?branch=feat/fuel-vm#ea47cf55463749d11f3b8e26f6052fa1d1eb64ad"
 dependencies = [
  "derive_more",
  "digest 0.10.7",
@@ -3007,12 +2907,10 @@ dependencies = [
 [[package]]
 name = "fuel-storage"
 version = "0.55.0"
-source = "git+https://github.com/fluentlabs-xyz/fuel-vm?branch=feat/fuel-vm#ea47cf55463749d11f3b8e26f6052fa1d1eb64ad"
 
 [[package]]
 name = "fuel-tx"
 version = "0.55.0"
-source = "git+https://github.com/fluentlabs-xyz/fuel-vm?branch=feat/fuel-vm#ea47cf55463749d11f3b8e26f6052fa1d1eb64ad"
 dependencies = [
  "bitflags 2.6.0",
  "derivative",
@@ -3034,7 +2932,6 @@ dependencies = [
 [[package]]
 name = "fuel-types"
 version = "0.55.0"
-source = "git+https://github.com/fluentlabs-xyz/fuel-vm?branch=feat/fuel-vm#ea47cf55463749d11f3b8e26f6052fa1d1eb64ad"
 dependencies = [
  "fuel-derive",
  "hex",
@@ -3045,7 +2942,6 @@ dependencies = [
 [[package]]
 name = "fuel-vm"
 version = "0.55.0"
-source = "git+https://github.com/fluentlabs-xyz/fuel-vm?branch=feat/fuel-vm#ea47cf55463749d11f3b8e26f6052fa1d1eb64ad"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3415,6 +3311,7 @@ checksum = "e5274423e17b7c9fc20b6e7e208532f9b19825d82dfd615708b70edd83df41f1"
 dependencies = [
  "ahash",
  "allocator-api2",
+ "rayon",
  "serde",
 ]
 
@@ -5979,14 +5876,13 @@ dependencies = [
 [[package]]
 name = "revm"
 version = "9.0.0"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm#0c28b2824100d027a1c699fdf33446c98c84c188"
 dependencies = [
  "auto_impl",
  "cfg-if",
  "dyn-clone",
  "fluentbase-core",
  "fluentbase-runtime",
- "fluentbase-sdk 0.1.0 (git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm)",
+ "fluentbase-sdk",
  "revm-interpreter",
  "revm-precompile",
  "serde",
@@ -5996,25 +5892,21 @@ dependencies = [
 [[package]]
 name = "revm-interpreter"
 version = "5.0.0"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm#0c28b2824100d027a1c699fdf33446c98c84c188"
 dependencies = [
- "paste",
- "phf",
- "revm-primitives 4.0.0 (git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm)",
+ "revm-primitives",
  "serde",
 ]
 
 [[package]]
 name = "revm-precompile"
 version = "7.0.0"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm#0c28b2824100d027a1c699fdf33446c98c84c188"
 dependencies = [
  "aurora-engine-modexp",
  "blst",
  "c-kzg",
  "k256",
  "once_cell",
- "revm-primitives 4.0.0 (git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm)",
+ "revm-primitives",
  "ripemd",
  "secp256k1 0.29.1",
  "sha2 0.10.8",
@@ -6024,23 +5916,6 @@ dependencies = [
 [[package]]
 name = "revm-primitives"
 version = "4.0.0"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel#4bca9a05941b2912ea66014965665423d6e26a1f"
-dependencies = [
- "alloy-primitives",
- "auto_impl",
- "bitflags 2.6.0",
- "bitvec",
- "cfg-if",
- "dyn-clone",
- "enumn",
- "hashbrown 0.14.5",
- "hex",
-]
-
-[[package]]
-name = "revm-primitives"
-version = "4.0.0"
-source = "git+https://github.com/fluentlabs-xyz/fluentbase?branch=feat/fuel-vm#0c28b2824100d027a1c699fdf33446c98c84c188"
 dependencies = [
  "alloy-primitives",
  "auto_impl",
@@ -8149,27 +8024,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.79",
-]
-
-[[package]]
-name = "zeth-primitives"
-version = "0.1.0"
-source = "git+https://github.com/fluentlabs-xyz/zeth-rwasm.git?branch=rwasm#e90b526c6a7045c49a82049454f0d35b80c3817e"
-dependencies = [
- "alloy-primitives",
- "alloy-rlp",
- "alloy-rlp-derive",
- "anyhow",
- "bytes",
- "fluentbase-sdk 0.1.0 (git+https://github.com/fluentlabs-xyz/fluentbase?branch=devel)",
- "hashbrown 0.14.5",
- "k256",
- "log",
- "rlp",
- "serde",
- "sha2 0.10.8",
- "sha3",
- "thiserror",
 ]
 
 [[package]]

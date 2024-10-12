@@ -11,10 +11,8 @@ import (
 	"github.com/fluentlabs-xyz/fuel-ee/src/config"
 	"github.com/fluentlabs-xyz/fuel-ee/src/graphql_object"
 	"github.com/fluentlabs-xyz/fuel-ee/src/graphql_scalars"
-	"github.com/fluentlabs-xyz/fuel-ee/src/types"
 	"github.com/graphql-go/graphql"
 	log "github.com/sirupsen/logrus"
-	"time"
 )
 
 type SubmitEntry struct {
@@ -24,7 +22,6 @@ type SubmitEntry struct {
 type SubmitEntryStruct struct {
 }
 
-// const encodedTransactionsArgName = "encodedTransactions"
 const encodedTransactionArgName = "tx"
 
 func MakeSubmitEntry(ethClient *ethclient.Client, submitType *graphql_object.SubmitType, config *config.Config) (*SubmitEntry, error) {
@@ -47,8 +44,8 @@ func MakeSubmitEntry(ethClient *ethclient.Client, submitType *graphql_object.Sub
 
 				// send tx to reth node for emulation/estimation process (to get status, receipts, gas spent)
 				data := transactionHexString.Value()
-				from := common.HexToAddress(types.FuelRelayerAccountAddress)
-				to := common.HexToAddress(types.EthFuelVMPrecompileAddress)
+				from := common.HexToAddress(config.Blockchain.FuelRelayerAddress)
+				to := common.HexToAddress(config.Blockchain.FuelContractAddress)
 				chainId, err := ethClient.ChainID(context.Background())
 				if err != nil {
 					return nil, errors.New(fmt.Sprintf("Submit: failed to fetch chain id, error: %s", err))
@@ -68,7 +65,6 @@ func MakeSubmitEntry(ethClient *ethclient.Client, submitType *graphql_object.Sub
 					Nonce:    nonce,
 					Data:     append(config.Blockchain.FvmExecSigBytes, data...),
 				})
-				log.Printf("Submit: tx.Hash(): %s tx.Hash().String(): %s", tx.Hash(), tx.Hash().String())
 				privateKey, err := crypto.HexToECDSA(config.Relayer.PrivateKey)
 				if err != nil {
 					return nil, errors.New(fmt.Sprintf("Submit: failed to create private key, error: %s", err))
@@ -77,33 +73,30 @@ func MakeSubmitEntry(ethClient *ethclient.Client, submitType *graphql_object.Sub
 				if err != nil {
 					return nil, errors.New(fmt.Sprintf("Submit: failed to sign tx, error: %s", err))
 				}
-				log.Printf("Submit: len(signedTx.Data()) %d", len(signedTx.Data()))
 				err = ethClient.SendTransaction(context.Background(), signedTx)
 				if err != nil {
 					return nil, errors.New(fmt.Sprintf("Submit: failed to send tx, error: %s", err))
 				}
-				log.Printf("Submit: signedTx.Hash().Hex(): %s signedTx.To(): %s", signedTx.Hash().Hex(), signedTx.To())
-				isPending := true
-				for isPending {
-					tx, isPending, err = ethClient.TransactionByHash(context.Background(), signedTx.Hash())
-					if err != nil {
-						log.Printf("Submit: TransactionByHash, error: %s", err)
-						//break
-					} else {
-						log.Printf(
-							"Submit: tx: isPending:%v Hash:%s Nonce:%d ChainId:%s To:%s",
-							isPending,
-							tx.Hash(),
-							tx.Nonce(),
-							tx.ChainId(),
-							tx.To(),
-						)
-						if !isPending {
-							break
-						}
-					}
-					time.Sleep(5 * time.Second)
-				}
+				//isPending := true
+				//for isPending {
+				//	tx, isPending, err = ethClient.TransactionByHash(context.Background(), signedTx.Hash())
+				//	if err != nil {
+				//		log.Printf("Submit: TransactionByHash, error: %s", err)
+				//	} else {
+				//		log.Printf(
+				//			"Submit: tx: isPending:%v Hash:%s Nonce:%d ChainId:%s To:%s",
+				//			isPending,
+				//			tx.Hash(),
+				//			tx.Nonce(),
+				//			tx.ChainId(),
+				//			tx.To(),
+				//		)
+				//		if !isPending {
+				//			break
+				//		}
+				//	}
+				//	time.Sleep(5 * time.Second)
+				//}
 				return graphql_object.SubmitStruct{
 					Id: graphql_scalars.NewBytes32TryFromStringOrPanic(signedTx.Hash().String()),
 				}, nil

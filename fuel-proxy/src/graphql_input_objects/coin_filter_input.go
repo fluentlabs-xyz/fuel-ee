@@ -10,7 +10,7 @@ type CoinFilterInputType struct {
 	SchemaFields graphql_object.InputObjectFields
 }
 
-//		pub struct CoinFilterInput {
+//	pub struct CoinFilterInput {
 //	   pub owner: Address,
 //	   pub asset_id: Option<AssetId>,
 //	}

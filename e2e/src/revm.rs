@@ -1,4 +1,4 @@
-use crate::generated::i_fuel_ee::FvmDepositCall;
+use crate::generated::i_fuel_ee::{FvmDepositCall, FvmWithdrawSol};
 use alloy_sol_types::private::keccak256;
 use alloy_sol_types::SolValue;
 use core::{
@@ -6,13 +6,11 @@ use core::{
     str::{from_utf8, FromStr},
 };
 use ethers::abi::AbiEncode;
+use ethers::types::Uint8;
 use fluentbase_genesis::devnet::GENESIS_KECCAK_HASH_SLOT;
 use fluentbase_genesis::{
     devnet::{devnet_genesis_from_file, GENESIS_POSEIDON_HASH_SLOT},
-    Genesis
-
-
-    ,
+    Genesis,
 };
 use fluentbase_poseidon::poseidon_hash;
 use fluentbase_runtime::RuntimeContext;
@@ -26,15 +24,15 @@ use fuel_core_types::{
     },
     fuel_types::{canonical::Serialize, AssetId, BlockHeight, ChainId},
 };
-use fuel_ee_core::fvm::types::{FvmWithdrawInput, UtxoIdSol, FVM_DRY_RUN_SIG_BYTES, FVM_EXEC_SIG_BYTES};
+use fuel_ee_core::fvm::types::{FvmWithdrawInput, FVM_DRY_RUN_SIG_BYTES, FVM_EXEC_SIG_BYTES};
 use fuel_ee_core::fvm::{
     helpers::FUEL_TESTNET_BASE_ASSET_ID,
     types::{FVM_DEPOSIT_SIG_BYTES, FVM_WITHDRAW_SIG_BYTES},
 };
-use fuel_tx::field::Witnesses;
 use fuel_tx::{ConsensusParameters, Input, TransactionBuilder, TransactionRepr, TxId, TxPointer, UtxoId};
 use fuel_vm::{fuel_asm::RegId, storage::MemoryStorage};
 use hashbrown::HashMap;
+use hex::FromHex;
 use revm::{
     primitives::{AccountInfo, Bytecode, Env, ExecutionResult, TransactTo},
     rwasm::RwasmDbWrapper,
@@ -150,7 +148,7 @@ impl EvmTestingContext {
             RwasmDbWrapper<'_, fluentbase_sdk::runtime::RuntimeContextWrapper, &mut InMemoryDB>,
         ) -> (),
     {
-        let mut evm = Evm::builder().with_db(&mut self.db).build_revm();
+        let mut evm = Evm::builder().with_db(&mut self.db).build();
         let runtime_context = RuntimeContext::default().with_depth(0u32);
         let native_sdk = fluentbase_sdk::runtime::RuntimeContextWrapper::new(runtime_context);
         f(RwasmDbWrapper::new(&mut evm.context.evm, native_sdk))
@@ -223,7 +221,7 @@ impl<'a> TxBuilder<'a> {
         let mut evm = Evm::builder()
             .with_env(Box::new(take(&mut self.env)))
             .with_ref_db(&mut self.ctx.db)
-            .build_rwasm();
+            .build();
         evm.transact_commit().unwrap()
     }
 }
@@ -463,32 +461,46 @@ fn test_fvm_deposit_then_withdraw() {
         Some(100_000_000),
         Some(U256::from(coins_sent * 1e9 as u64)),
     );
+    println!(
+        "output: {}",
+        from_utf8(result.output().cloned().unwrap_or_default().as_ref()).unwrap_or("")
+    );
     assert!(result.is_success());
 
     let balance_after_deposit_to_fvm = ctx.get_balance(secret1_address_as_evm);
 
     let tx_id: TxId =
         TxId::from_str("0000000000000000000000000000000000000000000000000000000000000000").unwrap();
-    let output_index = 0x0;
+    let output_index: u16 = 0x0;
 
     // FVM withdraw
-    let mut input = Vec::<u8>::new();
+    let mut input = Vec::new();
     input.extend_from_slice(FVM_WITHDRAW_SIG_BYTES.as_slice());
+    let mut utxo_id = [0u8; 34];
+    utxo_id[..32].copy_from_slice(tx_id.as_slice());
+    utxo_id[32..34].copy_from_slice(output_index.to_be_bytes().as_slice());
     let utxo_ids: FvmWithdrawInput = FvmWithdrawInput {
-        utxos: vec![UtxoIdSol {
-            tx_id: tx_id.0.into(),
-            output_index,
-        }],
+        utxo_ids: vec![utxo_id.into()],
         withdraw_amount: 0x1,
     };
     input.extend_from_slice(&utxo_ids.abi_encode());
+
+    // let mut input = Vec::new();
+    // input.extend_from_slice(FVM_WITHDRAW_SIG_BYTES.as_slice());
+    // let mut utxo_id: [Uint8; 34] = [0u8; 34].map(|v| Uint8::from(v));
+    // utxo_id[..tx_id.len()].clone_from_slice(tx_id.map(|v| Uint8::from(v)).as_slice());
+    // utxo_id[tx_id.len()..].clone_from_slice(output_index.to_be_bytes().map(|v| Uint8::from(v)).as_slice());
+    // let fvm_withdraw_sol_input = FvmWithdrawSol{ utxo_ids: vec![ethers::core::types::Bytes::from_iter(utxo_id.as_slice())], withdraw_amount: 0x1 };
+    // input.extend_from_slice(&fvm_withdraw_sol_input.encode());
+
     let result = call_evm_tx_simple(
         &mut ctx,
         secret1_address_as_evm.clone(),
         PRECOMPILE_FVM,
         input.into(),
         Some(3_000_000_000),
-        None);
+        None,
+    );
     assert!(result.is_success());
 
     let balance_after_withdraw_from_fvm = ctx.get_balance(secret1_address_as_evm);

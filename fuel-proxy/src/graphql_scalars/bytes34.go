@@ -56,6 +56,10 @@ func NewBytes34TryFromStringOrPanic(v string) *Bytes34 {
 	return output
 }
 
+func NewBytes34Zero() *Bytes34 {
+	return NewBytes34TryFromStringOrPanic("0x00000000000000000000000000000000000000000000000000000000000000000000")
+}
+
 var Bytes34Type = graphql.NewScalar(graphql.ScalarConfig{
 	Name:        "Bytes34",
 	Description: "The `Bytes34Type` holds fixed 32 bytes array",

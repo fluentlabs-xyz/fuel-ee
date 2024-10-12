@@ -9,12 +9,10 @@ import (
 
 func CreateContainer() *dig.Container {
 	container := dig.New()
-	/* init base */
 	must(container.Provide(config.NewConfig))
 	must(container.Provide(func() *emitter.Emitter {
 		return emitter.New(10)
 	}))
-	/* initialize internal services */
 	return container
 }
 

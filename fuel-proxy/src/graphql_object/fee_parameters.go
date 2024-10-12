@@ -25,13 +25,13 @@ func FeeParameters(versionType *FeeParametersVersionType) (*FeeParametersType, e
 		"gasPriceFactor": &graphql.Field{
 			Type: graphql.String,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return "92000", nil
+				return 92000, nil
 			},
 		},
 		"gasPerByte": &graphql.Field{
 			Type: graphql.String,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return "63", nil
+				return 63, nil
 			},
 		},
 	}}

@@ -23,14 +23,20 @@ func NewDryRunTransactionExecutionStatusType(dryRunTransactionStatusType *DryRun
 		"id": &graphql.Field{
 			Type: graphql.String,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return "0xb4f5b359704eda15f8ec6c15004b6816b9df4f730baaa50d0a2fb34a99108bee", nil
+				if status, ok := p.Source.(*DryRunTransactionExecutionStatusStruct); ok {
+					return status.Id, nil
+				}
+				return "0x0000000000000000000000000000000000000000000000000000000000000000", nil
 			},
 		},
 		"status": &graphql.Field{
 			Type: dryRunTransactionStatusType.SchemaFields.Type,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				if status, ok := p.Source.(*DryRunTransactionExecutionStatusStruct); ok {
+					return status.Status, nil
+				}
 				return &DryRunSuccessStatusStruct{
-					TotalGas: 62570,
+					TotalGas: 0,
 					TotalFee: 0,
 					ProgramState: &ProgramStateStruct{
 						ReturnType: "RETURN",
@@ -42,6 +48,9 @@ func NewDryRunTransactionExecutionStatusType(dryRunTransactionStatusType *DryRun
 		"receipts": &graphql.Field{
 			Type: graphql.NewList(receiptType.SchemaFields.Object),
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				if status, ok := p.Source.(*DryRunTransactionExecutionStatusStruct); ok {
+					return status.Receipts, nil
+				}
 				return []ReceiptStruct{}, nil
 			},
 		},

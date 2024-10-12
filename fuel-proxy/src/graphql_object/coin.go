@@ -102,7 +102,7 @@ func MakeCoin() (*CoinType, error) {
 				if ok {
 					return coin.UtxoId, nil
 				}
-				return graphql_scalars.NewBytes34TryFromStringOrPanic("0x00000000000000000000000000000000000000000000000000000000000000000000"), nil
+				return graphql_scalars.NewBytes34Zero(), nil
 			},
 		},
 	}}

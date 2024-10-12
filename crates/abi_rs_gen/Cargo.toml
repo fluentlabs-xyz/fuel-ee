@@ -6,7 +6,6 @@ authors = [
 ]
 repository = "https://github.com/fluentlabs-xyz/fuel-ee"
 edition = "2021"
-readme = "README.md"
 license = "MIT"
 keywords = ["fuel", "execution", "environment", "zk", "integration"]
 categories = ["no-std"]

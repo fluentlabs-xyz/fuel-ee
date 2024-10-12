@@ -41,7 +41,7 @@ impl<SDK: SharedAPI> FvmLoader<SDK> {
         let deposit_input: FvmDepositInput =
             <FvmDepositInput as SolType>::abi_decode(msg, true)
                 .expect("failed to decode FvmDepositInput");
-        let recipient_address = fuel_core_types::fuel_types::Address::new(deposit_input.address.0);
+        let recipient_address = fuel_core_types::fuel_types::Address::new(deposit_input.addr.0);
 
         let contract_ctx = sdk.contract_context();
         let caller = contract_ctx.caller;
@@ -91,18 +91,23 @@ impl<SDK: SharedAPI> FvmLoader<SDK> {
         let fvm_withdraw_input: FvmWithdrawInput =
             <FvmWithdrawInput as SolType>::abi_decode(msg, true)
                 .expect("failed to decode FvmWithdrawInput");
+        // let fvm_withdraw_input = FvmWithdrawSol::decode(msg);
         let FvmWithdrawInput {
-            utxos,
+            utxo_ids,
             withdraw_amount,
         } = fvm_withdraw_input;
         let mut utxos_total_balance = 0;
-        let utxos_to_spend: Vec<UtxoId> = utxos
+        let utxos_to_spend: Vec<UtxoId> = utxo_ids
             .iter()
             .map(|v| {
-                UtxoId::new(
-                    TxId::new(v.tx_id),
-                    v.output_index,
-                )
+                if v.len() != 34 {
+                    panic!("each utxo_id must have len 34, but found {}", v.len())
+                }
+                let tx_id: [u8; 32] = v[..32].to_vec().try_into().expect("failed to restore tx id");
+                let output_index: [u8; 2] = v[32..34].to_vec().try_into().expect("failed to restore output index");
+                let tx_id = TxId::new(tx_id);
+                let output_index: u16 = u16::from_be_bytes(output_index);
+                UtxoId::new(tx_id, output_index)
             })
             .collect();
         if utxos_to_spend.len() <= 0 {
