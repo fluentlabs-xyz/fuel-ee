@@ -1,4 +1,4 @@
-use crate::generated::i_fuel_ee::{FvmDepositCall, FvmWithdrawSol};
+use crate::generated::i_fuel_ee::{FvmDepositCall};
 use alloy_sol_types::private::keccak256;
 use alloy_sol_types::SolValue;
 use core::{

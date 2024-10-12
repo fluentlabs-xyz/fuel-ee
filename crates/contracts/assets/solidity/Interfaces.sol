@@ -1,11 +1,11 @@
 pragma solidity ^0.8.26;
 
-struct UtxoId {
+struct UtxoIdSol {
     uint8[32] tx_id;
     uint16 output_index;
 }
 
-struct FvmWithdrawInput {
+struct FvmWithdrawSol {
     uint64 withdraw_amount;
     bytes[] utxo_ids;
 }
@@ -19,7 +19,7 @@ interface IFuelEE {
 
     function fvm_exec(uint8[] calldata data) external;
 
-    function _stub_1(FvmWithdrawInput memory data) external;
+    function _stub_1(FvmWithdrawSol memory data) external;
 }
 
 contract FuelEE {
