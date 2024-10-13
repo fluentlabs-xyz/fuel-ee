@@ -1,9 +1,5 @@
 all: build_contracts_and_update_genesis_locally
 
-SKIP_CONTRACTS=n
-SKIP_EXAMPLES=n
-SKIP_GENESIS=n
-
 .PHONY: prepare
 prepare:
 	cd examples; $(MAKE) prepare
@@ -14,7 +10,7 @@ run_fuel_proxy:
 
 .PHONY: build_contracts
 build_contracts:
-	cd crates/contracts && make
+	cd crates/contracts && $(MAKE)
 
 .PHONY: copy_contracts_locally
 copy_contracts_locally:
@@ -24,7 +20,7 @@ copy_contracts_locally:
 
 .PHONY: update_local_genesis
 update_local_genesis:
-	cd ../fluentbase/crates/genesis && make
+	cd ../fluentbase/crates/genesis && $(MAKE)
 
 .PHONY: build_contracts_and_update_genesis_locally
 build_contracts_and_update_genesis_locally:
@@ -34,8 +30,8 @@ build_contracts_and_update_genesis_locally:
 
 .PHONY: run_fluent_node
 run_fluent_node:
-	cd ../fluent; make fluent_build;
-	cd ../fluent; make fluent_clear_datadir
+	cd ../fluent; $(MAKE) fluent_build;
+	cd ../fluent; $(MAKE) fluent_clear_datadir
 	cd ../fluent; RUST_LOG=debug make fluent_run
 
 .PHONY: build_contracts_and_update_genesis_locally_and_run_fluent_node
@@ -45,4 +41,4 @@ build_contracts_and_update_genesis_locally_and_run_fluent_node:
 
 .PHONY: send_example_fuel_tx
 send_example_fuel_tx:
-	cd examples; make send_example_fuel_tx
+	cd examples; $(MAKE) send_example_fuel_tx

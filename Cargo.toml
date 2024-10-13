@@ -60,7 +60,7 @@ fuel-core-storage = { path = "../fuel-core/crates/storage", default-features = f
 #    "blst",
 #    "rwasm",
 #], default-features = false }
-revm-interpreter = { path = "../fluentbase/revm/crates/interpreter", default-features = false }
+revm-interpreter = { path = "../fluentbase/revm/crates/interpreter", default-features = false, features = ["rwasm"] }
 revm-primitives = { path = "../fluentbase/revm/crates/primitives", default-features = false }
 revm-precompile = { path = "../fluentbase/revm/crates/precompile", default-features = false }
 revm = { package = "revm", path = "../fluentbase/revm/crates/revm", default-features = false, features = [

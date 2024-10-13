@@ -16,11 +16,6 @@ crate-type = ["cdylib", "rlib"]
 fluentbase-sdk = { workspace = true, default-features = false }
 fluentbase-core = { workspace = true, default-features = false }
 
-# revm
-#revm-interpreter = { workspace = true, default-features = false, features = ["rwasm"] }
-#revm-precompile = { workspace = true, default-features = false }
-#revm-primitives = { workspace = true, default-features = false }
-
 # fuel
 fuel-tx = { workspace = true, default-features = false, features = ["alloc"] }
 fuel-core-types = { workspace = true, default-features = false }
@@ -28,10 +23,8 @@ fuel-core-storage = { workspace = true, default-features = false }
 
 fuel-ee-core = { workspace = true }
 
-#zeth-primitives = { workspace = true, default-features = false }
 alloy-rlp = { workspace = true, default-features = false }
 alloy-sol-types = { workspace = true }
-#ethers = { workspace = true, default-features = false, features = ["abigen"] }
 
 [features]
 default = []
