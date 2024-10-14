@@ -26,5 +26,4 @@
 4. Send example fuel transaction: `make send_example_fuel_tx`
 
 ## How to rebuild Fuel-EE smart contract and update Fluent node with it
-
-## 
+use make command ``

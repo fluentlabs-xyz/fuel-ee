@@ -1,6 +1,6 @@
 const {Web3, ETH_DATA_FORMAT} = require('web3');
 const {Wallet, Provider, Signer} = require('fuels');
-const { BN } = require('@fuel-ts/math');
+const {BN} = require('@fuel-ts/math');
 const {hexToBytes} = require("web3-utils");
 
 const DEPLOYER_PRIVATE_KEY = 'ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
@@ -10,6 +10,7 @@ function dec2hex(n) {
     let res = n ? [n % 256].concat(dec2hex(~~(n / 256))) : [];
     return res
 }
+
 function dec2hexReverse(n) {
     return dec2hex(n).reverse()
 }
@@ -49,7 +50,7 @@ const main = async () => {
 
     const doDepositOnFuel = 1;
     const doSendFuelTx = 1;
-    const doWithdrawFromFuel = 1;
+    const doWithdrawFromFuel = 0;
 
     const FvmDepositSig = 3146128830
     let FvmDepositSigBytes = dec2hexReverse(FvmDepositSig)
@@ -85,14 +86,14 @@ const main = async () => {
         let rawTransaction = {
             from: account.address,
             gasPrice: gasPrice,
-            gas: 300_000_000,
+            gas: 30_000_000,
             to: FVM_PRECOMPILE_ADDRESS,
             value: ethAmountToDeposit,
             data: Buffer.from(data),
         };
         console.log(`Raw transaction:`, rawTransaction)
         let signedTransaction = await web3.eth.accounts.signTransaction(rawTransaction, privateKey)
-        console.log("sending fuel transaction");
+        console.log("Sending fuel transaction");
         await web3.eth.sendSignedTransaction(signedTransaction.rawTransaction)
             .on('confirmation', confirmation => {
                 console.log(`confirmation:`, confirmation)
@@ -116,8 +117,7 @@ const main = async () => {
 
     if (doWithdrawFromFuel) {
         let spendableCoins = await fuelWalletOfficial.getCoins();
-        console.log(`spendable coins:`, spendableCoins);
-        // process.exit(0);
+        console.log(`spendableCoins:`, spendableCoins);
         if (spendableCoins.coins.length <= 0) {
             throw new Error("user have utxos to spend")
         }

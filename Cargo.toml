@@ -23,62 +23,62 @@ categories = ["no-std", "zk"]
 fuel-ee-core = { path = "./crates/core", default-features = false }
 fuel-ee-contracts = { path = "./crates/contracts", default-features = false }
 
-#fluentbase-poseidon = { git = "https://github.com/fluentlabs-xyz/fluentbase", branch = "feat/fuel-vm", default-features = false }
-#fluentbase-core = { git = "https://github.com/fluentlabs-xyz/fluentbase", branch = "feat/fuel-vm", default-features = false }
-#fluentbase-runtime = { git = "https://github.com/fluentlabs-xyz/fluentbase", branch = "feat/fuel-vm", default-features = false }
-#fluentbase-codec = { git = "https://github.com/fluentlabs-xyz/fluentbase", branch = "feat/fuel-vm", default-features = false }
-#fluentbase-sdk = { git = "https://github.com/fluentlabs-xyz/fluentbase", branch = "feat/fuel-vm", default-features = false }
-#fluentbase-genesis = { git = "https://github.com/fluentlabs-xyz/fluentbase", branch = "feat/fuel-vm", default-features = false }
-#fluentbase-types = { git = "https://github.com/fluentlabs-xyz/fluentbase", branch = "feat/fuel-vm", default-features = false }
-fluentbase-poseidon = { path = "../fluentbase/crates/poseidon", default-features = false }
-fluentbase-core = { path = "../fluentbase/crates/core", default-features = false }
-fluentbase-sdk = { path = "../fluentbase/crates/sdk", default-features = false }
-fluentbase-runtime = { path = "../fluentbase/crates/runtime", default-features = false }
-fluentbase-codec = { path = "../fluentbase/crates/codec", default-features = false }
-fluentbase-genesis = { path = "../fluentbase/crates/genesis", default-features = false }
-fluentbase-types = { path = "../fluentbase/crates/types", default-features = false }
+fluentbase-poseidon = { git = "https://github.com/fluentlabs-xyz/fluentbase", branch = "feat/fuel-vm", default-features = false }
+fluentbase-core = { git = "https://github.com/fluentlabs-xyz/fluentbase", branch = "feat/fuel-vm", default-features = false }
+fluentbase-runtime = { git = "https://github.com/fluentlabs-xyz/fluentbase", branch = "feat/fuel-vm", default-features = false }
+fluentbase-codec = { git = "https://github.com/fluentlabs-xyz/fluentbase", branch = "feat/fuel-vm", default-features = false }
+fluentbase-sdk = { git = "https://github.com/fluentlabs-xyz/fluentbase", branch = "feat/fuel-vm", default-features = false }
+fluentbase-genesis = { git = "https://github.com/fluentlabs-xyz/fluentbase", branch = "feat/fuel-vm", default-features = false }
+fluentbase-types = { git = "https://github.com/fluentlabs-xyz/fluentbase", branch = "feat/fuel-vm", default-features = false }
+#fluentbase-poseidon = { path = "../fluentbase/crates/poseidon", default-features = false }
+#fluentbase-core = { path = "../fluentbase/crates/core", default-features = false }
+#fluentbase-sdk = { path = "../fluentbase/crates/sdk", default-features = false, features = ["more-panic"] }
+#fluentbase-runtime = { path = "../fluentbase/crates/runtime", default-features = false }
+#fluentbase-codec = { path = "../fluentbase/crates/codec", default-features = false }
+#fluentbase-genesis = { path = "../fluentbase/crates/genesis", default-features = false }
+#fluentbase-types = { path = "../fluentbase/crates/types", default-features = false, features = ["rwasm"] }
 
-#fuel-tx = { git = "https://github.com/fluentlabs-xyz/fuel-vm", branch = "feat/fuel-vm", default-features = false, features = ["alloc"] }
-#fuel-vm = { git = "https://github.com/fluentlabs-xyz/fuel-vm", branch = "feat/fuel-vm", default-features = false, features = ["alloc"] }
-#fuel-core = { git = "https://github.com/fluentlabs-xyz/fuel-core", branch = "feat/fuel-vm" }
-#fuel-core-types = { git = "https://github.com/fluentlabs-xyz/fuel-core", branch = "feat/fuel-vm", default-features = false, features = ["serde", "alloc"] }
-#fuel-core-executor = { git = "https://github.com/fluentlabs-xyz/fuel-core", branch = "feat/fuel-vm", default-features = false, features = ["alloc"] }
-#fuel-core-storage = { git = "https://github.com/fluentlabs-xyz/fuel-core", branch = "feat/fuel-vm", default-features = false, features = ["alloc"] }
-fuel-tx = { path = "../fuel-vm/fuel-tx", default-features = false, features = ["alloc"] }
-fuel-vm = { path = "../fuel-vm/fuel-vm", default-features = false, features = ["alloc"] }
-fuel-core = { path = "../fuel-core/crates/fuel-core" }
-fuel-core-types = { path = "../fuel-core/crates/types", default-features = false, features = ["serde", "alloc"] }
-fuel-core-executor = { path = "../fuel-core/crates/services/executor", default-features = false, features = ["alloc"] }
-fuel-core-storage = { path = "../fuel-core/crates/storage", default-features = false, features = ["alloc"] }
+fuel-tx = { git = "https://github.com/fluentlabs-xyz/fuel-vm", branch = "feat/fuel-vm", default-features = false, features = ["alloc"] }
+fuel-vm = { git = "https://github.com/fluentlabs-xyz/fuel-vm", branch = "feat/fuel-vm", default-features = false, features = ["alloc"] }
+fuel-core = { git = "https://github.com/fluentlabs-xyz/fuel-core", branch = "feat/fuel-vm" }
+fuel-core-types = { git = "https://github.com/fluentlabs-xyz/fuel-core", branch = "feat/fuel-vm", default-features = false, features = ["serde", "alloc"] }
+fuel-core-executor = { git = "https://github.com/fluentlabs-xyz/fuel-core", branch = "feat/fuel-vm", default-features = false, features = ["alloc"] }
+fuel-core-storage = { git = "https://github.com/fluentlabs-xyz/fuel-core", branch = "feat/fuel-vm", default-features = false, features = ["alloc"] }
+#fuel-tx = { path = "../fuel-vm/fuel-tx", default-features = false, features = ["alloc"] }
+#fuel-vm = { path = "../fuel-vm/fuel-vm", default-features = false, features = ["alloc"] }
+#fuel-core = { path = "../fuel-core/crates/fuel-core" }
+#fuel-core-types = { path = "../fuel-core/crates/types", default-features = false, features = ["serde", "alloc"] }
+#fuel-core-executor = { path = "../fuel-core/crates/services/executor", default-features = false, features = ["alloc"] }
+#fuel-core-storage = { path = "../fuel-core/crates/storage", default-features = false, features = ["alloc"] }
 
-#revm-interpreter = { git = "https://github.com/fluentlabs-xyz/fluentbase", branch = "feat/fuel-vm" }
-#revm-primitives = { git = "https://github.com/fluentlabs-xyz/fluentbase", branch = "feat/fuel-vm" }
-#revm-precompile = { git = "https://github.com/fluentlabs-xyz/fluentbase", branch = "feat/fuel-vm" }
-#revm = { package = "revm", git = "https://github.com/fluentlabs-xyz/fluentbase", branch = "feat/fuel-vm", features = [
-#    "std",
-#    "hashbrown",
-#    "blst",
-#    "rwasm",
-#], default-features = false }
-revm-interpreter = { path = "../fluentbase/revm/crates/interpreter", default-features = false, features = ["rwasm"] }
-revm-primitives = { path = "../fluentbase/revm/crates/primitives", default-features = false }
-revm-precompile = { path = "../fluentbase/revm/crates/precompile", default-features = false }
-revm = { package = "revm", path = "../fluentbase/revm/crates/revm", default-features = false, features = [
+revm-interpreter = { git = "https://github.com/fluentlabs-xyz/fluentbase", branch = "feat/fuel-vm" }
+revm-primitives = { git = "https://github.com/fluentlabs-xyz/fluentbase", branch = "feat/fuel-vm" }
+revm-precompile = { git = "https://github.com/fluentlabs-xyz/fluentbase", branch = "feat/fuel-vm" }
+revm = { package = "revm", git = "https://github.com/fluentlabs-xyz/fluentbase", branch = "feat/fuel-vm", features = [
     "std",
     "hashbrown",
     "blst",
     "rwasm",
-] }
+], default-features = false }
+#revm-interpreter = { path = "../fluentbase/revm/crates/interpreter", default-features = false, features = ["rwasm"] }
+#revm-primitives = { path = "../fluentbase/revm/crates/primitives", default-features = false }
+#revm-precompile = { path = "../fluentbase/revm/crates/precompile", default-features = false }
+#revm = { package = "revm", path = "../fluentbase/revm/crates/revm", default-features = false, features = [
+#    "std",
+#    "hashbrown",
+#    "blst",
+#    "rwasm",
+#] }
 
 rwasm = { git = "https://github.com/fluentlabs-xyz/rwasm", branch = "devel", default-features = false }
 #rwasm = { path = "../rwasm/rwasm", default-features = false }
 halo2curves = { git = "https://github.com/privacy-scaling-explorations/halo2curves", tag = "v0.6.1", default-features = false }
 byteorder = { version = "1.5.0", default-features = false }
-alloy-primitives = { version = "0.7", default-features = false, features = ["rlp"] }
+alloy-primitives = { version = "0.8", default-features = false, features = ["rlp"] }
 alloy-rlp = { version = "0.3", default-features = false, features = ["derive"] }
-alloy-genesis = { version = "0.1", default-features = false }
-alloy-sol-types = { version = "0.7", default-features = false }
-hashbrown = { version = "0.14" }
+alloy-genesis = { version = "0.4", default-features = false }
+alloy-sol-types = { version = "0.8", default-features = false }
+hashbrown = { version = "0.15" }
 serde = { version = "1.0.203", default-features = false, features = ["derive"] }
 postcard = { version = "1.0", default-features = false }
 casey = { version = "0.4" }

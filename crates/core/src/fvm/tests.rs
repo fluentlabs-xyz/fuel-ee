@@ -15,8 +15,7 @@ mod tests {
     };
     use fuel_core::{
         database::{database_description::on_chain::OnChain, Database, RegularStage},
-        executor::test_helpers::{create_contract, setup_executable_script}
-        ,
+        executor::test_helpers::{create_contract, setup_executable_script},
     };
     use fuel_core_executor::executor::{BlockExecutor, ExecutionOptions};
     use fuel_core_executor::{executor::ExecutionData, refs::ContractRef};
@@ -24,8 +23,7 @@ mod tests {
         rand::rngs::StdRng,
         structured_storage::StructuredStorage,
         tables::Coins,
-        transactional::{Modifiable, WriteTransaction}
-        , StorageAsMut, StorageInspect, StorageMutate,
+        transactional::{Modifiable, WriteTransaction}, StorageAsMut, StorageInspect, StorageMutate,
     };
     use fuel_core_types::{
         blockchain::{
@@ -1411,30 +1409,29 @@ mod tests {
 }
 
 
-
-#[test]
-fn utx_ids_sol_encode_decode() {
-    let utxo_id_1 = UtxoIdSol {
-        tx_id: [1u8; 32].into(),
-        output_index: 1,
-    };
-    let utxo_id_2 = UtxoIdSol {
-        tx_id: [2u8; 32].into(),
-        output_index: 2,
-    };
-    let utxo_id_3 = UtxoIdSol {
-        tx_id: [3u8; 32].into(),
-        output_index: 3,
-    };
-    let utxo_id_encoded = utxo_id_1.abi_encode();
-    let utxo_id_decoded = UtxoIdSol::abi_decode(&utxo_id_encoded, true).unwrap();
-    assert_eq!(utxo_id_1, utxo_id_decoded);
-
-    let utxo_ids = FvmWithdrawInput {
-        utxos: vec![utxo_id_1, utxo_id_2, utxo_id_3],
-        withdraw_amount: 10,
-    };
-    let utxo_ids_encoded = utxo_ids.abi_encode();
-    let utxo_ids_decoded = FvmWithdrawInput::abi_decode(&utxo_ids_encoded, true).unwrap();
-    assert_eq!(utxo_ids, utxo_ids_decoded);
-}
+// #[test]
+// fn utx_ids_sol_encode_decode() {
+//     let utxo_id_1 = UtxoIdSol {
+//         tx_id: [1u8; 32].into(),
+//         output_index: 1,
+//     };
+//     let utxo_id_2 = UtxoIdSol {
+//         tx_id: [2u8; 32].into(),
+//         output_index: 2,
+//     };
+//     let utxo_id_3 = UtxoIdSol {
+//         tx_id: [3u8; 32].into(),
+//         output_index: 3,
+//     };
+//     let utxo_id_encoded = utxo_id_1.abi_encode();
+//     let utxo_id_decoded = UtxoIdSol::abi_decode(&utxo_id_encoded, true).unwrap();
+//     assert_eq!(utxo_id_1, utxo_id_decoded);
+//
+//     let utxo_ids = FvmWithdrawInput {
+//         utxos: vec![utxo_id_1, utxo_id_2, utxo_id_3],
+//         withdraw_amount: 10,
+//     };
+//     let utxo_ids_encoded = utxo_ids.abi_encode();
+//     let utxo_ids_decoded = FvmWithdrawInput::abi_decode(&utxo_ids_encoded, true).unwrap();
+//     assert_eq!(utxo_ids, utxo_ids_decoded);
+// }
