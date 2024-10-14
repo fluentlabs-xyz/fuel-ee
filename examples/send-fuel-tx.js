@@ -50,7 +50,7 @@ const main = async () => {
 
     const doDepositOnFuel = 1;
     const doSendFuelTx = 1;
-    const doWithdrawFromFuel = 0;
+    const doWithdrawFromFuel = 1;
 
     const FvmDepositSig = 3146128830
     let FvmDepositSigBytes = dec2hexReverse(FvmDepositSig)
@@ -93,11 +93,11 @@ const main = async () => {
         };
         console.log(`Raw transaction:`, rawTransaction)
         let signedTransaction = await web3.eth.accounts.signTransaction(rawTransaction, privateKey)
-        console.log("Sending fuel transaction");
+        console.log(`Sending fuel transaction: ${signedTransaction.transactionHash}`);
         await web3.eth.sendSignedTransaction(signedTransaction.rawTransaction)
             .on('confirmation', confirmation => {
                 console.log(`confirmation:`, confirmation)
-            });
+            })
         console.log(`Balance deposited`);
     }
 

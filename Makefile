@@ -30,7 +30,7 @@ build_contracts_and_update_genesis_locally:
 
 .PHONY: run_fluent_node
 run_fluent_node:
-	cd ../fluent; $(MAKE) fluent_build;
+	cd ../fluent; $(MAKE) fluent_build
 	cd ../fluent; $(MAKE) fluent_clear_datadir
 	cd ../fluent; RUST_LOG=debug make fluent_run
 
