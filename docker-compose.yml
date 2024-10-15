@@ -1,0 +1,13 @@
+version: '2.4'
+services:
+  redis:
+    image: redis
+    command: redis-server --requirepass 123456
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data: { }

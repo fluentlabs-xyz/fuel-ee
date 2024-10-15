@@ -143,16 +143,14 @@ const main = async () => {
         );
         let input = Array.from(hexToBytes(encodedParams));
         console.log(`Withdrawing balance from Fuel account ${fuelWalletOfficial.address.toHexString()} to Fluent account ${account.address}`);
-        let ethAmountToDeposit = web3.utils.toWei(0.01, "ether");
         let data = [];
         data = data.concat(FvmWithdrawSigBytes);
         data = data.concat(input);
         let rawTransaction = {
             from: account.address,
             gasPrice: gasPrice,
-            gas: 300_000_000,
+            gas: 30_000_000,
             to: FVM_PRECOMPILE_ADDRESS,
-            value: ethAmountToDeposit,
             data: Buffer.from(data),
         };
         console.log(`rawTransaction:`, rawTransaction);
