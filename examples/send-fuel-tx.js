@@ -49,9 +49,9 @@ const main = async () => {
 
     const web3 = new Web3(web3Url);
 
-    const doDepositOnFuel = 0;
+    const doDepositOnFuel = 1;
     const doSendFuelTx = 1;
-    const doWithdrawFromFuel = 0;
+    const doWithdrawFromFuel = 1;
 
     const FvmDepositSig = 3146128830
     let FvmDepositSigBytes = dec2hexBE(FvmDepositSig)
