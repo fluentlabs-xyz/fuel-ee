@@ -11,3 +11,4 @@ docker compose stop --timeout 0 redis
 docker container rm ${CONTAINER_PREFIX}-redis-1
 docker volume rm ${CONTAINER_PREFIX}_redis_data
 docker compose up -d
+docker ps

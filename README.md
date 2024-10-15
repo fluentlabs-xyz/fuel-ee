@@ -21,15 +21,19 @@
 - This project in some local directory
 - Fluent node project (https://github.com/fluentlabs-xyz/fluent) in 'fluent' directory on the same directory level as
   the current project's directory
-- 50 GB of free memory (required for the node when commiting canonical blocks)
+- 50 GB of free memory (required for the node when generating canonical blocks) - trying to figure out why it consumes so much
 
 ## How to run main components and send example Fuel transaction
 
 1. Prepare project: `make prepare`
-2. Run Redis inside docker: `./start_docker.sh`
+2. Run Redis inside docker: `./docker_start.sh` (will be running in background)
 3. Run Fluent node: `make run_fluent_node`
 4. Run Fuel proxy: `make run_fuel_proxy`
 5. Send example fuel transaction: `make send_example_fuel_tx`
+
+## How to reset states for running services (if you want to start from genesis state)
+- To reset Fluent's node state just run it again with (it always starts from genesis state): `make run_fluent_node`
+- To reset Redis state (running in docker) run (remember to run this command right after resetting Fluent's node state or it will be polluted with previously written data): `./docker_recreate_redis.sh`
 
 ## How to rebuild Fuel-EE smart contract and update Fluent node with it
 

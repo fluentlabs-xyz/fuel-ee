@@ -49,9 +49,9 @@ const main = async () => {
 
     const web3 = new Web3(web3Url);
 
-    const doDepositOnFuel = 1;
+    const doDepositOnFuel = 0;
     const doSendFuelTx = 1;
-    const doWithdrawFromFuel = 1;
+    const doWithdrawFromFuel = 0;
 
     const FvmDepositSig = 3146128830
     let FvmDepositSigBytes = dec2hexBE(FvmDepositSig)
@@ -104,8 +104,8 @@ const main = async () => {
                 console.log(`confirmation:`, confirmation)
             })
         ethAccountBalance = await web3.eth.getBalance(account.address);
-        console.log(`Balance deposited: Eth balance ${ethAccountBalance}`);
-        await sleep(2);
+        console.log(`Eth balance after send: ${ethAccountBalance}`);
+        await sleep(3);
         spendableCoins = await fuelWalletOfficial.getCoins();
         console.log(`Fuel spendableCoins (for ${fuelWalletOfficial.address.toHexString()}) after:`, spendableCoins);
     }
@@ -127,7 +127,7 @@ const main = async () => {
         fuelTransferTx.updateWitnessByOwner(recoveredAddress, fuelTransferFromOfficialToWallet1TxSigned);
         let transferResult = await fuelWallet1.sendTransaction(fuelTransferTx);
         console.log(`transferResult.id:`, transferResult.id);
-        await sleep(2);
+        await sleep(3);
         spendableCoins = await fuelWalletOfficial.getCoins();
         console.log(`Fuel spendableCoins (for ${fuelWalletOfficial.address.toHexString()}) after:`, spendableCoins);
         spendableCoins = await fuelWallet1.getCoins();
