@@ -13,6 +13,7 @@ import (
 	"github.com/fluentlabs-xyz/fuel-ee/src/graphql_scalars"
 	"github.com/graphql-go/graphql"
 	log "github.com/sirupsen/logrus"
+	"time"
 )
 
 type SubmitEntry struct {
@@ -77,26 +78,26 @@ func MakeSubmitEntry(ethClient *ethclient.Client, submitType *graphql_object.Sub
 				if err != nil {
 					return nil, errors.New(fmt.Sprintf("Submit: failed to send tx, error: %s", err))
 				}
-				//isPending := true
-				//for isPending {
-				//	tx, isPending, err = ethClient.TransactionByHash(context.Background(), signedTx.Hash())
-				//	if err != nil {
-				//		log.Printf("Submit: TransactionByHash, error: %s", err)
-				//	} else {
-				//		log.Printf(
-				//			"Submit: tx: isPending:%v Hash:%s Nonce:%d ChainId:%s To:%s",
-				//			isPending,
-				//			tx.Hash(),
-				//			tx.Nonce(),
-				//			tx.ChainId(),
-				//			tx.To(),
-				//		)
-				//		if !isPending {
-				//			break
-				//		}
-				//	}
-				//	time.Sleep(5 * time.Second)
-				//}
+				isPending := true
+				for isPending {
+					tx, isPending, err = ethClient.TransactionByHash(context.Background(), signedTx.Hash())
+					if err != nil {
+						log.Printf("Submit: TransactionByHash, error: %s", err)
+					} else {
+						log.Printf(
+							"Submit: tx: isPending:%v Hash:%s Nonce:%d ChainId:%s To:%s",
+							isPending,
+							tx.Hash(),
+							tx.Nonce(),
+							tx.ChainId(),
+							tx.To(),
+						)
+						if !isPending {
+							break
+						}
+					}
+					time.Sleep(5 * time.Second)
+				}
 				return graphql_object.SubmitStruct{
 					Id: graphql_scalars.NewBytes32TryFromStringOrPanic(signedTx.Hash().String()),
 				}, nil
