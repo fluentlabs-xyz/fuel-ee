@@ -12,7 +12,7 @@ resolver = "2"
 authors = [
     "Stanislav Stepanov <stanislav@fluentlabs.xyz>",
 ]
-repository = "https://github.com/fluentlabs-xyz/fuel-ee"
+repository = "https://github.com/fluentlabs-xyz/fuel-isolated-ee"
 edition = "2021"
 readme = "README.md"
 license = "MIT"
